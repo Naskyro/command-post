@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {payrollLine,workweek,spendingWeek} from '../../lib/finance/model.ts';
+const start='2026-08-30', end='2026-09-05';
+const person={id:'braden',kind:'person',version:0,name:'Braden',department:'Operations',workerType:'Employee',payType:'Hourly + commission',rate:21.63};
+const rec=(id,kind,x)=>({id,kind,version:0,person:'braden',date:start,status:'Approved',...x});
+test('Sunday workweek pays the following Friday; expense period ends Friday',()=>{assert.deepEqual(workweek('2026-09-05'),{start,end,payday:'2026-09-11',transition:false});assert.deepEqual(spendingWeek('2026-09-05'),{start:'2026-09-05',end:'2026-09-11'});});
+test('Braden hourly example rounds at payroll line level',()=>{const p=payrollLine(person,[rec('t','time',{hours:40+58/60})],start,end);assert.equal(p.gross,896.56);assert.ok(p.issues.includes('Verify taxes and YTD'));});
+test('Noncash truck credits are taxable and never paid a second time as cash',()=>{const p=payrollLine(person,[rec('t','time',{hours:40}),rec('c','earning',{amount:2377.6,destination:'Truck credit'})],start,end);assert.equal(p.gross,3242.8);assert.equal(p.noncash,2377.6);assert.equal(p.payment,865.2);});
+test('Commission belongs in hourly overtime regular rate',()=>{const p=payrollLine({...person,rate:20},[rec('t','time',{hours:45}),rec('c','earning',{amount:90,destination:'Cash earnings'})],start,end);assert.equal(p.gross,1045);});
+test('Austin requires verified gross-up and exactly 1500 net',()=>{const a={...person,id:'austin',payType:'Net salary',exempt:true,rate:1800,netTarget:1500};const taxes=rec('tax','taxInput',{person:'austin',federal:162.3,socialSecurity:111.6,medicare:26.1,verified:true});assert.equal(payrollLine(a,[taxes],start,end).net,1500);assert.equal(payrollLine(a,[taxes],start,end).issues.length,0);assert.ok(payrollLine({...a,rate:1500},[taxes],start,end).issues.length);});
+test('Per-tow contractor rate does not become an unearned base payment',()=>{const p=payrollLine({...person,workerType:'Contractor',payType:'Per tow',rate:50},[],start,end);assert.equal(p.gross,0);});
+test('Reimbursements are separate from wages and already paid expenses are excluded',()=>{const p=payrollLine(person,[rec('t','time',{hours:40}),rec('r','reimbursement',{amount:88.16}),rec('p','reimbursement',{amount:99,paidReference:'already-paid'})],start,end);assert.equal(p.gross,865.2);assert.equal(p.reimbursed,88.16);assert.equal(p.payment,953.36);});
+test('Repayment deductions stop at the remaining balance across released runs',()=>{const deduction=rec('d','deduction',{amount:100,remaining:150,recurring:true,date:'2026-08-01'});const prior={id:'old',kind:'payrun',version:0,period:'2026-08-23',status:'Released',lines:[{details:[{...deduction,appliedAmount:100}]}]};const p=payrollLine(person,[rec('t','time',{hours:40}),deduction,prior],start,end);assert.equal(p.deducted,50);});
+test('a calendar bridge cannot release salaried wages without explicit reviewed transition gross',()=>{
+ const p={id:'bridge',kind:'person',version:0,name:'Bridge',workerType:'Employee',payType:'Salary exempt',rate:1400,exempt:true};
+ const tax={id:'bridge-tax',kind:'taxInput',version:0,person:'bridge',date:'2026-09-13',federal:0,socialSecurity:0,medicare:0,verified:true,source:'Reviewed worksheet'};
+ const pending=payrollLine(p,[tax],'2026-09-13','2026-09-13');assert.ok(pending.issues.some(s=>s.includes('transition')));
+ const reviewed=payrollLine(p,[{...tax,transitionReviewed:true,transitionGross:200}],'2026-09-13','2026-09-13');assert.equal(reviewed.gross,200);assert.ok(!reviewed.issues.some(s=>s.includes('transition')));
+});

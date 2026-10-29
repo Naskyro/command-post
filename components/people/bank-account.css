@@ -1,0 +1,13 @@
+.f-bank-info { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--ws-canvas, #f4f7fc); border: 1px solid var(--ws-line, #dce5ef); border-radius: 10px; margin: 0 0 14px; }
+.f-bank-info.verified { gap: 12px; color: #166534; background: #f0fdf4; border-color: #bbf7d0; }
+.f-bank-info.verified svg { color: #16a34a; flex-shrink: 0; }
+.f-bank-info b { display: block; }
+.f-bank-info span { font-size: .875rem; color: var(--ws-muted, #53657a); }
+.f-status-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; background: #fff8e5; color: #805016; font-size: .8125rem; font-weight: 650; }
+.f-dialog-heading { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--ws-line, #dce5ef); }
+.f-dialog-heading h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.125rem; }
+.f-dialog-body { padding: 18px; }
+.f-dialog-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; }
+.f-button.danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+.f-button.danger:hover { background: #fee2e2; border-color: #fca5a5; }
+.f-button.danger svg { width: 15px; height: 15px; }

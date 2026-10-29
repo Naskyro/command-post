@@ -1,0 +1,1 @@
+export const permitFields=['permitSystem','permitPlatform','physicalPermitType','physicalPermitDisplay','vehiclesPerLeaseholder','residentVehicleLimitNotes','visitorSection','visitorSectionLocation','visitorVisitsPerMonth','visitorPermitHours','visitorConsecutiveDays','visitorApproval','visitorRules','evParkingEnforcement','evParkingRules'];

@@ -1,0 +1,506 @@
+{
+  "account:agaveeast": {
+    "photo": "/images/accounts/agaveeast-property.webp",
+    "photoSource": "https://www.apartmentsindelvalle.com/photogallery",
+    "photoVerifiedAddress": "7508 Ross Rd, Del Valle, TX 78617",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:alaranorthburnet": {
+    "photo": "/images/accounts/alaranorthburnet-property.webp",
+    "photoSource": "https://www.alaranorthburnet.com/gallery/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:almacherrywood": {
+    "photo": "/images/accounts/almacherrywood-property.webp",
+    "photoSource": "https://www.almanorthatx.com/gallery",
+    "photoVerifiedAddress": "1230 E 38 1/2 St, Austin, Tx 78722",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:almasoco": {
+    "photo": "/images/accounts/almasoco-property.webp",
+    "photoSource": "https://www.almasouthatx.com/gallery",
+    "photoVerifiedAddress": "126 w alpine Rd, Austin, Tx 78704",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:almawoodward": {
+    "photo": "/images/accounts/almawoodward-property.webp",
+    "photoSource": "https://www.umovefree.com/Apartment/alma-woodward-apartments-austin-tx/",
+    "photoVerifiedAddress": "607 Woodward St, Austin, Tx 78704",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:altura": {
+    "photo": "/images/accounts/altura-property.jpg",
+    "photoSource": "https://www.alturaaustin.com/amenities",
+    "photoVerifiedAddress": "1911 Willow Creek Dr, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:arbortrails": {
+    "photo": "/images/accounts/arbortrails-property.webp",
+    "photoSource": "https://www.liveatarbortrails.com/gallery/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:arizaeastonpark": {
+    "photo": "/images/accounts/arizaeastonpark-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/8001-E-William-Cannon-Dr_Austin_TX_78744_M98135-42285",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:artsatturtlecreek": {
+    "photo": "/images/accounts/artsatturtlecreek-property.webp",
+    "photoSource": "https://www.artsatturtlecreekaustin.com/gallery",
+    "photoVerifiedAddress": "714 Turtle Creek Blvd, Austin, TX 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:aubryhills": {
+    "photo": "/images/accounts/aubryhills-property.webp",
+    "photoSource": "https://aubryhillsapts.com/",
+    "photoVerifiedAddress": "8926 N Lamar Blvd, Austin, TX 78753",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:avalonpalms": {
+    "photo": "/images/accounts/avalonpalms-property.webp",
+    "photoSource": "https://www.zumper.com/apartment-buildings/p30364/avalon-palms-i-north-austin-austin-tx",
+    "photoVerifiedAddress": "9300 Northgate Blvd, Austin, TX 78758",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:avalontechridge": {
+    "photo": "/images/accounts/avalontechridge-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/14100-John-Henry-Faulk-Dr_Pflugerville_TX_78660_M93067-31543",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:avanasoco": {
+    "photo": "/images/accounts/avanasoco-property.webp",
+    "photoSource": "https://www.umovefree.com/Apartment/avana-soco-apartments-austin-tx/",
+    "photoVerifiedAddress": "401 Little Texas Ln, Austin, TX 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:banyaneverton": {
+    "photo": "/images/accounts/banyaneverton-property.webp",
+    "photoSource": "https://www.banyanresidential.com/banyan-everton",
+    "photoVerifiedAddress": "13701 sloan st, pflugerville, tx 78660",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:bluffspringstownhomes": {
+    "photo": "/images/accounts/bluffspringstownhomes-property.webp",
+    "photoSource": "https://www.bluffspringstownhomes.com/gallery/",
+    "photoVerifiedAddress": "7100 Bluff Springs Rd, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:brazoslofts": {
+    "photo": "/images/accounts/brazoslofts-property.webp",
+    "photoSource": "https://liveatbrazoslofts.com/gallery/",
+    "photoVerifiedAddress": "411 Brazos St, Austin, TX 78701",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:cherryhilllofts": {
+    "photo": "/images/accounts/cherryhilllofts-property.webp",
+    "photoSource": "https://www.cherryhillaustin.com/gallery",
+    "photoVerifiedAddress": "5609 Cougar Dr , Austin, Tx 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:citizenhousebergstrom": {
+    "photo": "/images/accounts/citizenhousebergstrom-property.webp",
+    "photoSource": "https://www.roberthidey.com/projects-Citizen-House-at-Bergstrom-1261.cfm",
+    "photoVerifiedAddress": "7733 Burleson Rd, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:cypresscreekmckinneyfalls": {
+    "photo": "/images/accounts/cypresscreekmckinneyfalls-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/7000-Janes-Ranch-Rd_Austin_TX_78744_M94054-24010",
+    "photoVerifiedAddress": "7000 Janes Ranch Rd, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:douglaslanding": {
+    "photo": "/images/accounts/douglaslanding-property.webp",
+    "photoSource": "https://www.douglaslanding.com/",
+    "photoVerifiedAddress": "2347 Douglas St, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:eastridgeluxuryapartments": {
+    "photo": "/images/accounts/eastridgeluxuryapartments-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/5501-Ross-Rd_Del-Valle_TX_78617_M99033-58458",
+    "photoVerifiedAddress": "5501 Ross Rd, Del Valle, Tx 78617",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:eastsideat2201": {
+    "photo": "/images/accounts/eastsideat2201-property.webp",
+    "photoSource": "https://www.eastsideat2201.com/gallery",
+    "photoVerifiedAddress": "2201 Montopolis Dr, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:element": {
+    "photo": "/images/accounts/element-property.webp",
+    "photoSource": "https://www.theelementaustin.com/gallery",
+    "photoVerifiedAddress": "1500 royal crest dr, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:ellishighline": {
+    "photo": "/images/accounts/ellishighline-property.webp",
+    "photoSource": "https://www.ellishighline.com/models",
+    "photoVerifiedAddress": "6324 N Lamar Blvd, Austin, TX 78752",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:enclavecreedmoor": {
+    "photo": "/images/accounts/enclavecreedmoor-property.webp",
+    "photoSource": "https://www.enclavecreedmoor.com/photogallery",
+    "photoVerifiedAddress": "12115 Creedmoor Municipal Dr, Creedmoor, TX 78610",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:enclaveonross": {
+    "photo": "/images/accounts/enclaveonross-property.webp",
+    "photoSource": "https://www.enclaveonross.com/photogallery",
+    "photoVerifiedAddress": "4700 Ross Rd, Del Valle, TX 78617",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:farmhouse": {
+    "photo": "/images/accounts/farmhouse-property.webp",
+    "photoSource": "https://www.har.com/farmhouse/apartment_4752B",
+    "photoVerifiedAddress": "10801 S Interstate 35, Austin, TX 78747",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:foxwood": {
+    "photo": "/images/accounts/foxwood-property.webp",
+    "photoSource": "https://www.zillow.com/apartments/austin-tx/foxwood/5Xht75/",
+    "photoVerifiedAddress": "6503 Bluff springs Rd, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:gardentrails": {
+    "photo": "/images/accounts/gardentrails-property.webp",
+    "photoSource": "https://www.liveatarbortrails.com/gallery/",
+    "photoVerifiedAddress": "1700 N Mays St, Round Rock, TX 78664",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:heightsat8721": {
+    "photo": "/images/accounts/heightsat8721-property.webp",
+    "photoSource": "https://www.theheightsat8721.com/",
+    "photoVerifiedAddress": "8721 Eastern Heights Blvd, Austin, TX 78724",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:ironhorseflats": {
+    "photo": "/images/accounts/ironhorseflats-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/1930-W-Rundberg-Ln_Austin_TX_78758_M74675-33076",
+    "photoVerifiedAddress": "1930 W Rundberg Ln, Austin, TX 78758",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:lakelinecenter": {
+    "photo": "/images/accounts/lakelinecenter-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/13800-Lyndhurst-St-Unit-104_Austin_TX_78717_M89943-97460",
+    "photoVerifiedAddress": "13800 Lyndhurst St, Austin, TX 78717",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:lamarplace": {
+    "photo": "/images/accounts/lamarplace-property.webp",
+    "photoSource": "https://www.lamarplaceapts.com/gallery/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:lanshireoaks": {
+    "photo": "/images/accounts/lanshireoaks-property.webp",
+    "photoSource": "https://www.theleafgroup.com/properties/lanshire-oaks/",
+    "photoVerifiedAddress": "3702 S 2nd St, Austin, TX 78704",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:legendslakeline": {
+    "photo": "/images/accounts/legendslakeline-property.webp",
+    "photoSource": "https://www.livelegendslakeline.com/gallery/",
+    "photoVerifiedAddress": "9725 N lake Creek Pkwy, Austin, Tx 78717",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:lenoxsoco": {
+    "photo": "/images/accounts/lenoxsoco-property.webp",
+    "photoSource": "https://www.lenoxsoco.com/photogallery",
+    "photoVerifiedAddress": "135 Foremost Drive, Austin, TX 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:limestoneridge": {
+    "photo": "/images/accounts/limestoneridge-property.webp",
+    "photoSource": "https://www.zillow.com/apartments/austin-tx/limestone-ridge/CkCZBn/",
+    "photoVerifiedAddress": "7011 McKinney Falls Pkwy, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:mckinneyfalls": {
+    "photo": "/images/accounts/mckinneyfalls-property.webp",
+    "photoSource": "https://www.mckinneyfallsapts.com/",
+    "photoVerifiedAddress": "6625 McKinney Falls Pkwy, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:mesh": {
+    "photo": "/images/accounts/mesh-property.webp",
+    "photoSource": "https://www.zumper.com/apartment-buildings/p10283/mesh-riverside-austin-tx",
+    "photoVerifiedAddress": "2101 Elmont Dr, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:miariverside": {
+    "photo": "/images/accounts/miariverside-property.webp",
+    "photoSource": "https://www.zumper.com/apartment-buildings/p84596/solaris-riverside-austin-tx",
+    "photoVerifiedAddress": "1601 Royal Crest Dr, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:mlkhighline": {
+    "photo": "/images/accounts/mlkhighline-property.webp",
+    "photoSource": "https://www.mlkhighline.com/gallery",
+    "photoVerifiedAddress": "2832 E Martin Luther King, Austin, Tx 78702",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:novaaustin": {
+    "photo": "/images/accounts/novaaustin-property.webp",
+    "photoSource": "https://www.novaatx.com/gallery",
+    "photoVerifiedAddress": "3515 Webberville Rd, Austin, TX 78702",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:ocotillo": {
+    "photo": "/images/accounts/ocotillo-property.webp",
+    "photoSource": "https://www.ocotilloaustin.com/ocotillo-apartments-west-austin-tx/gallery",
+    "photoVerifiedAddress": "8000 US-290, Austin, TX 78736",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:onioncreekluxury": {
+    "photo": "/images/accounts/onioncreekluxury-property.webp",
+    "photoSource": "https://www.rentanapt.com/apartments/tx/austin/onion-creek/",
+    "photoVerifiedAddress": "10701 S I-35 Frontage Rd, Austin, TX 78747",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:paseoatbeecavebycortland": {
+    "photo": "/images/accounts/paseoatbeecavebycortland-property.webp",
+    "photoSource": "https://cortland.com/apartments/paseo-at-bee-cave/",
+    "photoVerifiedAddress": "12531 State Hwy 71, Bee Cave, TX 78738",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:preservationsquare": {
+    "photo": "/images/accounts/preservationsquare-property.webp",
+    "photoSource": "https://www.gbatx.com/listings/detail/11122342-be09-412c-9604-a4fcd842ca08",
+    "photoVerifiedAddress": "904 W 21st, Austin, TX 78705",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:radiusongrove": {
+    "photo": "/images/accounts/radiusongrove-property.webp",
+    "photoSource": "https://www.radiusongrove.com/photogallery",
+    "photoVerifiedAddress": "2301 Grove Blvd, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:retreatatnorthbluff": {
+    "photo": "/images/accounts/retreatatnorthbluff-property.webp",
+    "photoSource": "https://www.retreatatnorthbluff.com/gallery/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:riversidemeadows": {
+    "photo": "/images/accounts/riversidemeadows-property.webp",
+    "photoSource": "https://www.riversidemeadowsaustin.com/photogallery",
+    "photoVerifiedAddress": "1601 Montopolis Dr, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:sagehill": {
+    "photo": "/images/accounts/sagehill-property.webp",
+    "photoSource": "https://www.sagehillatx.com/austin-austin-tx/sage-hill-apartment-homes-sage-hill/photos/",
+    "photoVerifiedAddress": "7227 E Hwy 290, Austin, TX 78723",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:socopark": {
+    "photo": "/images/accounts/socopark-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/7201-S-Congress-Ave_Austin_TX_78745_M72469-56025",
+    "photoVerifiedAddress": "7201 S Congress Ave, Austin Tx , Austin, Tx 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:sotolriverside": {
+    "photo": "/images/accounts/sotolriverside-property.webp",
+    "photoSource": "https://www.sotolriverside.com/gallery",
+    "photoVerifiedAddress": "2800 Collins Creek Dr , Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:southparkcrossing": {
+    "photo": "/images/accounts/southparkcrossing-property.jpg",
+    "photoSource": "https://www.southparkcrossing.com/austin/southpark-crossing-apartments/photos/",
+    "photoVerifiedAddress": "1701 Oak Hill Ln, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:stillwaters": {
+    "photo": "/images/accounts/stillwaters-property.webp",
+    "photoSource": "https://stillwatersaustin.com/gallery/",
+    "photoVerifiedAddress": "515 E. Slaughter Lane, Austin, Texas 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:strata": {
+    "photo": "/images/accounts/strata-property.webp",
+    "photoSource": "https://atxstrata.com/gallery/",
+    "photoVerifiedAddress": "8340 Bluff Springs Rd, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:theberkley": {
+    "photo": "/images/accounts/theberkley-property.webp",
+    "photoSource": "https://www.theberkleyatx.com/gallery/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thebreakers": {
+    "photo": "/images/accounts/thebreakers-property.webp",
+    "photoSource": "https://breakersapartmentsaustin.com/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thecanopyatsouthcongress": {
+    "photo": "/images/accounts/thecanopyatsouthcongress-property.webp",
+    "photoSource": "https://www.realtor.com/rentals/details/6812-S-Congress-Ave_Austin_TX_78745_M81193-54339",
+    "photoVerifiedAddress": "6812 S Congress Ave, Austin, TX 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thecarrells": {
+    "photo": "/images/accounts/thecarrells-property.webp",
+    "photoSource": "https://www.redfin.com/TX/Austin/2812-Nueces-St-78705/home/31404883",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thecole": {
+    "photo": "/images/accounts/thecole-property.webp",
+    "photoSource": "https://www.har.com/cole-apartments/highrise_1016",
+    "photoVerifiedAddress": "300 S Lamar Blvd, Austin, Tx 78704",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thefallsroundrock": {
+    "photo": "/images/accounts/thefallsroundrock-property.webp",
+    "photoSource": "https://www.thefallsroundrock.com/gallery/",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thehoward": {
+    "photo": "/images/accounts/thehoward-property.webp",
+    "photoSource": "https://thehowardatx.com/gallery/",
+    "photoVerifiedAddress": "2908 E Howard Ln, Manor, TX 78653",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:themeadows": {
+    "photo": "/images/accounts/themeadows-property.webp",
+    "photoSource": "https://www.umovefree.com/Apartment/meadow-apartments-austin-tx/",
+    "photoVerifiedAddress": "6220 Daniel Alexander Wy, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:themetropolis": {
+    "photo": "/images/accounts/themetropolis-property.webp",
+    "photoSource": "https://www.metropolisapartmentsaustin.com/",
+    "photoVerifiedAddress": "2200 S Pleasant Valley Rd , Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreserveathunterscrossing": {
+    "photo": "/images/accounts/thepreserveathunterscrossing-property.webp",
+    "photoSource": "https://www.preserve-at-hunters-crossing.com/photogallery",
+    "photoVerifiedAddress": "210 Hunters Crossing Blvd, Bastrop, TX 78602",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservecentralpark": {
+    "photo": "/images/accounts/thepreservecentralpark-property.webp",
+    "photoSource": "https://www.thepreservecentralpark.com/gallery/",
+    "photoVerifiedAddress": "6008 N Lamar Blvd, Austin, TX 78752",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservehydeparkavenuea": {
+    "photo": "/images/accounts/thepreservehydeparkavenuea-property.webp",
+    "photoSource": "https://avenuea.thepreservehydepark.com/gallery/",
+    "photoVerifiedAddress": "4100 Avenue A, Austin, TX 78751",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservehydeparkdelmar": {
+    "photo": "/images/accounts/thepreservehydeparkdelmar-property.webp",
+    "photoSource": "https://delmar.thepreservehydepark.com/gallery/",
+    "photoVerifiedAddress": "4415 Avenue B, Austin, TX 78751",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservehydeparkfiestaplace": {
+    "photo": "/images/accounts/thepreservehydeparkfiestaplace-property.jpg",
+    "photoSource": "https://fiestaplace.thepreservehydepark.com/gallery/",
+    "photoVerifiedAddress": "4200 Avenue A, Austin, TX 78751",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservehydeparksiestaplace": {
+    "photo": "/images/accounts/thepreservehydeparksiestaplace-property.webp",
+    "photoSource": "https://siestaplace.thepreservehydepark.com/gallery/",
+    "photoVerifiedAddress": "609 E 45th St, Austin, TX 78751",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservehydeparktheadler": {
+    "photo": "/images/accounts/thepreservehydeparktheadler-property.webp",
+    "photoSource": "https://theadler.thepreservehydepark.com/amenities/",
+    "photoVerifiedAddress": "4209 Speedway, Austin, TX 78751",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thepreservequailcreek": {
+    "photo": "/images/accounts/thepreservequailcreek-property.webp",
+    "photoSource": "https://www.preservequailcreek.com/gallery/",
+    "photoVerifiedAddress": "9008 Galewood Drive, Austin, TX 78758",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:therail": {
+    "photo": "/images/accounts/therail-property.webp",
+    "photoSource": "https://www.therailatx.com/apartments/tx/austin/photo-gallery",
+    "photoVerifiedAddress": "",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:theroz": {
+    "photo": "/images/accounts/theroz-property.webp",
+    "photoSource": "https://www.austintexas.gov/housing/news/protecting-austins-vulnerable-roz-permanent-supportive-housing-community-0",
+    "photoVerifiedAddress": "3435 Parker Ln, Austin, TX 78741",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thesarahbyarium": {
+    "photo": "/images/accounts/thesarahbyarium-property.webp",
+    "photoSource": "https://ariumliving.com/austin-tx/the-sarah/",
+    "photoVerifiedAddress": "16760 Ronald Reagan Blvd, Leander, TX 78641",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:thesquare": {
+    "photo": "/images/accounts/thesquare-property.webp",
+    "photoSource": "https://www.rentable.co/austin-tx/t-square-apartments",
+    "photoVerifiedAddress": "202 E 30th St, Austin, TX 78705",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:treatyoaks": {
+    "photo": "/images/accounts/treatyoaks-property.webp",
+    "photoSource": "https://www.greendoors.org/housing/TreatyOaks.php",
+    "photoVerifiedAddress": "3700 Menchaca Rd, Austin , TX 78704",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:villason26th": {
+    "photo": "/images/accounts/villason26th-property.webp",
+    "photoSource": "https://villason26.com/photos/",
+    "photoVerifiedAddress": "800 w 26th, Austin, TX 78705",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:watersatbartoncreek": {
+    "photo": "/images/accounts/watersatbartoncreek-property.webp",
+    "photoSource": "https://www.umovefree.com/Apartment/waters-at-barton-creek-apartments-austin-tx/",
+    "photoVerifiedAddress": "2611 Bee Caves Rd, Austin, TX 78746",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:whisperingoaks": {
+    "photo": "/images/accounts/whisperingoaks-property.webp",
+    "photoSource": "https://www.umovefree.com/Apartment/arts-apartments-at-south-austin-apartments-austin-tx/",
+    "photoVerifiedAddress": "400 W Saint Elmo Rd, Austin, TX 78745",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:wilder": {
+    "photo": "/images/accounts/wilder-property.webp",
+    "photoSource": "https://livebh.com/apartments/wilder/photos/",
+    "photoVerifiedAddress": "8350 Bluff Springs Road, Austin, TX 78744",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:wildhorseflats": {
+    "photo": "/images/accounts/wildhorseflats-property.webp",
+    "photoSource": "https://www.wildhorseflats.com/gallery1",
+    "photoVerifiedAddress": "10525 Wildhorse Ranch Trl  Manor, TX 78653, Manor , TX 78653",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:wootenpark": {
+    "photo": "/images/accounts/wootenpark-property.jpg",
+    "photoSource": "https://www.1802capital.com/our-investments/austin-portfolio-wooten/",
+    "photoVerifiedAddress": "1720 Wooten Park Drive, Austin, TX",
+    "photoRetrievedAt": "2026-09-06"
+  },
+  "account:yagerflats": {
+    "photo": "/images/accounts/yagerflats-property.webp",
+    "photoSource": "https://www.yagerflatsapartments.com/gallery-1",
+    "photoVerifiedAddress": "4818 E Yager Ln, Manor, TX 78653",
+    "photoRetrievedAt": "2026-09-06"
+  }
+}

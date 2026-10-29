@@ -1,0 +1,36 @@
+{
+  "sources": [
+    "export (25).csv",
+    "CallAnalysis (27).xlsx",
+    "IncomeSummary (10).xlsx"
+  ],
+  "addressPhoneMatches": 105,
+  "vehicles": 4166,
+  "payments": 4126,
+  "netCollectionCents": 136105014,
+  "actualTowDates": 26,
+  "paymentsWithoutMatchedCall": 3,
+  "unmatchedAccounts": {
+    "Cash / Private Customers": "Address / phone export",
+    "Cidercade": "Address / phone export",
+    "Consent Storage": "Address / phone export",
+    "Galindo's Towing & Transport": "Address / phone export",
+    "Los Lolitos Body Shop": "Address / phone export",
+    "Parking & Towing Enforcement": "Address / phone export",
+    "Private Property": "Address / phone export",
+    "Private Residence": "Address / phone export",
+    "Training Account": "Address / phone export"
+  },
+  "unmatchedPayments": [],
+  "excludedAccounts": [
+    "noaccountspecified",
+    "nonpaymentconsenttow",
+    "impoundfornonpaymentconsent"
+  ],
+  "notes": [
+    "No contact names, tags, property types or gate codes imported from address CSV.",
+    "Payment date is collection date. Missing actual tow dates remain unattributed to manager tenure.",
+    "VIN and plate are separate identifiers. Plate/state absent in source, left blank.",
+    "No invoice balances or invoice totals included in revenue."
+  ]
+}

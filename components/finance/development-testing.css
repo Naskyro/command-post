@@ -1,0 +1,26 @@
+.dev-card{max-width:640px;margin:24px auto;border:1px solid var(--ws-line,#dde8ef);border-radius:16px;background:var(--ws-surface,#fff);overflow:hidden}
+.f-card-heading{display:flex;align-items:center;gap:10px;padding:18px 22px;background:var(--ws-soft,#f0f7fb);border-bottom:1px solid var(--ws-line,#dde8ef)}
+.f-card-heading h2{display:flex;align-items:center;gap:10px;margin:0;font-size:1.125rem;color:var(--ws-ink,#163e53)}
+.dev-body{padding:24px 22px;display:flex;flex-direction:column;gap:18px}
+.dev-warning{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:12px;font-size:.9375rem}
+.dev-warning b{font-weight:700}
+.dev-warning svg{flex-shrink:0;color:#ea580c}
+.dev-bank{display:flex;flex-direction:column;gap:8px;padding:18px;background:var(--ws-canvas,#f6f9fb);border:1px solid var(--ws-line,#e0eaf1);border-radius:14px}
+.dev-bank b{font-size:14px;text-transform:uppercase;letter-spacing:.5px;color:var(--ws-muted,#4b6676)}
+.dev-bank span{font-size:1rem;color:var(--ws-ink,#163e53)}
+.dev-bad{display:block;font-size:.875rem;color:#b91c1c;background:#fef2f2;padding:10px 12px;border-radius:8px;margin-top:6px}
+.dev-amount{display:flex;flex-direction:column;gap:7px}
+.dev-amount span{font-size:14px;font-weight:650;color:var(--ws-ink,#163e53)}
+.dev-amount input{max-width:160px;padding:12px 14px;border:1px solid var(--ws-line,#c6d7e2);border-radius:10px;font-size:16px;background:#fff;color:var(--ws-ink,#163e53)}
+.dev-confirm{padding:18px;background:#fffbeb;border:1px solid #fde68a;border-radius:14px}
+.dev-confirm p{margin:0 0 14px;color:#713f12;font-size:.9375rem}
+.dev-confirm-actions{display:flex;gap:10px}
+.f-button.danger{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.f-button.danger:hover{background:#fee2e2;border-color:#fca5a5}
+.dev-result{display:flex;align-items:flex-start;gap:12px;padding:16px;border-radius:12px;font-size:.9375rem}
+.dev-result.ok{background:#f0fdf4;color:#166534}
+.dev-result.ok svg{flex-shrink:0;color:#16a34a}
+.dev-result.bad{background:#fef2f2;color:#b91c1c}
+.dev-result.bad svg{flex-shrink:0;color:#dc2626}
+.dev-result p{margin:0}
+.dev-result small{font-size:12px;opacity:.85}

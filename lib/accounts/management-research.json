@@ -1,0 +1,134 @@
+[
+  {
+    "accountId": "account:agaveeast",
+    "company": "Kittle Property Group",
+    "source": "https://www.apartmentsindelvalle.com/termsandconditions",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:almacherrywood",
+    "company": "ResProp Management",
+    "source": "https://www.almanorthatx.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:almasoco",
+    "company": "ResProp Management",
+    "source": "https://www.almasouthatx.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:almawoodward",
+    "company": "ResProp Management",
+    "source": "https://www.almasouthatx.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:altura",
+    "company": "ResProp Management",
+    "source": "https://www.alturaaustin.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:artsatturtlecreek",
+    "company": "ResProp Management",
+    "source": "https://www.artsatturtlecreekaustin.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:cherryhilllofts",
+    "company": "ResProp Management",
+    "source": "https://www.respropmanagement.com/portfolio",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:eastsideat2201",
+    "company": "ResProp Management",
+    "source": "https://www.respropmanagement.com/portfolio",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:element",
+    "company": "ResProp Management",
+    "source": "https://www.respropmanagement.com/portfolio",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:sotolriverside",
+    "company": "ResProp Management",
+    "source": "https://www.respropmanagement.com/portfolio",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:avanasoco",
+    "company": "Greystar",
+    "source": "https://www.avanasoco.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:banyaneverton",
+    "company": "Bridge Property Management",
+    "source": "https://banyanevertonhomes.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:mlkhighline",
+    "company": "Urban Genesis",
+    "source": "https://www.apartments.com/pmc/urban-genesis/w46cqcl/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:ellishighline",
+    "company": "Urban Genesis",
+    "source": "https://www.forrent.com/tx/austin/ellis-highline/j1etz47",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:mesh",
+    "company": "RPM Living",
+    "source": "https://rpmliving.com/cities/austin-texas/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:townlakevillas",
+    "company": "RPM Living",
+    "source": "https://rpmliving.com/cities/austin-texas/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:thecole",
+    "company": "Willow Bridge Property Company",
+    "source": "https://www.willowbridgepc.com/properties/cole-apartments-austin-texas",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:limestoneridge",
+    "company": "Mayfair Management Group",
+    "source": "https://www.mayfairmgt.com/residents/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:mckinneyfalls",
+    "company": "Mayfair Management Group",
+    "source": "https://www.mayfairmgt.com/residents/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:lenoxsoco",
+    "company": "Avenue5 Residential",
+    "source": "https://www.lenoxsoco.com/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:cypresscreekmckinneyfalls",
+    "company": "Allegiant-Carter Management",
+    "source": "https://www.allegiant-carter.com/apartments/tx/austin/cypress-mckinney-falls/",
+    "checkedOn": "2026-09-07"
+  },
+  {
+    "accountId": "account:farmhouse",
+    "company": "The Tipton Group",
+    "source": "https://www.har.com/farmhouse/apartment_4752B",
+    "checkedOn": "2026-09-07"
+  }
+]

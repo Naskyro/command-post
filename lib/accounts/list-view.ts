@@ -1,0 +1,3 @@
+export const accountColumns=[['property','Property'],['company','Management Company'],['assignee','Account Manager'],['contact','Last Check-In'],['service','Service'],['health','Account Health'],['status','Status'],['propertyType','Property Type'],['jurisdiction','Reporting Jurisdiction'],['renewal','Renewal Date']] as const;
+export const defaultAccountColumns=(leadership:boolean)=>['property','company',...(leadership?['assignee']:[]),'contact','service','status'];
+export function validAccountColumns(input:unknown):input is string[]{return Array.isArray(input)&&input.length>=1&&input.length<=accountColumns.length&&input[0]==='property'&&new Set(input).size===input.length&&input.every(k=>accountColumns.some(([id])=>id===k));}

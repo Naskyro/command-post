@@ -1,0 +1,1 @@
+ALTER TABLE `home_layouts` ADD `grid` text DEFAULT '{"columns":3,"spacing":"Comfortable"}' NOT NULL;

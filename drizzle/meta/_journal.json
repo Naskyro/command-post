@@ -1,0 +1,83 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788635344461,
+      "tag": "0000_nifty_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788636807494,
+      "tag": "0001_quiet_sandman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788654444242,
+      "tag": "0002_salty_juggernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788655626312,
+      "tag": "0003_wooden_purple_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788662487507,
+      "tag": "0004_goofy_wendigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788671412722,
+      "tag": "0005_perfect_blue_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791136876436,
+      "tag": "0006_curved_psynapse",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792899778275,
+      "tag": "0007_melodic_venom",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792899997559,
+      "tag": "0008_brown_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792900239314,
+      "tag": "0009_mute_bastion",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1792903384150,
+      "tag": "0010_plain_may_parker",
+      "breakpoints": true
+    }
+  ]
+}

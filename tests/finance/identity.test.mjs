@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {financeIdentity} from '../../lib/finance/identity.ts';
+const owner={id:'jerson',kind:'person',version:0,name:'Jerson Arauz',email:'jerson@gtowingtransport.com',userId:'',department:'Operations',role:'Owner'};
+const employee={id:'staff',kind:'person',version:0,name:'Staff',email:'staff@example.com',userId:'verified-staff-id',department:'Dispatch',role:'Employee'};
+const headers=values=>new Headers(values);
+test('legacy verified owner email works without optional platform ID',()=>{const v=financeIdentity(headers({'oai-authenticated-user-email':'Jerson@gtowingtransport.com'}),[owner]);assert.equal(v.person,'jerson');assert.equal(v.canRelease,true);assert.equal(v.id,'verified-email:jerson@gtowingtransport.com');});
+test('current owner session preserves platform ID for audit',()=>{const v=financeIdentity(headers({'oai-authenticated-user-email':owner.email,'oai-authenticated-user-id':'current-owner-id'}),[owner]);assert.equal(v.id,'current-owner-id');});
+test('anonymous requests remain unauthorized',()=>assert.throws(()=>financeIdentity(headers({}),[owner]),e=>e.status===401));
+test('unknown verified email and owner display-name cannot grant access',()=>assert.throws(()=>financeIdentity(headers({'oai-authenticated-user-email':'unknown@gtowingtransport.com','oai-authenticated-user-full-name':'Jerson Arauz'}),[owner]),e=>e.status===403));
+test('assigned staff identity gets only its configured permission',()=>{const v=financeIdentity(headers({'oai-authenticated-user-id':employee.userId}),[owner,employee]);assert.equal(v.person,'staff');assert.equal(v.canRelease,false);});
+test('explicitly bound owner identity is not replaced by email fallback',()=>assert.throws(()=>financeIdentity(headers({'oai-authenticated-user-email':owner.email,'oai-authenticated-user-id':'different-id'}),[{...owner,userId:'bound-id'}]),e=>e.status===403));
+test('both owner company domains resolve to the same owner record',()=>{const p={...owner,emailAliases:['jerson@parkingtowingenforcement.com']};const v=financeIdentity(headers({'oai-authenticated-user-email':'jerson@parkingtowingenforcement.com','oai-authenticated-user-id':'full-screen-owner'}),[p]);assert.equal(v.person,'jerson');assert.equal(v.owner,true);});
+test('Jendel uses the explicit manny mailbox alias without guessing by display name',()=>{const p={...owner,id:'jendel',name:'Jendel Arauz',email:'manny@gtowingtransport.com',emailAliases:['manny@parkingtowingenforcement.com']};assert.equal(financeIdentity(headers({'oai-authenticated-user-email':'manny@parkingtowingenforcement.com'}),[p]).person,'jendel');assert.throws(()=>financeIdentity(headers({'oai-authenticated-user-email':'jendel@gtowingtransport.com'}),[p]),e=>e.status===403);});

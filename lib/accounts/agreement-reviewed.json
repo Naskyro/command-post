@@ -1,0 +1,26 @@
+{
+  "account:3600capitolview": {
+    "agreementTerm": "Continues until cancelled",
+    "cancellationDays": 30,
+    "cancellationTerms": "Either party may cancel with 30 days’ written notice delivered by email.",
+    "agreementVerified": true,
+    "service": "Full Patrol",
+    "agreementEvidence": "3600.pdf, pages 3–4"
+  },
+  "account:nexuseast": {
+    "agreementStart": "2024-11-22",
+    "agreementTerm": "Continues until cancelled",
+    "cancellationDays": 5,
+    "cancellationTerms": "Either party may cancel with 5 days’ written notice delivered by email.",
+    "agreementVerified": true,
+    "agreementEvidence": "Nexus East Contract.pdf, page 4"
+  },
+  "account:autozonedelvalle": {
+    "agreementStart": "2024-06-17",
+    "agreementTerm": "Continues until cancelled",
+    "cancellationDays": 10,
+    "cancellationTerms": "Agreement states 10 days’ notice via email or phone call from management.",
+    "agreementVerified": true,
+    "agreementEvidence": "Autozone.pdf, page 7 (document page 4)"
+  }
+}

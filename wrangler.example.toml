@@ -1,0 +1,22 @@
+# Production Wrangler template.
+# Copy this file to wrangler.toml (or use `wrangler deploy --config=wrangler.example.toml`)
+# and fill in the real Cloudflare values before deploying to the server.
+
+name = "command-post"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat_v2", "enable_weak_ref"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "command-post-db"
+# Replace with your real database ID from the Cloudflare dashboard:
+# database_id = "<your-database-id>"
+migrations_dir = "drizzle"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "command-post-files"
+
+[vars]
+# Non-secret values only. Secrets belong in .dev.vars or Wrangler secrets.
+APP_ENV = "production"

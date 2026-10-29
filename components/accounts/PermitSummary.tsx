@@ -1,0 +1,11 @@
+import {hasDetail} from '@/lib/accounts/display';
+import type {Row} from '@/lib/accounts/model';
+import {permitFields} from '@/lib/accounts/permit-details';
+import {fieldVisible,hasDigital,hasPhysical} from '@/lib/accounts/field-rules';
+import {Button} from '@/components/ui/button';
+const show=(v:unknown)=>String(v);
+export function PermitSummary({account:a,onEdit}:{account:Row;onEdit?:(r:Row,fields:string[],title:string)=>void}) {
+ const entries=[['permitSystem','Permit requirements'],['permitPlatform','Digital platform'],['physicalPermitType','Physical permit type'],['vehiclesPerLeaseholder','Vehicles per leaseholder'],['visitorSection','Visitor section'],['visitorVisitsPerMonth','Visitor visits / month'],['visitorPermitHours','Visitor permit duration (hours)'],['visitorConsecutiveDays','Consecutive visitor days'],['visitorApproval','Resident must validate visitor'],['evParkingEnforcement','EV parking enforcement']];
+ if(!permitFields.some(key=>hasDetail(a[key])&&fieldVisible(a,key)))return onEdit?<Button className="am-add-detail" variant="outline" size="sm" onClick={()=>onEdit(a,permitFields,'Resident & visitor parking')}>Add permit & parking rules</Button>:null;
+ return <section className="ah-permits"><header><h3>Permits & parking rules</h3>{onEdit&&<Button variant="outline" size="sm" onClick={()=>onEdit(a,permitFields,'Resident & visitor parking')}>Edit parking rules</Button>}</header><dl>{entries.filter(([key])=>fieldVisible(a,key)&&hasDetail(a[key])).map(([key,label])=><div key={key}><dt>{label}</dt><dd>{show(a[key])}</dd></div>)}</dl>{hasPhysical(a)&&hasDigital(a)&&<p className="ah-rule-callout">Both the physical permit display and digital registration are required.</p>}{hasDigital(a)&&a.visitorApproval==='Required'&&<p className="ah-rule-callout">A registered resident must validate the visitor permit. A pending request is awaiting approval.</p>}{[['physicalPermitDisplay','Physical permit display'],['residentVehicleLimitNotes','Resident limits / exceptions'],['visitorSectionLocation','Visitor section location'],['visitorRules','Visitor rules'],['evParkingRules','EV parking rules']].filter(([key])=>hasDetail(a[key])&&fieldVisible(a,key)).map(([key,label])=><div className="ah-rule-note" key={key}><b>{label}</b><p>{a[key]}</p></div>)}</section>;
+}
