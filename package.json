@@ -10,6 +10,7 @@
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
     "build": "bash scripts/build-verified.sh",
     "build:spa": "vite build --config vite.spa.config.ts",
+    "build:vercel": "npm run build:spa && node scripts/spa-vercel-output.mjs",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "vitest run",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name=command-post --config=wrangler.example.toml",
