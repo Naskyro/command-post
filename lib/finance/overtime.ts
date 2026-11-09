@@ -1,3 +1,4 @@
+import { displayPersonName } from '../people/display-name.ts';
 import type { FinRecord, Viewer } from './model';
 import { num, round, workweek } from './model.ts';
 import { canAccess } from './access.ts';
@@ -17,7 +18,7 @@ export function overtimeSummary(p: FinRecord, records: FinRecord[], now = Date.n
   const period = workweek(localDate(now), records.find(r => r.id === 'company'));
   const worked = weekHours(records, p.id, period.start, period.end, now), hours = overtimeHours(worked.worked);
   const requests = records.filter(r => r.kind === 'overtime' && r.person === p.id && String(r.date) >= period.start && String(r.date) <= period.end);
-  const sum = (decision: string) => requests.filter(r => r.decision === decision).reduce((n, r) => n + num(r.hours), 0);
+  const sum = (decision: string) => requests.filter(r => r.decision === decision).reduce((n, r) => n + num(decision === 'Approved' ? r.approvedHours ?? r.hours : r.hours), 0);
   let cost: number | null = null, basis = 'Verify the overtime rate in the pay agreement.';
   const hourly = String(p.payType).includes('Hourly');
   const commission = records.filter(r => r.kind === 'earning' && r.person === p.id && r.status === 'Approved' && String(r.date) >= period.start && String(r.date) <= period.end).reduce((n, r) => n + num(r.amount), 0);
@@ -29,10 +30,11 @@ export function overtimeSummary(p: FinRecord, records: FinRecord[], now = Date.n
     cost = round(hours * num(p.overtimeEstimateRate));
     basis = 'Verified salaried overtime rate from the pay agreement.';
   }
+  if(Array.isArray(p.payComponents)){cost=null;basis='Review component-based compensation and approved incentives for the overtime estimate.';}
   if (period.transition || p.date && String(p.date) > period.start) {
     cost = null; basis = 'Payroll review needed for a calendar or pay-rate change within this week.';
   }
-  return { person:p.id, name:String(p.name), department:String(p.department || ''), start:period.start, end:period.end,
+  return { person:p.id, name:displayPersonName(p), department:String(p.department || ''), start:period.start, end:period.end,
     worked:worked.worked, hours, running:Boolean(worked.active), approvedHours:sum('Approved'), pendingHours:sum('Pending'),
     cost, basis, asOf:new Date(now).toISOString() };
 }

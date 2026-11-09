@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtemp,rm,readFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+import {jsPDF} from 'jspdf';
+import {readiness} from '../../lib/hr/workflow.ts';
+import {personnelJobDocuments} from '../../lib/hr/job-description-acceptance.ts';
+
+test('Assigned PDF survives sign, replacement, paper verification and personnel-file retrieval with scoped access',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'command-job-personnel-'));t.after(()=>rm(dir,{recursive:true,force:true}));const out=join(dir,'fixture.mjs');
+ await build({stdin:{contents:"export {assignmentPlan} from './lib/hr/job-catalog-server';export {mutateHr,readHrRecords,writeHrRecord,encode,encryptBytes} from './lib/hr/server';export {GET,POST} from './app/api/hr/files/route';",resolveDir:process.cwd(),loader:'ts'},outfile:out,bundle:true,platform:'node',format:'esm',logLevel:'silent',plugins:[{name:'isolated-bindings',setup(b){for(const [filter,contents] of [[/^cloudflare:workers$/,'export const env=globalThis.jobPersonnelBindings;'],[/^next\/server$/,'export const NextResponse=Response;'],[/^@\/lib\/finance\/server$/,'export const allRecords=async()=>globalThis.jobPersonnelPeople;'],[/^@\/lib\/finance\/identity$/,"export const verifiedOwnerRecord=p=>p?.role==='Owner'&&['jerson','jendel','jeidy'].includes(p.id);export const financeIdentity=h=>globalThis.jobPersonnelActors[h.get('x-fixture-account')];"]]){b.onResolve({filter},args=>({path:args.path,namespace:'jd-fixture'}));b.onLoad({filter,namespace:'jd-fixture'},()=>({contents,loader:'js'}));}}}]});
+ const db=new DatabaseSync(':memory:'),files=new Map();t.after(()=>db.close());
+ db.exec('CREATE TABLE hr_records(id TEXT PRIMARY KEY,kind TEXT,person_id TEXT,payload TEXT,version INTEGER,created_at TEXT,created_by TEXT,updated_at TEXT,updated_by TEXT);CREATE TABLE hr_audit(id TEXT PRIMARY KEY,record_id TEXT,actor TEXT,actor_id TEXT,at TEXT,action TEXT,version INTEGER,snapshot TEXT);CREATE TABLE hr_write_guard(id TEXT PRIMARY KEY,success INTEGER CHECK(success=1));');db.exec(await readFile(new URL('../../drizzle/0015_hr_job_descriptions.sql',import.meta.url),'utf8'));
+ const D1={prepare(sql){return {sql,args:[],bind(...args){return {...this,args};},async all(){return {results:db.prepare(sql).all(...this.args)};},async first(){return db.prepare(sql).get(...this.args)||null;},async run(){return {meta:db.prepare(sql).run(...this.args)};}};},async batch(statements){db.exec('BEGIN');try{const r=statements.map(s=>({meta:db.prepare(s.sql).run(...s.args)}));db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}}};
+ const p={id:'test-worker',kind:'person',version:1,name:'Jordan Example',department:'Dispatch',departmentId:'dept-dispatch',status:'Onboarding',supervisor:'manager',workerType:'Employee'},people=[p,{id:'manager',kind:'person',status:'Active',department:'Dispatch'},{id:'dept-dispatch',kind:'department',name:'Dispatch',status:'Active'}];
+ const viewer=person=>({id:person+'-identity',person,name:person,email:person+'@example.invalid',department:'Dispatch',owner:false,role:'Employee',access:[{module:'People & HR',tab:'hiring',level:'Edit'}],hrResponsibilities:[]});
+ const manager={...viewer('manager'),owner:true,role:'Owner'},self={...viewer(p.id),onboardingOnly:true},other=viewer('someone-else');
+ globalThis.jobPersonnelActors={manager,self,other};globalThis.jobPersonnelPeople=people;globalThis.jobPersonnelBindings={DB:D1,BUCKET:{put:async(k,v)=>files.set(k,Uint8Array.from(v)),get:async k=>files.has(k)?new Blob([files.get(k)]):null,delete:async k=>files.delete(k)},HR_DATA_ENCRYPTION_KEY:Buffer.alloc(32,9).toString('base64')};
+ const api=await import(pathToFileURL(out)),hash=b=>createHash('sha256').update(b).digest('hex');
+ async function edition(version){const pdf=new jsPDF();pdf.text('Fixture responsibilities edition '+version,15,15);const bytes=new Uint8Array(pdf.output('arraybuffer')),storageKey='fixture/'+version;
+   const e={id:'job:dispatch',version,etag:1,status:'Published',departmentId:'dept-dispatch',departmentName:'Dispatch',content:{title:'Dispatcher'},ownerId:'manager',updatedAt:new Date().toISOString(),updatedBy:'Manager',file:{storageKey,sha256:hash(bytes),size:bytes.length,fileName:'Dispatcher.pdf'}};
+   db.prepare('INSERT INTO job_description_editions VALUES (?,?,?,?,?,?)').run(e.id,version,1,e.status,e.departmentId,await api.encode(e));files.set(storageKey,await api.encryptBytes(bytes));return {e,bytes};}
+ const docs=()=>api.readHrRecords();
+ const apply=async(e,prior)=>{const plan=await api.assignmentPlan(e,p.id,manager,people,await docs(),{replaceDocumentId:prior});await D1.batch(plan.statements);return plan;};
+ const mutate=async(actor,r,action,data)=>api.mutateHr({id:r.id,version:r.version,action,data},actor,people,await docs());
+ const get=async(actor,id)=>{const u=new URL('https://test.invalid/api/hr/files');u.searchParams.set('id',id);const req=new Request(u,{headers:{'x-fixture-account':actor}});req.nextUrl=u;return api.GET(req);};
+ const initial=await edition(1),plan=await apply(initial.e);let rows=await docs();const doc=plan.document,setup=plan.setup;
+ assert.equal(personnelJobDocuments(p.id,rows).current.id,doc.id);const step=setup.data.tasks.find(t=>t.key==='jobDescription');assert.equal(step.documentId,doc.id);assert.ok(readiness(setup,p,rows).issues.includes(step.label));
+ const opened=await get('self',doc.id);assert.equal(opened.status,200);assert.deepEqual(new Uint8Array(await opened.arrayBuffer()),initial.bytes);assert.equal((await get('other',doc.id)).status,403);
+ const accept={documentHash:doc.data.sha256,consent:true,signatureName:p.name};await assert.rejects(()=>mutate(other,doc,'sign',accept));await assert.rejects(()=>mutate(self,doc,'sign',{...accept,documentHash:'wrong'}));await assert.rejects(()=>mutate(self,doc,'sign',{...accept,signatureName:'Unrelated Person'}));
+ const signed=await mutate(self,doc,'sign',accept);assert.equal(signed.data.signedDocumentHash,hash(initial.bytes));assert.equal(signed.data.signerIdentity,self.id);assert.ok(signed.data.signedAt);assert.ok(!readiness(setup,p,await docs()).issues.includes(step.label));
+ const next=await edition(2),nextPlan=await apply(next.e,doc.id);rows=await docs();const state=personnelJobDocuments(p.id,rows),old=state.history.find(r=>r.id===doc.id),current=state.current;assert.equal(old.data.signedAt,signed.data.signedAt);assert.equal(old.data.assignmentSupersededBy,current.id);assert.equal(current.data.jobDescriptionVersion,2);assert.ok(readiness(nextPlan.setup,p,rows).issues.includes(step.label));
+ const activeSelf={...self,onboardingOnly:false};globalThis.jobPersonnelActors.activeSelf=activeSelf;const retained=await get('activeSelf',old.id);assert.equal(retained.status,200);assert.deepEqual(new Uint8Array(await retained.arrayBuffer()),initial.bytes);await assert.rejects(()=>mutate(self,old,'sign',accept));
+ const verification={signatureConfirmed:true,signatureDate:'2026-10-01'};await assert.rejects(()=>mutate(manager,current,'verifyDocument',verification));await assert.rejects(()=>mutate(manager,current,'verifyDocument',{...verification,signedCopyId:old.id}));
+ const physical=new jsPDF();physical.text('Signed paper fixture',15,15);const paper=new Uint8Array(physical.output('arraybuffer'));const form=new FormData();form.set('category','Job Description');form.set('personId',p.id);form.set('parentId',current.id);form.set('file',new File([paper],'paper-signed.pdf',{type:'application/pdf'}));
+ const u=new URL('https://test.invalid/api/hr/files');const upload=new Request(u,{method:'POST',headers:{'x-fixture-account':'manager'},body:form});upload.nextUrl=u;const up=await api.POST(upload);assert.equal(up.status,201);const proof=(await up.json()).record;
+ await assert.rejects(()=>mutate(self,current,'verifyDocument',{...verification,signedCopyId:proof.id}));const verified=await mutate(manager,current,'verifyDocument',{...verification,signedCopyId:proof.id});assert.equal(verified.data.signedCopyHash,hash(paper));assert.equal(verified.data.signedDocumentHash,hash(next.bytes));assert.equal(verified.data.signatureVerifiedById,manager.id);assert.equal((await get('other',proof.id)).status,403);const final=await docs();assert.equal(personnelJobDocuments(p.id,final).history.length,1);assert.ok(!readiness(nextPlan.setup,p,final).issues.includes(step.label));
+});

@@ -1,0 +1,53 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {build} from 'esbuild';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {createRequire} from 'node:module';
+
+test('Home HR, SOP and Timeclock counts match scoped, current records and honor the calendar across midnight',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'people-pulse-'));t.after(()=>rm(dir,{recursive:true,force:true}));
+ const bundle=join(dir,'test.cjs'),db=new DatabaseSync(':memory:');t.after(()=>db.close());
+ for(const name of ['0012_sop_catalog','0013_sop_version_storage','0014_sop_signatures'])db.exec(await readFile('drizzle/'+name+'.sql','utf8'));
+ db.exec("CREATE TABLE hr_records(id TEXT,person_id TEXT,kind TEXT,payload TEXT,updated_at TEXT)");
+ const transport={prepare(sql){return {args:[],bind(...vals){this.args=vals;return this;},all(){return {results:db.prepare(sql).all(...this.args)};},first(){return db.prepare(sql).get(...this.args);}};}};
+ const catalog=JSON.parse(await readFile('lib/sop/private/catalog.json','utf8'));
+ const whole=catalog[0],publish=catalog[1],retire=catalog[2];
+ const addPolicy=(p,status)=>{const row={id:p.id,code:p.id,version:1,topicId:p.topicId,sourceStatus:p.sourceStatus,status,content:p.content,audience:{all:true,people:[],departments:[],levels:[]}};db.prepare('INSERT INTO sop_versions (key,policy_id,status,payload) VALUES (?,?,?,?)').run(row.id+'|1',row.id,status,JSON.stringify(row));};
+ addPolicy(publish,'Published');addPolicy(retire,'Archived');
+ await build({entryPoints:['lib/home/pulse-people.ts'],bundle:true,platform:'node',format:'cjs',outfile:bundle,logLevel:'silent',plugins:[{name:'test-transport',setup(b){
+  b.onResolve({filter:/^cloudflare:workers$/},()=>({path:'cf',namespace:'shim'}));
+  b.onLoad({filter:/.*/,namespace:'shim'},()=>({contents:'export const env=globalThis.__commandPulsePeopleEnv;'}));
+  b.onResolve({filter:/^\.\.\/hr\/server$/},()=>({path:'hr',namespace:'encrypted-fixture'}));
+  b.onLoad({filter:/.*/,namespace:'encrypted-fixture'},()=>({contents:'export const decode=JSON.parse;'}));
+ }}]});
+ globalThis.__commandPulsePeopleEnv={DB:transport};t.after(()=>{delete globalThis.__commandPulsePeopleEnv;});
+ const {peopleSignals,schedulingSignals,policySignals,staffingSignals}=createRequire(import.meta.url)(bundle);
+ const now=new Date('2026-11-01T05:15:00Z');
+ const grant=(module,tab,level='View')=>({module,tab,level});
+ const view={id:'session',person:'d1',name:'Worker',email:'private@example.invalid',role:'Employee',department:'Dispatch',owner:false,canManage:false,canRelease:false,access:[grant('Timeclock','Schedule'),grant('Timeclock','Open shifts'),grant('People & HR','hiring'),grant('SOP Library','assigned')]};
+ const mk=(id,kind,data)=>({id,kind,version:1,...data});
+ const p=(id,name,department,status='Active',props={})=>mk(id,'person',{name,department,status,authorityLevel:'Coordinator',...props});
+ const roster=[p('d1','Dispatch One','Dispatch'),p('d2','Dispatch Two','Dispatch'),p('other','Protected Name','Private'),p('new','New Person','Dispatch','Onboarding'),p('former','Former Worker','Dispatch','Former'),p('cleared','Released Worker','Dispatch','Active',{onboardingClearedAt:'2026-10-25'}),mk('department-1','department',{name:'Dispatch',status:'Active'}),mk('private-dept','department',{name:'Private',status:'Active'})];
+ const shifts=[mk('s1','shift',{person:'d1',department:'Dispatch',coverageRole:'Dispatcher',start:'2026-10-31T22:00',end:'2026-11-01T08:00',status:'Published'}),mk('s2','shift',{person:'d2',department:'Dispatch',coverageRole:'Dispatcher',start:'2026-11-02T08:00',end:'2026-11-02T15:00',status:'Published'}),mk('d','shift',{person:'d1',department:'Dispatch',coverageRole:'Dispatcher',start:'2026-11-02T16:00',end:'2026-11-02T18:00',status:'Draft'}),mk('o','shift',{department:'Dispatch',coverageRole:'Dispatcher',start:'2026-11-02T18:00',end:'2026-11-02T20:00',status:'Published'}),mk('oo','shift',{department:'Private',start:'2026-11-02T18:00',end:'2026-11-02T20:00',status:'Published'})];
+ const saveSetup=(id,status,extras={})=>db.prepare('INSERT INTO hr_records VALUES (?,?,?,?,?)').run(id,id,'onboarding',JSON.stringify({kind:'onboarding',personId:id,updatedAt:'2026-10-01T15:00:00Z',data:{status,...extras}}),'2026-10-01T15:00:00Z');
+ saveSetup('other','In Progress');saveSetup('d2','In Progress');saveSetup('former','In Progress');saveSetup('cleared','In Progress');
+ const result=async(v,records=[...roster,...shifts])=>Object.fromEntries((await peopleSignals(v,records,now)).map(s=>[s.id,s]));
+ const emp=await result(view);
+ assert.equal(emp.my_shifts.count,1);assert.equal(emp.my_shifts.items[0].at,'2026-11-01T03:00:00.000Z');assert.equal(emp.my_shifts.items[0].calendar,true);
+ assert.equal(emp.open_shift_pickups.count,1);assert.equal(emp.sop_signatures.count,1);
+ assert.ok(!emp.sop_review&&!emp.my_onboarding&&!emp.employee_onboarding&&!emp.coverage_gaps);assert.ok(!JSON.stringify(emp).includes('Protected Name'));
+ saveSetup('d1','In Progress');assert.equal((await result(view)).my_onboarding.count,1);
+ const regularEditor=await result({...view,access:[grant('SOP Library','workflow','Edit')]});
+ assert.equal(regularEditor.sop_review.count,catalog.filter(p=>p.topicId!=='HR-CA').length-2);assert.ok(regularEditor.sop_review.items.every(p=>p.target.section.endsWith('@1')));assert.ok(regularEditor.sop_review.items.every(p=>!p.title.startsWith('HR-CA-')));
+ const supervisor={...view,role:'Supervisor',access:[...view.access,grant('People & HR','people')],hrResponsibilities:[{action:'manageOnboarding',scope:'Department'}]};
+ const managed=await result(supervisor,roster.map(p=>p.id==='d2'?{...p,supervisor:'d1'}:p).concat(shifts));
+ assert.deepEqual(managed.employee_onboarding.items.map(r=>r.id).sort(),['d1','d2','new']);assert.ok(!managed.employee_onboarding.description.includes('Protected'));assert.ok(managed.coverage_gaps.items.every(g=>g.target.department==='Dispatch'));assert.equal(managed.coverage_gaps.items[0].at,'2026-11-01T14:00:00.000Z');
+ // A missing HR storage binding is an unavailable source, never an all-clear count.
+ db.exec('DROP TABLE hr_records');await assert.rejects(result(view));
+ assert.ok((await schedulingSignals(view,[...roster,...shifts],now)).some(s=>s.id==='my_shifts'&&s.count===1));
+ assert.ok((await policySignals(view,roster,now)).some(s=>s.id==='sop_signatures'));
+ assert.deepEqual(await staffingSignals({...view,access:[]},roster,now),[]);
+});

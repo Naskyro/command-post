@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {build} from 'esbuild';
+
+test('Won handoff is a single guarded transaction; retries and existing active properties do not create or alter any account',async t=>{
+ const sql=new DatabaseSync(':memory:'),dir=await mkdtemp(join(tmpdir(),'sales-handoff-'));
+ t.after(async()=>{sql.close();delete globalThis.fixtureSalesDb;await rm(dir,{recursive:true,force:true});});
+ for(const f of (await readdir('drizzle')).filter(x=>x.endsWith('.sql')).sort())sql.exec(await readFile('drizzle/'+f,'utf8'));
+ globalThis.fixtureSalesDb={prepare(s){const q=sql.prepare(s);let a=[];return{bind(...x){a=x;return this;},run(){return {meta:{changes:q.run(...a).changes}};},all(){return{results:q.all(...a)};},first(){return q.get(...a);}};},batch(ops){sql.exec('BEGIN');try{const res=ops.map(o=>o.run());sql.exec('COMMIT');return res;}catch(e){sql.exec('ROLLBACK');throw e;}}};
+ await build({entryPoints:['lib/sales/server.ts'],outfile:join(dir,'sales.mjs'),bundle:true,format:'esm',platform:'node',plugins:[{name:'isolated-source',setup(b){b.onResolve({filter:/^cloudflare:workers$/},a=>({path:a.path,namespace:'runtime'}));b.onLoad({filter:/.*/,namespace:'runtime'},()=>({contents:'export const env={DB:globalThis.fixtureSalesDb};'}));}}]});
+ const {saveSales}=await import(pathToFileURL(join(dir,'sales.mjs')).href);
+ const rec=(id,kind,name,x={})=>({id,kind,name,version:1,...x}),lead=rec('lead:test','opportunity','Test Property',{stage:'Won',assignee:'admin',companyName:'Fixture Management',address:'Fixture Street',propertyManager:'Onsite Manager',contactName:'Regional Manager',contactRole:'Decision Maker',email:'regional@example.invalid'});
+ const fixtures=[lead,rec('task-template','playbook','Review Contact',{status:'Current',type:'Onboarding'}),rec('call1','salesActivity','Phone call',{opportunityId:lead.id,channel:'Phone call',date:'2026-01-01',details:'Logged call'}),rec('active','account','Existing Property',{status:'Active'})];
+ const actor={id:'fixture-auth',person:'admin',name:'Fixture Operator',role:'Owner',owner:true,department:'Sales',access:[]},staff=[{id:'admin',kind:'person',status:'Active'}],ctx=all=>({all,staff,viewer:actor});
+ const insert=sql.prepare('INSERT INTO account_records(id,kind,account_id,payload,version,updated_at) VALUES(?,?,NULL,?,?,?)');
+ for(const r of fixtures)insert.run(r.id,r.kind,JSON.stringify(r),r.version,'2026-01-01');
+ const rows=()=>sql.prepare('SELECT payload FROM account_records ORDER BY id').all().map(r=>JSON.parse(r.payload));
+ const before=rows(),action={action:'handoff',id:lead.id,version:1};
+ sql.exec("CREATE TRIGGER simulate_rollback BEFORE INSERT ON account_audit WHEN NEW.record_id='sales-account:lead:test' BEGIN SELECT RAISE(ABORT,'test failure'); END;");
+ await assert.rejects(saveSales(action,ctx(rows())));assert.deepEqual(rows(),before);assert.equal(sql.prepare('SELECT COUNT(*) n FROM account_audit').get().n,0);
+ sql.exec('DROP TRIGGER simulate_rollback');await saveSales(action,ctx(rows()));
+ const done=rows(),a=done.find(r=>r.sourceOpportunityId===lead.id&&r.kind==='account');
+ assert.equal(a.status,'Onboarding');assert.equal(a.officeContact,'Onsite Manager');
+ assert.equal(done.find(r=>r.id===lead.id).onboardingAccountId,a.id);assert.ok(done.some(r=>r.kind==='task'&&r.accountId===a.id));assert.deepEqual(done.find(r=>r.id==='active'),before.find(r=>r.id==='active'));
+ await saveSales(action,ctx(rows()));assert.deepEqual(rows(),done);
+ await assert.rejects(saveSales(action,ctx(before.map(r=>r.id===lead.id?{...r,name:'Existing Property'}:r))),/already has an account/);
+ await assert.rejects(saveSales(action,ctx(before.map(r=>r.id===lead.id?{...r,example:true}:r))));assert.deepEqual(rows(),done);
+});

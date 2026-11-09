@@ -1,6 +1,12 @@
+import {withImportedCareer} from '../hr/imported-career';
+import {componentsFor} from '../hr/compensation.ts';
+import {effectivePay} from '../hr/pay-agreements';
 import { validateCategory, validateTransaction } from './quick-edit';
 export { visible } from './visibility';
 import { normalizePerson } from '../people/policy';
+import {rosterUsernameConflictSql} from '../people/work-contact';
+import {ConflictError} from '../shared/errors';
+import { resolveDepartmentLabels, departmentFor } from '../people/departments';
 import { financeDb } from '@/db/finance';
 import { initialRecords, sourceTransactions } from './seed';
 import { FinRecord, Viewer, num, payrollLine } from './model';
@@ -12,12 +18,27 @@ import { financeIdentity } from './identity';
 import { deriveTime, managesPerson } from './timeclock';
 import { expandSchedule } from './schedule';
 import { timeKinds, validateTime } from './time-validation';
-export async function allRecords() { const result = await financeDb().prepare('SELECT payload FROM finance_records').all<{
-    payload: string;
-}>(); const records = new Map(initialRecords.map(r => [r.id, r])); for (const row of result.results) {
-    const r = JSON.parse(row.payload) as FinRecord;
-    records.set(r.id, r);
-} return deriveTime(expandSchedule(alignBookkeeping([...records.values()].map(r => r.kind === 'person' ? normalizePerson(r) : r)), new Date(Date.now() + 366 * 86400000).toISOString().slice(0, 10))); }
+// Both the full workspace and scoped identity reads resolve exactly the same roster snapshot.
+function currentRecords(seeds:FinRecord[], rows:{payload:string}[]) {
+    const records=new Map(seeds.map(r=>[r.id,r]));
+    for(const {payload} of rows){const r=JSON.parse(payload) as FinRecord;records.set(r.id,r);}
+    const localDay=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago'}).format(new Date());
+    return resolveDepartmentLabels([...records.values()].map(r=>r.kind==='person'?effectivePay(withImportedCareer(normalizePerson(r)),localDay):r));
+}
+export async function allRecords() {
+    const result=await financeDb().prepare('SELECT payload FROM finance_records').all<{payload:string}>();
+    return deriveTime(expandSchedule(alignBookkeeping(currentRecords(initialRecords,result.results)),new Date(Date.now()+366*86400000).toISOString().slice(0,10)));
+}
+// Only immutable built-in seeds are retained. Always read the current grants, employees,
+// account status and renamed departments before authenticating each protected request.
+const rosterSeeds=initialRecords.filter(r=>r.kind==='person'||r.kind==='department');
+export async function requestRoster():Promise<FinRecord[]> {
+    const result=await financeDb().prepare("SELECT payload FROM finance_records WHERE kind IN ('person','department')").all<{payload:string}>();
+    return currentRecords(rosterSeeds,result.results);
+}
+export async function requestViewer(headers:Pick<Headers,'get'>):Promise<Viewer> {
+    return financeIdentity(headers,await requestRoster());
+}
 export function identify(records: FinRecord[], requestHeaders: Pick<Headers, 'get'>): Viewer { return financeIdentity(requestHeaders, records); }
 export function branch(v: Viewer, records: FinRecord[]) { const ids = new Set([v.person]); let added = true; while (added) {
     added = false;
@@ -33,7 +54,10 @@ export async function persist(old: FinRecord | undefined, next: FinRecord, v: Vi
     const payload = JSON.stringify(value);
     const auditId = crypto.randomUUID();
     // Both statements are transactional; a duplicate audit key rolls the batch back.
-    const write = old?.version ? db.prepare('UPDATE finance_records SET payload=?,version=?,updated_by=?,updated_at=? WHERE id=? AND version=?').bind(payload, version, v.name, at, next.id, old.version) : db.prepare('INSERT OR IGNORE INTO finance_records (id,kind,payload,version,updated_by,updated_at) VALUES (?,?,?,?,?,?)').bind(next.id, next.kind, payload, version, v.name, at);
+    const write = old?.version ? db.prepare('UPDATE finance_records SET payload=?,version=?,updated_by=?,updated_at=? WHERE id=? AND version=?').bind(payload, version, v.name, at, next.id, old.version)
+        : !old && next.kind==='person' && next.username
+        ? db.prepare('INSERT OR IGNORE INTO finance_records (id,kind,payload,version,updated_by,updated_at) SELECT ?,?,?,?,?,? WHERE NOT EXISTS ('+rosterUsernameConflictSql+')').bind(next.id,next.kind,payload,version,v.name,at,next.username,next.id,next.username,next.id)
+        : db.prepare('INSERT OR IGNORE INTO finance_records (id,kind,payload,version,updated_by,updated_at) VALUES (?,?,?,?,?,?)').bind(next.id, next.kind, payload, version, v.name, at);
     const effects = [];
     if (next.kind === 'shiftRequest' && next.status === 'Approved') {
         effects.push(db.prepare('INSERT INTO finance_records (id,kind,payload,version,updated_by,updated_at) SELECT ?,?,?,?,?,? FROM finance_audit WHERE id=?').bind('shift-claim:' + next.shiftId, 'shiftClaim', JSON.stringify({ id: 'shift-claim:' + next.shiftId, kind: 'shiftClaim', version: 1, person: next.person, shiftId: next.shiftId, request: next.id }), 1, v.name, at, auditId));
@@ -53,6 +77,7 @@ export async function persist(old: FinRecord | undefined, next: FinRecord, v: Vi
         effects.push(db.prepare('UPDATE finance_payroll_balances SET remaining=remaining-? WHERE id=? AND EXISTS (SELECT 1 FROM finance_audit WHERE id=?)').bind(delta, next.payrun + ':' + next.person, auditId));
     }
     const results = await db.batch([write, db.prepare('INSERT INTO finance_audit (id,record_id,actor,actor_id,at,reason,before,after) SELECT ?,?,?,?,?,?,?,? WHERE changes()=1').bind(auditId, next.id, v.name, v.id, at, reason, old ? JSON.stringify(old) : null, payload), ...effects]);
+    if(results[0].meta.changes!==1&&!old&&next.kind==='person')throw new ConflictError('That username or employee record was just claimed. Refresh and choose a different username.');
     if (results[0].meta.changes !== 1)
         throw new Error('Someone changed this record. Reload it before saving.');
     return value;
@@ -94,8 +119,20 @@ export function validate(next: FinRecord, old: FinRecord | undefined, v: Viewer,
         throw new Error('Use Admin Departments to change department settings.');
     if (next.kind === 'settings' && !v.owner)
         throw new Error('Only owners can change company settings.');
+    if (next.department && next.department !== old?.department) {
+        const department = departmentFor(records,next.department);
+        if (!department || department.status === 'Retired') throw new Error('Choose an active department.');
+        next.departmentId = department.id;
+        next.department = department.name;
+    }
     if (timeKinds.includes(next.kind))
         validateTime(next, old, v, records);
+    if (next.kind === 'expense' || next.kind === 'expenseReport') {
+        if (next.person !== v.person && !canAccess(v, 'Finance', 'Outflows', true))
+            throw new Error('Outflows edit access is required to change another person’s spending.');
+        if (next.person === v.person && ['Approved', 'Released', 'Paid'].includes(String(next.status)))
+            throw new Error('You cannot approve your own spending. Another authorized reviewer must approve it.');
+    }
     if (!v.canManage && !timeKinds.includes(next.kind)) {
         const own = next.person === v.person;
         const subordinate = next.person !== v.person && branch(v, records).has(String(next.person)) && ['Supervisor', 'Department Head'].includes(v.role);
@@ -122,6 +159,19 @@ export function validate(next: FinRecord, old: FinRecord | undefined, v: Viewer,
         throw new Error('Enter a positive amount and choose the appropriate record type.');
     if (next.kind === 'time' && (num(next.hours) < 0 || num(next.hours) > 24))
         throw new Error('Time entries must contain 0–24 hours per day.');
+    if(next.kind==='earning'){
+      const employee=records.find(r=>r.kind==='person'&&r.id===next.person);
+      if(employee){const agreement=effectivePay(employee,String(next.date||''));if(Array.isArray(agreement.payComponents)){
+        if(!String(next.sourceId||'').trim())throw new Error('Link this incentive to its tow, sale, account, or qualifying event.');
+        const component=componentsFor(agreement).find(c=>c.id===next.compensationComponentId&&!['Salary','Hourly Pay','Guaranteed Minimum'].includes(c.kind));
+        if(!component)throw new Error('Choose an incentive component from this employee’s effective pay agreement.');
+        const quantity=Number(component.basis==='Amount Set Per Event'?next.amount:component.basis==='Percent'?next.qualifyingRevenue:next.qualifyingUnits);
+        if(component.basis==='Amount Set Per Event'&&!String(next.notes||'').trim())throw new Error('Explain the negotiated commission for this account or sale.');
+        if(!Number.isFinite(quantity)||quantity<0||quantity>1e9)throw new Error('Enter valid qualifying activity or revenue.');
+        next.amount=Math.round(quantity*(component.basis==='Amount Set Per Event'?1:component.amount)*(component.basis==='Percent'?.01:1)*100)/100;
+        next.compensationSnapshot=[{...component}];
+      }}
+    }
     if (next.kind === 'earning' && next.sourceId && records.some(r => r.kind === 'earning' && r.id !== next.id && r.person === next.person && r.sourceId === next.sourceId && r.type === next.type && r.status !== 'Voided'))
         throw new Error('That source item is already recorded for this worker.');
     if (next.kind === 'expense' && next.receipt === 'No receipt provided' && !next.receiptReason)

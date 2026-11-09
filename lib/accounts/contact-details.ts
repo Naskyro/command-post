@@ -1,3 +1,4 @@
+import {delegatedUrl} from '@/lib/shared/client';
 import type { Row } from './model';
 import { contactName } from './work';
 
@@ -21,7 +22,7 @@ export function normalizeContact(row: Row): Row {
 }
 export function profilePhoto(all: Row[], entity: Row) {
   const file = all.filter(f=>f.kind==='file' && f.status==='Current' && (entity.kind==='contact' ? f.category==='Contact photo' && f.contactId===entity.id : f.category==='Account photo' && f.accountId===entity.id)).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')) || b.id.localeCompare(a.id))[0];
-  return file ? '/api/accounts/files?id='+encodeURIComponent(file.id)+'&preview=1' : String(entity.kind==='account' ? entity.photo||'' : '');
+  return delegatedUrl(file ? '/api/accounts/files?id='+encodeURIComponent(file.id)+'&preview=1' : String(entity.kind==='account' ? entity.photo||'' : ''));
 }
 export function contactAge(row: Row, day: string) {
   if (row.dateOfBirth) {

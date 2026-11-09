@@ -1,0 +1,4 @@
+/** Central-time schedule values; stored instants always carry an explicit UTC offset. */
+const centralClock=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+export function localInput(value:string){if(!value)return '';const d=new Date(value);if(!Number.isFinite(d.getTime()))return '';const parts=Object.fromEntries(centralClock.formatToParts(d).map(p=>[p.type,p.value]));return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`}
+export function instant(value:string){if(!value)return '';const target=Date.parse(value+'Z');if(!Number.isFinite(target))return '';let guess=target;for(let i=0;i<4;i++){const shown=Date.parse(localInput(new Date(guess).toISOString())+'Z');if(shown===target)return new Date(guess).toISOString();guess+=target-shown}return localInput(new Date(guess).toISOString())===value?new Date(guess).toISOString():''}

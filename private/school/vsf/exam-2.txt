@@ -1,0 +1,218 @@
+﻿Vehicle Storage Facility Unit 2 Exam
+
+
+
+
+Section 1: Jurisdiction-Specific Reporting
+1. Which jurisdiction requires the use of the "Private Property Impounds & Repossession" Microsoft form?
+A. APD
+B. TCSO
+C. WilCo
+D. Buda
+2. Where must a law enforcement report be submitted for a vehicle towed within WilCo jurisdiction?
+A. Buda’s non-emergency line
+B. Autura
+C. APD
+D. ADD
+3. In Buda jurisdiction, impound reports are made by:
+A. Autura
+B. TCSO form
+C. Calling 512-393-7896
+D. Online report system
+4. Autura is the online reporting system used by:
+A. APD and WilCo
+B. Buda only
+C. APD only
+D. TCSO only
+5. Which agency handles law enforcement in Austin’s city limits?
+A. WilCo
+B. TCSO
+C. APD
+D. Buda PD
+Section 2: Vehicle and Towing Fees
+   6. When is a $50 Drop Fee charged?
+A. If the vehicle is partially prepared for transport
+B. When the vehicle is fully ready for transport, and the owner arrives
+C. Only if the vehicle has a flat tire
+D. During a courtesy release
+
+
+      7. We cannot charge a Drop Fee if:
+A. The tow truck driver is licensed
+B. The vehicle is not fully hooked and ready
+C. The vehicle owner is present
+D. The vehicle has a parking permit
+      8. What is the Notification Fee charged for notifying a vehicle’s owner or lienholder?
+A. $15
+B. $30
+C. $50
+D. $75
+      9. What is a Winch Fee for?
+A. Processing payments
+B. Vehicles needing winching with a rotating cable
+C. Daily storage costs
+D. Notifying the vehicle owner
+      10. What is the standard Daily Storage Fee in Texas for vehicles stored at a VSF?
+A. $10.50
+B. $12.88
+C. $22.85
+D. $50.00
+      11. What is the standard Impound Fee in Texas for vehicles stored at a VSF?
+A. $10.50
+B. $12.88
+C. $22.85
+D. $50.00
+      12. When is a Pull Out Fee charged?
+A. During inclement weather
+B. If a vehicle needs to be moved out of a VSF due to mechanical issues
+C. Only when the owner requests it
+D. For impounds only
+Section 3: VSF and Notification Requirements
+         13. The Impound Fee covers:
+A. Transportation of a vehicle
+B. Running a MVR for a vehicle in the VSF
+C. Processing payments
+D. Storing vehicle photos
+         14. Where are vehicle condition photos at the time of release stored?
+A. Autura
+B. TowBook
+C. TDLR website
+D. ADD system
+         15. A Notification Fee can only be charged:
+A. When the vehicle’s owner is contacted each time
+B. Only once, regardless of the number of notices sent
+C. Once daily
+D. After the car is released
+         16. An owner is notified of impoundment via:
+A. Email and TowBook entry
+B. Certified mail
+C. Autura system and form submission
+D. Text message and phone call
+Section 4: Required Documents for Tow Operators
+            17. Tow truck drivers picking up a vehicle from a VSF must present:
+A. VSF records
+B. A TDLR Tow Operator Card, Cab Card, and driver’s license
+C. MVR documents
+D. VSF inspection forms only
+            18. A tow operator’s driver’s license alone is enough to retrieve a vehicle from a VSF.
+A. True
+B. False
+            19. Tow truck drivers must show a TDLR-issued:
+A. Driver’s License only
+B. Towing Operator Card
+C. Pull Out Form
+D. Notification Card
+            20. The Tow Truck Cab Card includes details about:
+A. The vehicle’s original registration
+B. Unit Number, VIN, and permit type
+C. Insurance and ownership status
+D. Vehicle release authorization
+            21. What does it mean if the TDLR number displayed on a tow truck does not match the number listed on its cab card?
+A. The truck is operating under a temporary license
+B. The cab card belongs to a different truck, which may indicate improper registration
+C. The truck is exempt from displaying a TDLR number
+D. The TDLR number refers to the driver, not the truck
+Section 5: Legal and Compliance Standards
+               22. Where can Texas laws on towing operations be found?
+A. APD Website
+B. Texas Transportation Code Chapter 2308 and Occupations Code Chapter 2303
+C. Travis County website
+D. Local ordinances
+               23. A vehicle owner has how many days to file a tow hearing dispute?
+A. 7 days
+B. 10 days
+C. 14 days
+D. 30 days
+               24. To tow from public roads, authorization from law enforcement is:
+A. Always required
+B. Never required
+C. Required only during inclement weather
+D. Optional based on VSF policy
+               25. Private Property Parking information must be kept updated with a:
+A. Parking Addendum
+B. TowBook entry
+C. Cab Card report
+D. Driver’s license verification
+Section 6: Additional Policies and Fees
+                  26. A Courtesy Release allows:
+A. The property owner to avoid fees
+B. A tenant to tow a vehicle for free
+C. A vehicle owner to pick up their car without charge
+D. A fee adjustment by APD
+                  27. If a vehicle needs release photos taken, they should be taken within:
+A. 2 hours after release
+B. 24 hours before release
+C. 30 minutes before release
+D. 1 day after release
+                  28. A Parking Addendum clarifies:
+A. Apartment Tenant parking rules
+B. VSF policies
+C. Requirements for towing from public roads
+D. How to apply VSF fees
+
+
+
+                  29. Credit Card Fees cover:
+A. Equipment maintenance
+B. 3% of debit or credit card transactions
+C. Vehicle release processing
+D. Impound notifications
+                  30. For towing companies, impounding from "Public Roads" means:
+A. A driveway
+B. Roads with no traffic rules
+C. Roads that require a law enforcement dispatch request
+D. Roads within gated communities only
+Bonus Questions
+
+
+
+What happens if a vehicle is reported to the wrong jurisdiction?
+A. A fine is given by the jurisdiction to the VSF
+B. The vehicle is reported stolen
+C. The jurisdiction may call and let you know to report it to the correct jurisdiction.
+D. The police will take the car away
+A vehicle owner arrives at the Vehicle Storage Facility (VSF) to retrieve their vehicle, but their ID is expired. What should the VSF staff do?
+A. Release the vehicle if the owner signs a VSF 13
+B. Require the owner to promise that they are the owner
+C. Release the vehicle with a photocopy of the expired ID
+D. Require the owner to show an unexpired form of ID before the vehicle release
+
+A vehicle owner arrives at the VSF to pick up their vehicle but presents an expired ID. Their friend, who is with them, has a valid ID and is willing to complete the paperwork. What should the VSF staff do?
+A. Release the vehicle to the friend as long as they complete the VSF 12 form
+B. Release the vehicle to the friend only if they provide/request a VSF 13 form with the correct VIN or license plate number
+C. Release the vehicle to the friend if they provide a VTR 265 form
+D. Deny the release and require the vehicle owner to provide a valid ID
+Answer Key
+                     1. C
+                     2. B
+                     3. C
+                     4. A
+                     5. C
+                     6. B
+                     7. B
+                     8. C
+                     9. B
+                     10. C
+                     11. C
+                     12. B
+                     13. B
+                     14. B
+                     15. B
+                     16. B
+                     17. B
+                     18. B
+                     19. B
+                     20. B
+                     21. A
+                     22. B
+                     23. C
+                     24. A
+                     25. A
+                     26. C
+                     27. C
+                     28. A
+                     29. B
+                     30. C
+                     31. C
+                     32. D
+                     33. B

@@ -1,0 +1,12 @@
+.arel .arel-company-icon{display:inline-grid;flex-shrink:0;place-items:center;border-radius:13px;background:var(--ws-soft);color:var(--ws-ink);border:1px solid var(--ws-line)}
+.arel .srel-context{max-width:100%;min-width:0}.arel .srel-context select{max-width:100%;min-width:0}.arel .srel-section{overflow-wrap:anywhere}
+.arel .srel-actions{margin:11px 0;flex-wrap:wrap}.arel .arel-prose,.arel .arel-note p,.arel .arel-facts dd{white-space:pre-wrap}
+.arel .arel-note{border-left:3px solid var(--ws-line);background:var(--ws-soft-alt);padding:10px 12px;margin:14px 0}
+.arel .arel-follow{list-style:none;padding:0;margin:7px 0 14px}.arel .arel-follow li{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--ws-line);padding:8px 0}
+.arel .arel-follow small,.arel .arel-follow strong{display:block}.arel .arel-follow small,.arel .arel-facts dt{color:var(--ws-muted);font-size:12px}.arel .arel-follow .srel-text{margin-left:auto}
+.arel .arel-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:12px;margin:12px 0}.arel .arel-facts dd{margin:2px 0 0}
+.arel .srel-section .am-contact-top{flex-wrap:wrap}.arel .srel-section>.am-contact-profile{padding:0}.arel .srel-identity-actions a{overflow-wrap:anywhere}
+.arel .srel-tabs{flex-wrap:wrap}.arel .srel-tabs button[aria-current=page]{border-bottom-color:var(--ws-accent);color:var(--ws-ink);font-weight:700}
+.arel .srel-section .am-facts,.arel .srel-section .am-table-wrap{min-width:0;max-width:100%;overflow-x:auto}
+@media(max-width:620px){.arel .srel-header-actions{flex-wrap:wrap}.arel .srel-section-head{flex-wrap:wrap}.arel .srel-context{display:grid;flex:1 0 100%}}
+.arel .arel-more{margin:9px 14px}

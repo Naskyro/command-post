@@ -1,0 +1,17 @@
+.account-event-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem 1rem;min-width:0;margin:.25rem 0;font-size:.83rem;line-height:1.45;color:var(--ws-muted,#53657a);text-align:left}
+.account-event-meta>span{min-width:0;overflow-wrap:anywhere}
+.account-event-meta time,.account-history-table time{font-variant-numeric:tabular-nums;white-space:normal}
+.account-meta-label{font-weight:600}
+.account-history-wrap{container-type:inline-size;min-width:0;max-width:100%;overflow:auto}
+.account-history-table{width:100%;border-collapse:collapse;text-align:left;font-size:.9rem}
+.account-history-table th,.account-history-table td{padding:.65rem .5rem;border-bottom:1px solid var(--ws-line,#cbd5e1);vertical-align:top;overflow-wrap:anywhere}
+.account-history-table th{color:var(--ws-muted,#4e6179);font-weight:600}
+.account-history-table td:first-child{font-weight:600}
+.account-history-table td[data-label="When"]{min-width:8em}
+@container(max-width:440px){
+ .account-history-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .account-history-table,.account-history-table tbody,.account-history-table tr,.account-history-table td{display:block;width:100%;min-width:0}
+ .account-history-table tr{padding:.65rem 0;border-bottom:1px solid var(--ws-line,#cbd5e1)}
+ .account-history-table td{border:0;padding:.12rem 0}
+ .account-history-table td[data-label]::before{content:attr(data-label) ": ";font-weight:600;color:var(--ws-muted,#4e6179)}
+}

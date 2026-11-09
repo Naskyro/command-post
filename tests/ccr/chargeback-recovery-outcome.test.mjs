@@ -1,0 +1,38 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {blankChargeback,checkedChargeback,chargebackFinancialSummary,reopenChargebackRecovery,chargebackRecoveryQueue} from '../../lib/ccr/chargeback.ts';
+import {blankRecoveryContact,blankRecoveryAppointment,blankRecoverySettlement} from '../../lib/ccr/recovery-activity.ts';
+const now=new Date('2026-11-19T17:30:00Z'),check=(c,old,principal=50000)=>checkedChargeback(c,old,principal,now),loss={...blankChargeback(),processor:'Square',noticeRef:'processor dispute notice',decision:'Cardholder Prevailed',decisionRef:'processor decision',recoveryStartedDay:'2026-10-01'},entry=(id,cents,kind='Cash Repayment',extra={})=>({id,kind,day:'2026-10-15',cents,reference:'receipt-'+id,...extra});
+test('bank loss, receipts and active recovery measure distinct amounts; promises never become received money',()=>{
+ const c=check({...loss,entries:[entry('payment',15000),entry('refund',1000,'Recovery Refund'),entry('postage',1445,'Certified Mail Postage'),entry('fee',2000,'Processor Fee',{includeInRecovery:true})],settlement:{...blankRecoverySettlement(),status:'Agreed',amountCents:30000,agreedDay:'2026-11-01',agreementReference:'signed terms.pdf',terms:'Pay at the yard.'},appointments:[{...blankRecoveryAppointment(),id:'meeting',status:'Confirmed',day:'2026-11-20',time:'10:00',zone:'',person:'Customer',expectedAmountCents:30000}]});
+ const f=chargebackFinancialSummary(c,50000);assert.equal(f.bankLossCents,50000);assert.equal(f.netRecoveryCents,14000);assert.equal(f.customerPaymentsCents,15000);assert.equal(f.recoveryRefundsCents,1000);assert.equal(f.activeOutstandingCents,38000);assert.equal(f.finalLossCents,0);assert.equal(f.courtReviewCents,0);assert.equal(f.receiptStatus,'Receipts Recorded');
+});
+test('a legacy demand with unknown processor outcome stays outside verified pending totals',()=>{
+ const source={...blankChargeback(),mail:'Reported Mailed',sentDay:'2026-10-05',tracking:'mail-1'},unknown=chargebackFinancialSummary(source,24000);assert.equal(unknown.pendingPrincipalCents,0);assert.equal(unknown.bankLossCents,0);assert.equal(unknown.unverifiedPrincipalCents,24000);assert.equal(unknown.unverifiedActiveOutstandingCents,24000);assert.equal(unknown.verifiedActiveOutstandingCents,0);assert.equal(unknown.receiptStatus,'No Receipts Recorded');
+ const identified=chargebackFinancialSummary({...source,processor:'Square',noticeRef:'processor notice'},24000);assert.equal(identified.pendingPrincipalCents,24000);assert.equal(identified.unverifiedPrincipalCents,0);assert.equal(identified.unverifiedActiveOutstandingCents,0);assert.equal(identified.verifiedActiveOutstandingCents,24000);
+ const won=chargebackFinancialSummary({...source,processor:'Square',decision:'Merchant Prevailed',decisionRef:'bank decision'},24000);assert.equal(won.bankWinCents,24000);assert.equal(won.netRecoveryCents,0);assert.equal(won.activeOutstandingCents,0);
+ const feeReview=check({...blankChargeback(),decision:'Merchant Prevailed',decisionRef:'bank decision',disposition:'Court Filed',courtFiledDay:'2026-11-01',courtReference:'filed case',entries:[entry('credit',50000,'Processor Credit'),entry('pursued-fee',2500,'Processor Fee',{includeInRecovery:true})]});assert.equal(chargebackFinancialSummary(feeReview,50000).activeOutstandingCents,2500);assert.equal(chargebackFinancialSummary(feeReview,50000).courtReviewCents,2500);
+});
+test('final loss needs an explicit dated decision and can be reopened for later receipt without altering the prior decision',()=>{
+ const active=check({...loss,entries:[entry('partial',15000)],disposition:'Partial Recovery'});
+ assert.throws(()=>check({...active,disposition:'Final Loss'}),/close date/);
+ assert.throws(()=>check({...active,disposition:'Final Loss',recoveryClosedDay:'2026-11-01'}),/reason/);
+ const final=check({...active,disposition:'Final Loss',recoveryClosedDay:'2026-11-01',writeOffReason:'Repeated contact and document review completed; remaining recovery exhausted.'}),snapshot=JSON.stringify(final),f=chargebackFinancialSummary(final,50000);assert.equal(final.recoveryStage,'Complete');assert.equal(f.finalLossCents,35000);assert.equal(f.activeOutstandingCents,0);assert.equal(f.netRecoveryCents,15000);assert.equal(chargebackRecoveryQueue(final,50000),null);
+ assert.throws(()=>check({...final,entries:[...final.entries,entry('late',2000)]},final),/Reopen Recovery/);assert.throws(()=>check({...final,entries:[]},final),/Reopen Recovery/);
+ const reopening=reopenChargebackRecovery(final,50000),updated=check({...reopening,entries:[...reopening.entries,entry('late',2000)]},final);assert.equal(updated.disposition,'Partial Recovery');assert.equal(updated.recoveryClosedDay,'');assert.equal(updated.writeOffReason,'');assert.equal(chargebackFinancialSummary(updated,50000).activeOutstandingCents,33000);assert.equal(chargebackFinancialSummary(updated,50000).finalLossCents,0);assert.equal(JSON.stringify(final),snapshot);
+});
+test('no response is not court eligibility; staff must select court review and closed unclassified balances remain visible',()=>{
+ const contact={...blankRecoveryContact(),id:'attempt',day:'2026-11-01',person:'Customer',outcome:'No Answer'},c=check({...loss,contactLog:[contact],disposition:'No Response'});assert.equal(c.contactAttempts,'');assert.equal(chargebackFinancialSummary(c,50000).courtReviewCents,0);assert.notEqual(chargebackRecoveryQueue(c,50000).stage,'Court Review');
+ const reviewed={...c,recoveryStage:'Court Review'},f=chargebackFinancialSummary(reviewed,50000);assert.equal(f.courtReviewCents,f.activeOutstandingCents);assert.equal(f.courtReviewCents,50000);
+ const closed=chargebackFinancialSummary(c,50000,'Closed');assert.equal(closed.activeOutstandingCents,0);assert.equal(closed.finalLossCents,0);assert.equal(closed.unclassifiedClosedCents,50000);
+});
+test('unknown balances and absent receipts remain unknown; refunding a real receipt does not erase its history',()=>{
+ const unknown=chargebackFinancialSummary(loss,null);assert.equal(unknown.bankLossCents,null);assert.equal(unknown.activeOutstandingCents,null);assert.equal(unknown.netRecoveryCents,0);assert.equal(unknown.receiptStatus,'No Receipts Recorded');
+ assert.throws(()=>check({...loss,disposition:'Final Loss',recoveryClosedDay:'2026-11-01',writeOffReason:'Recovery exhausted'},undefined,null),/known remaining balance/);
+ const returned=check({...loss,entries:[entry('received',10000),entry('refunded',10000,'Recovery Refund')]});assert.equal(chargebackFinancialSummary(returned,50000).netRecoveryCents,0);assert.equal(chargebackFinancialSummary(returned,50000).receiptStatus,'Receipts Recorded');
+ assert.throws(()=>check({...loss,recoveryStartedDay:'2026-11-20'}),/actual recovery/);assert.throws(()=>check({...loss,disposition:'Final Loss',recoveryClosedDay:'2026-09-01',writeOffReason:'Recovery exhausted'}),/cannot precede/);
+});
+test('older clients cannot silently clear contact, appointment or settlement records by omitting new fields',()=>{
+ const prior=check({...loss,contactLog:[{...blankRecoveryContact(),id:'contact',day:'2026-11-01',person:'Customer',outcome:'Payment Promised'}],appointments:[{...blankRecoveryAppointment(),id:'appointment',person:'Customer'}],settlement:{...blankRecoverySettlement(),terms:'Draft terms'}}),legacy={...prior};delete legacy.contactLog;delete legacy.appointments;delete legacy.settlement;
+ const updated=check(legacy,prior);assert.equal(updated.contactLog[0].outcome,'Payment Promised');assert.equal(updated.appointments[0].status,'Needs Scheduling');assert.equal(updated.settlement.status,'Draft');assert.equal(chargebackFinancialSummary(updated,50000).netRecoveryCents,0);
+});

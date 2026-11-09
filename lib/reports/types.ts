@@ -1,0 +1,10 @@
+export type ReportArea='hr'|'finance';
+export type ChartKind='bar'|'line'|'pie'|'scatter'|'table';
+export type ReportFilters={from?:string;to?:string;department?:string;person?:string;group?:string};
+export type ReportDefinition={id:string;title:string;group:string;description:string;visual:ChartKind;unit?:string;filters?:(keyof ReportFilters)[]};
+export type ReportColumn={key:string;label:string;format?:'text'|'number'|'money'|'percent'|'date'};
+export type ReportRow=Record<string,string|number|null>;
+export type ChartPoint={label:string;value:number;x?:number;series?:string};
+export type ReportResult={columns:ReportColumn[];rows:ReportRow[];chart:ChartPoint[];note?:string;metric?:{label:string;value:string};details?:{columns:ReportColumn[];rows:ReportRow[]}};
+export type CustomView={columns?:string[];visual?:ChartKind;groupBy?:string;aggregation?:'count'|'sum';measure?:string};
+export type SavedReport=CustomView & {id:string;name:string;reportId:string;filters:ReportFilters;columns:string[];visual:ChartKind};

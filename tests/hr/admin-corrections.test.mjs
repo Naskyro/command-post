@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {canRemoveHr} from '../../lib/hr/record-removal.ts';
+import {withImportedCareer} from '../../lib/hr/imported-career.ts';
+import {auditStamp,auditDiff} from '../../lib/shared/audit-format.ts';
+const admin={owner:true,person:'boss',id:'boss'},manager={owner:false,person:'manager',role:'Supervisor',access:[{module:'People & HR',tab:'hiring',level:'Edit'}],hrResponsibilities:[{action:'manageOnboarding',scope:'Team'}]};
+const people=[{id:'manager',kind:'person',supervisor:''}];
+const r=(kind,data={})=>({id:'r',kind,personId:'worker',data,version:1});
+test('performance removal is admin-only, not implied by manager authority',()=>{assert.equal(canRemoveHr(admin,r('note'),people,[]),true);assert.equal(canRemoveHr(manager,r('note'),people,[]),false);assert.equal(canRemoveHr(admin,r('corrective'),people,[]),true);});
+test('hiring deletion is scoped and cannot remove an onboarded candidate',()=>{const vacancy=r('vacancy',{ownerId:'manager'});assert.equal(canRemoveHr(manager,vacancy,people,[]),true);assert.equal(canRemoveHr({...manager,person:'other'},vacancy,people,[]),false);assert.equal(canRemoveHr(admin,r('candidate',{employeeId:'worker',vacancyId:'r'}),people,[vacancy]),false);});
+test('signed documents cannot be erased with the correction action',()=>{assert.equal(canRemoveHr(admin,r('document',{signatureStatus:'Signed'}),people,[]),false);assert.equal(canRemoveHr(admin,r('document',{signatureStatus:'Not Verified'}),people,[]),true);});
+test('owner history keeps unknown rates blank and never resurrects a deleted import',()=>{const p=withImportedCareer({id:'nessa',kind:'person',version:1});assert.equal(p.careerHistory.length,5);assert.equal(p.careerHistory[2].hourlyRate,null);assert.ok(p.careerHistory.every(e=>e.effectiveDate===''));const edited={...p,careerHistory:p.careerHistory.map((e,i)=>i===0?{...e,deletedAt:'now'}:e)};assert.equal(withImportedCareer(edited).careerHistory.length,5);assert.equal(withImportedCareer({id:'dalila',kind:'person',version:1}).careerHistory.length,2);});
+test('audit timestamp is padded Central Time and nested secrets are masked',()=>{assert.equal(auditStamp('2026-10-28T02:04:00Z'),'10-27-2026 09:04pm CT');const changes=auditDiff({}, {bank:[{accountNumber:'0'.repeat(7),routingNumber:'0'.repeat(9)}],name:'Sample'});assert.ok(!JSON.stringify(changes).includes('0'.repeat(7)));assert.ok(!JSON.stringify(changes).includes('0'.repeat(9)));assert.ok(changes.some(c=>c.field==='name'));});

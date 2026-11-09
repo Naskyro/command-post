@@ -1,3 +1,5 @@
+import {reviewExpense} from '@/lib/ccr/expense-handoff-server';
+import {AppError} from '@/lib/shared/errors';
 import { visibleOvertime } from '@/lib/finance/overtime';
 import { validatePayrollPolicy, type PayrollPolicy } from '@/lib/finance/payroll-calendar';
 import { today } from '@/lib/finance/model';
@@ -15,7 +17,7 @@ import { FinanceAccessError } from '@/lib/finance/identity';
 export const dynamic = 'force-dynamic';
 const response = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } });
 const failure = (e: unknown) => { if (e instanceof FinanceAccessError)
-    return response({ error: e.message, signInUrl: e.status === 401 ? '/signin-with-chatgpt?return_to=/' : undefined }, e.status); const f = safeFailure(e, 'finance.request'); return response(f.body, f.status); };
+    return response({ error: e.message, signInUrl: e.status === 401 ? '/command-access/sign-in' : undefined }, e.status); const f = safeFailure(e, 'finance.request'); return response(f.body, f.status); };
 export async function GET(request: NextRequest) { try {
     const records = await allRecords(), viewer = identify(records, request.headers);
     if (request.nextUrl.searchParams.get('surface') === 'slack') {
@@ -27,6 +29,7 @@ export async function GET(request: NextRequest) { try {
         throw new FinanceAccessError('This module is not assigned to your account.', 403);
     const history = request.nextUrl.searchParams.get('history');
     if (history) {
+        if(!canAccess(viewer,'Admin','activity'))return response({error:'Admin activity access required'},403);
         if (!visible(viewer, records).some(r => r.id === history) && !(viewer.canManage && sourceTransactions.some(r => r.id === history)))
             return response({ error: 'Access denied' }, 403);
         const audit = await financeDb().prepare('SELECT * FROM finance_audit WHERE record_id=? ORDER BY at DESC LIMIT 100').bind(history).all();
@@ -76,12 +79,9 @@ export async function POST(request: NextRequest) {
                 throw new Error('Select an active worker.');
             const active = records.find(r => r.kind === 'clock' && r.person === person && r.status === 'Running');
             const now = new Date();
-            if (['clockIn', 'clockOut'].includes(String(body.action))) {
-                const recent = records.filter(r => r.kind === 'clock' && r.person === person).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))[0];
-                if (recent && (now.getTime() - Date.parse(String(recent.updatedAt))) < 60000)
-                    throw new Error('Wait one minute between clock in / out actions.');
-            }
             if (body.action === 'clockIn') {
+                const worker = records.find(r => r.kind === 'person' && r.id === person)!;
+                if (worker.onboardingRequired === true && !worker.onboardingClearedAt) throw new Error('Finish your onboarding tasks and wait for authorized start approval before your first clock-in.');
                 if (active)
                     throw new Error('This person is already clocked in.');
                 const day = new Date().toISOString();
@@ -123,7 +123,8 @@ export async function POST(request: NextRequest) {
             if (shifts.some(r => !r.person || !managesPerson(viewer, String(r.person), records)))
                 throw new Error('Assign every shift and ask a manager with access to this schedule to publish it.');
             const publishedDepartments = new Set(shifts.map(r => String(r.department)));
-            const gaps = coverageGaps(records, start, endDay).filter(g => publishedDepartments.has(g.role === 'Dispatcher' ? 'Dispatch' : 'Drivers'));
+            const publishingIds = new Set(shifts.map(r => r.id));
+            const gaps = coverageGaps(records.map(r => publishingIds.has(r.id) ? { ...r, status: 'Published' } : r), start, endDay).filter(g => publishedDepartments.has(g.role === 'Dispatcher' ? 'Dispatch' : 'Drivers'));
             if (gaps.length)
                 throw new Error('Cover all dispatcher and driver gaps before publishing this week.');
             const db = financeDb(), at = new Date().toISOString();
@@ -137,28 +138,12 @@ export async function POST(request: NextRequest) {
             await db.batch(statements);
             return response({ published: shifts.length });
         }
-        if (body.action === 'submitWeek' || body.action === 'approveWeek') {
-            if (!canAccess(viewer, 'Timeclock'))
-                throw new Error('Timeclock access is not assigned to your account.');
-            const personId = String(body.person);
-            const start = String(body.week), period = workweek(start, records.find(r => r.id === 'company'));
-            if (start !== period.start)
-                throw new Error('Choose the first day of the configured workweek.');
-            if (personId !== viewer.person && !managesPerson(viewer, personId, records))
-                throw new Error('You can only submit or approve your own timesheet or a worker you manage.');
-            const isSubmit = body.action === 'submitWeek';
-            const targets = records.filter(r => r.kind === 'time' && r.person === personId && String(r.date) >= period.start && String(r.date) <= period.end && r.status !== 'Voided' && r.status !== 'Approved' && !(isSubmit && r.status === 'Submitted'));
-            const nextStatus = isSubmit ? 'Submitted' : 'Approved';
-            for (const old of targets) {
-                const next = { ...old, status: nextStatus };
-                await persist(old, next as FinRecord, viewer, `${nextStatus} timesheet for ${start}`);
-            }
-            return response({ updated: targets.length });
-        }
         if (body.action === 'reviewPayroll' || body.action === 'releasePayroll') {
             if (!viewer.canRelease || !canAccess(viewer, 'Finance', 'Payroll', true))
                 throw new Error('Only owners and the assigned Operations Department Head can release payroll.');
             const old = records.find(r => r.id === body.id);
+            if (old && old.kind !== 'payrun')
+                throw new Error('Choose an existing payroll run or create a new one.');
             if (old && old.version !== body.version)
                 throw new Error('Payroll changed. Reload and review again.');
             if (old?.status === 'Released')
@@ -190,6 +175,14 @@ export async function POST(request: NextRequest) {
             throw new Error('Someone changed this record. Reload before saving.');
         if (old && !String(body.reason || '').trim())
             throw new Error('Add a reason for this change.');
+        if(next.id.startsWith('ccr-cost:')){
+            if(!old){
+                const {draft}=await reviewExpense(viewer,records,next.id);
+                if(next.kind!=='expense'||next.status!=='Draft'||next.date!==draft.date||next.amount!==draft.amount)
+                    throw new AppError('Save this company cost as a draft at its recorded date and amount. Refresh the case if the cost changed.');
+                next.source=draft.source;
+            }else next.source=old.source;
+        }
         validate(next, old, viewer, records);
         return response({ record: await persist(old, next, viewer, String(body.reason || 'Created record')) });
     }

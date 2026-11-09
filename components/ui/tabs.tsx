@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import ModuleRail from '@/components/shared/ModuleRail';
 import {TabStrip} from "./tab-strip"
 const Orientation=React.createContext("horizontal");
 import { cva, type VariantProps } from "class-variance-authority"
@@ -68,6 +69,7 @@ function TabsList({
       {...props}
     />
   );
+  if(className?.split(' ').some(x=>['caseTabs','managerTabs'].includes(x)))return <ModuleRail label="Module Sections">{list}</ModuleRail>;
   return orientation==='horizontal'?<TabStrip>{list}</TabStrip>:list;
 }
 

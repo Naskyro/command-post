@@ -1,0 +1,12 @@
+'use client';
+import {useEffect,useState} from 'react';
+import {ImageIcon,ChevronLeft,ChevronRight,X} from 'lucide-react';
+import type {DamageIntakeFile} from '@/lib/ccr/damage-intake-model';
+import {documentTypeLabel} from '@/lib/ccr/document-types';
+import {auditStamp} from '@/lib/shared/audit-format';
+import {timedFetch} from '@/lib/shared/client';
+export default function DamagePhotoViewer({id,files}:{id:string;files:DamageIntakeFile[]}){
+ const photos=files.filter(f=>/^image\/(png|jpeg)$/.test(f.type)),[index,setIndex]=useState<number|null>(null),[url,setUrl]=useState(''),[error,setError]=useState('');const p=index==null?undefined:photos[index],photoId=p?.id;
+ useEffect(()=>{let live=true,local='';setUrl('');setError('');if(photoId)void(async()=>{try{const r=await timedFetch('/api/ccr/damage-intake/documents?id='+encodeURIComponent(id)+'&file='+encodeURIComponent(photoId),{},60000);if(!r.ok||!/^image\/(?:png|jpeg)(?:;|$)/.test(r.headers.get('content-type')||''))throw Error('This photo could not be loaded. Open the original in Claim Documents to retry.');const b=await r.blob();if(live){local=URL.createObjectURL(b);setUrl(local);}}catch(e){if(live)setError((e as Error).message);}})();return()=>{live=false;if(local)URL.revokeObjectURL(local);};},[id,photoId]);
+ if(!photos.length)return null;return <section aria-label="Claim Photo Evidence" style={{marginBlock:'1rem'}}>{!p?<button type="button" className="ccrc-btn" onClick={()=>setIndex(0)}><ImageIcon size={16}/>View Evidence Photos ({photos.length})</button>:<figure style={{margin:0}}><div className="ccrc-actions"><b>Evidence Photo {Number(index)+1} of {photos.length}</b><button className="ccrc-btn" aria-label="Previous Photo" title="Previous Photo" disabled={index===0} onClick={()=>setIndex(i=>Number(i)-1)}><ChevronLeft size={16}/></button><button className="ccrc-btn" aria-label="Next Photo" title="Next Photo" disabled={index===photos.length-1} onClick={()=>setIndex(i=>Number(i)+1)}><ChevronRight size={16}/></button><button className="ccrc-btn" aria-label="Close Photo Viewer" title="Close Photo Viewer" onClick={()=>setIndex(null)}><X size={15}/></button></div>{error?<p role="alert">{error}</p>:url?<img src={url} alt={documentTypeLabel(p)+' · '+p.name} style={{objectFit:'contain',display:'block',maxHeight:460,maxWidth:'100%',marginBlock:12}}/>:<p role="status">Loading Original Photo…</p>}<figcaption>{documentTypeLabel(p)} · {p.name} · Filed {auditStamp(p.at)} by {p.by}</figcaption></figure>}</section>;
+}

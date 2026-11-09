@@ -1,3 +1,4 @@
+import { publicPersonIdentity } from '../people/display-name.ts';
 import {allRecords,identify} from '@/lib/finance/server';
 import {records,writeMany} from '@/lib/accounts/server';
 import {vehicles} from '@/lib/accounts/history';
@@ -7,7 +8,7 @@ import {AppError,ForbiddenError,ConflictError} from '@/lib/shared/errors';
 import {safetyAccess,safetyReviewer,safetyKinds} from './access';
 import {prepareCase,safetyAlerts,checkedText,checkedDate,normalizeVin,normalizePlate,validVin,exactVehicle} from './model';
 export async function safetyContext(request:Request){const staff=await allRecords(),viewer=identify(staff,request.headers);if(!staff.some(r=>r.id===viewer.person&&r.kind==='person'&&r.status==='Active'))throw new ForbiddenError();return {staff,viewer,all:await records()};}
-export function safetyData(ctx:Awaited<ReturnType<typeof safetyContext>>,alertsOnly=false){const {all,viewer:v,staff}=ctx;const alerts=safetyAlerts(all,vehicles(all));if(alertsOnly)return {alerts,canEdit:safetyAccess(v,true),canReview:safetyReviewer(v),canView:safetyAccess(v)};if(!safetyAccess(v))throw new ForbiddenError();return {alerts,canEdit:safetyAccess(v,true),canReview:safetyReviewer(v),canView:true,records:all.filter(r=>safetyKinds.includes(r.kind)||r.kind==='file'&&r.category==='Trespass evidence').map(r=>{const {storageKey,...rest}=r;return rest;}),accounts:all.filter(r=>r.kind==='account').map(r=>({id:r.id,name:r.name,assignee:r.assignee})),staff:staff.filter(r=>r.kind==='person').map(r=>({id:r.id,name:r.name}))};}
+export function safetyData(ctx:Awaited<ReturnType<typeof safetyContext>>,alertsOnly=false){const {all,viewer:v,staff}=ctx;const alerts=safetyAlerts(all,vehicles(all));if(alertsOnly)return {alerts,canEdit:safetyAccess(v,true),canReview:safetyReviewer(v),canView:safetyAccess(v)};if(!safetyAccess(v))throw new ForbiddenError();return {alerts,canEdit:safetyAccess(v,true),canReview:safetyReviewer(v),canView:true,records:all.filter(r=>safetyKinds.includes(r.kind)||r.kind==='file'&&r.category==='Trespass evidence').map(r=>{const {storageKey,...rest}=r;return rest;}),accounts:all.filter(r=>r.kind==='account').map(r=>({id:r.id,name:r.name,assignee:r.assignee})),staff:staff.filter(r=>r.kind==='person').map(r=>({id:r.id,...publicPersonIdentity(r)}))};}
 export async function saveSafety(body:Record<string,unknown>,ctx:Awaited<ReturnType<typeof safetyContext>>){
  const {all,viewer:v,staff}=ctx,action=String(body.action||''),c=all.find(r=>r.kind==='trespass'&&r.id===body.caseId),at=new Date().toISOString();
  if(!safetyAccess(v,true))throw new ForbiddenError();

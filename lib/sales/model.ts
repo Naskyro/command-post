@@ -1,6 +1,6 @@
 import {today, type Row} from '@/lib/accounts/model';
-export const salesStages=['Prospect','Qualified','Meeting','Proposal','Contract review','Won','Lost'];
-export const openStages=salesStages.slice(0,5);
+export const salesStages=['Not Engaged','Engaged','Stalled','Contract Pending','Won','Lost'];
+export const openStages=salesStages.slice(0,4);
 export const closed=(r:Row)=>['Won','Lost'].includes(String(r.stage));
 export const due=(r:Row,day=today())=>!closed(r)&&!!r.dueDate&&String(r.dueDate)<=day;
 export function salesMetrics(rows:Row[],day=today()) {

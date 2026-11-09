@@ -10,7 +10,7 @@ Updated September 5, 2026. This implementation extends the existing private Comm
 | People & HR | Employee profile, reporting line, onboarding, initial bounded permissions; restricted pay agreements | `components/people/PeopleDirectory.tsx`, `components/people/PersonEditor.tsx` |
 | Finance | Pay agreements, payroll calendar, categories, budgets, bank categorization, debt plans, bookkeeping | `components/finance/FinanceWorkspace.tsx` |
 | Timeclock | Clock events, timesheets, requests, leave, hourly schedule | `components/finance/TimeclockWorkspace.tsx`, `ShiftCalendar.tsx` |
-| Home | Current user's available workspaces, own shifts/hours/PTO, accessible requests and payroll forecast | `components/home/HomeWorkspace.tsx`, `app/api/home/route.ts` |
+| Home | Permission-scoped priorities, field alerts, work calendar, pins and schedules, Finance and personal work trends | `components/home/HomeWorkspace.tsx`, `app/api/home/route.ts` |
 
 ## Authorization and data boundaries
 
@@ -49,3 +49,13 @@ The existing D1 records and audit tables remain in place. Each mutation records 
 The automated finance suite covers identity aliases, authorization ceilings, sensitive-data projections, audit privacy, payroll calculations, transition periods, overnight/DST behavior, open-shift rules, assets, bill approvals, category budgets, cash reviews, and quick edits. TypeScript and the production build are also required before publication.
 
 Bank transfer execution, bank synchronization, automatic payroll tax calculation, tax filing, and Slack API synchronization are not connected by this change. Existing manual tax verification and payment recording remain explicit. Some older account, work-order, compliance, and HR specialty screens still use session-based prototype workflows; this update does not represent a completed replacement for those backend integrations. Browser interaction was not part of this verification pass.
+
+## Reporting and Personal Dashboards
+
+Home reads the authorized dashboard sections, display modes, chart settings, and each employee’s arrangement from `/api/home`. **Customize Dashboard → Layout & Charts** controls section order and chart visibility; **Individual Tiles** controls order, pinning, hiding, and weekday schedules. The versioned settings share the existing per-person `home_signal_preferences` row. Legacy pins and schedules survive, and revoked sections do not appear in the catalog. The retired widget layout is not used. Critical alerts remain actionable even if the priority section is removed.
+
+The chart catalog includes Finance, personal Timeclock, scheduled workload, Work Orders, hiring, and property tow activity as access allows. Work orders compare first dated opening and completion events by Austin calendar week. Scheduled workload counts upcoming dated items instead of historical completions. Finance uses the report bank register; Hiring uses scoped personnel hire dates; property tow activity distinguishes confirmed tow dates from intake-only dates. Check the coverage notes before comparing periods. Employees can restore a removed chart, and their chart types and ranges do not change anyone else’s Home.
+
+People & HR → Reports and Finance → Reports & Taxes → Reports use the same report explorer. The Job Description Library lives under HR Reports, retains its hiring/position permissions, and does not require broader workforce reporting permission. An employee's assigned description remains in the personnel file. Education comes from the personnel education editor; in-progress and completed studies are distinct.
+
+Every catalog, report, saved view and export request checks the signed-in identity and the applicable source permissions. HR personnel export additionally limits the population to the caller's export scope. Personal report definitions in `report_presets` contain selected columns, filters, visualization and grouping; they store no result snapshots. A saved report reruns against currently permitted data. The PDF and Excel export is generated on the server and the export activity is recorded without copying the results into the activity log. See `app/api/reports/route.ts`, `lib/reports`, and `components/reports`.

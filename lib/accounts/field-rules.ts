@@ -20,7 +20,7 @@ export function fieldVisible(r:Row,key:string):boolean {
  if(['permitPlatform','visitorApproval'].includes(key))return hasDigital(r);
  if(key==='visitorSectionLocation')return r.visitorSection==='Yes';
  if(key==='evParkingRules')return ['Yes','Call-in only'].includes(String(r.evParkingEnforcement));
- if(['carportEnforcement','carportRules'].includes(key))return r.carportParking==='Yes';
+ if(['carportEnforcement','carportSpaceCallAuthority','carportRules'].includes(key))return r.carportParking==='Yes';
  if(['garageEnforcement','garageRules'].includes(key))return r.garageParking==='Yes';
  if(key.startsWith('parkingGarage')&&key!=='parkingGarage') {
    if(r.parkingGarage!=='Yes')return false;

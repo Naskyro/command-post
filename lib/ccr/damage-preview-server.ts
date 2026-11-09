@@ -1,0 +1,52 @@
+import {createHash} from 'node:crypto';
+import {financeDb} from '@/db/finance';
+import {encode,decode,encryptBytes,decryptBytes} from '@/lib/hr/server';
+import {AppError,ConflictError} from '@/lib/shared/errors';
+import type {Viewer} from '@/lib/finance/model';
+import {grantHistorical} from './damage-correspondence-server';
+import {getDamageIntake} from './damage-intake-server';
+import {indexedFile,type IndexedOriginal} from './damage-attachment-index';
+import {previewManifest,validPreviewJpeg,type PhotoMeta,type PreviewReceipt} from './damage-preview-model';
+const hash=(s:string|Uint8Array)=>createHash('sha256').update(s).digest('hex');
+const caseId=(t:string)=>'dmi_'+hash('support@gtowingtransport.com:'+t),idx=(id:string,sha:string)=>hash(id+':'+sha);
+const table='ccr_damage_photo_previews',inventory='ccr_damage_source_inventory',marks=(len:number)=>Array(len).fill('?').join(',');
+type Saved={source:IndexedOriginal;photo:PhotoMeta;filedAt:string;filedBy:string;actorId:string};
+type Entry={idx_key:string;case_id:string;signature:string;payload:string;image:ArrayBuffer};
+type Indexed={idx_key:string;case_id:string;signature:string;payload:string};
+function bytes(v:ArrayBuffer|Uint8Array){return new Uint8Array(v);}
+async function store<T>(db:D1Database,f:()=>Promise<T>){try{return await f();}catch(e){if(!/no such table:\s*(?:main\.)?ccr_damage_photo_previews\b/i.test(String(e)))throw e;await db.prepare('CREATE TABLE IF NOT EXISTS '+table+'(idx_key TEXT PRIMARY KEY NOT NULL,case_id TEXT NOT NULL,signature TEXT NOT NULL,payload TEXT NOT NULL,image BLOB NOT NULL)').run();await db.prepare('CREATE INDEX IF NOT EXISTS ccr_damage_photo_previews_case ON '+table+'(case_id)').run();return f();}}
+const checkCase=(s:string)=>{if(!/^dmi_[0-9a-f]{64}$/.test(s))throw new AppError('Choose a saved Support claim.');return s;};
+async function verifiedImage(row:Entry,meta:PhotoMeta){const clean=await decryptBytes(bytes(row.image));if(clean.length!==meta.previewBytes||hash(clean)!==meta.previewSha256)throw new AppError('The stored preview could not be verified.',503);validPreviewJpeg(clean,meta.width,meta.height);return clean;}
+export async function damagePreviewTransfer(v:Viewer,raw:unknown,save:boolean):Promise<PreviewReceipt>{
+ grantHistorical(v,save);const items=previewManifest(raw,save),db=financeDb();const values=items.map(({jpegBase64,...meta})=>{const id=caseId(meta.threadId),key=idx(id,meta.sha256);let image:Uint8Array|undefined;if(save){const decoded=Buffer.from(jpegBase64!,'base64');if(decoded.toString('base64')!==jpegBase64||decoded.length!==meta.previewBytes||hash(decoded)!==meta.previewSha256)throw new AppError('The preview bytes do not match their fingerprint.');validPreviewJpeg(decoded,meta.width,meta.height);image=decoded;}return {id,key,meta,image,sig:hash(JSON.stringify(meta))};});
+ let confirmed=0,awaitingIndex=0;type Work=typeof values[number];const ready:{work:Work;source:IndexedOriginal;signature:string}[]=[];
+ for(let i=0;i<values.length;i+=32){const group=values.slice(i,i+32);let rows:Indexed[];try{rows=(await db.prepare('SELECT idx_key,case_id,signature,payload FROM '+inventory+' WHERE idx_key IN ('+marks(group.length)+')').bind(...group.map(x=>x.key)).all<Indexed>()).results;}catch(e){if(!/no such table:\s*(?:main\.)?ccr_damage_source_inventory\b/i.test(String(e)))throw e;rows=[];}
+  const map=new Map(rows.map(r=>[r.idx_key,r]));for(const work of group){const r=map.get(work.key);if(!r){awaitingIndex++;continue;}const {document}=await decode(r.payload) as {document:IndexedOriginal};if(r.case_id!==work.id||hash(JSON.stringify(document))!==r.signature||document.name!==work.meta.name||document.sha256!==work.meta.sha256||document.bytes!==work.meta.bytes||document.sourceMessageId!==work.meta.sourceMessageId)throw new ConflictError('A photo does not match the saved claim, source message, filename or original fingerprint. No previews were replaced.');ready.push({work,source:document,signature:r.signature});}
+ }
+ // Inventory was issued only for a verified claim/message association. Keep that exact immutable index key and signature.
+ // The composite signature prevents replaying a different rendering against the same source while preserving its first filing audit.
+ async function scan(checkBytes:boolean){const absent:typeof ready=[];let n=0;for(let i=0;i<ready.length;i+=8){const group=ready.slice(i,i+8);const rows=await store(db,()=>db.prepare('SELECT idx_key,case_id,signature'+(checkBytes?',image':'')+' FROM '+table+' WHERE idx_key IN ('+marks(group.length)+')').bind(...group.map(x=>x.work.key)).all<Entry>());const found=new Map(rows.results.map(r=>[r.idx_key,r]));for(const x of group){const k=found.get(x.work.key);if(!k){absent.push(x);continue;}if(k.case_id!==x.work.id||k.signature!==x.work.sig)throw new ConflictError('A different immutable preview already exists for this source. Review the original; the preview was not replaced.');if(checkBytes)await verifiedImage(k,x.work.meta);n++;}}return {absent,n};}
+ let state=await scan(!save);if(save){const batch:D1PreparedStatement[]=[];const at=new Date().toISOString();for(const entry of state.absent){const {work,source,signature}=entry;const payload=await encode({photo:work.meta,source,filedAt:at,filedBy:v.name,actorId:v.id} satisfies Saved);const image=await encryptBytes(work.image!);batch.push(db.prepare('INSERT OR IGNORE INTO '+table+'(idx_key,case_id,signature,payload,image) SELECT ?,?,?,?,? WHERE EXISTS (SELECT 1 FROM '+inventory+' WHERE idx_key=? AND case_id=? AND signature=?)').bind(work.key,work.id,work.sig,payload,new Uint8Array(image).buffer,work.key,work.id,signature));}
+ if(batch.length)await db.batch(batch);state=await scan(true);}
+ confirmed=state.n;return {total:items.length,confirmed,awaitingIndex,missing:items.length-confirmed-awaitingIndex};
+}
+export async function casePhotoPreviews(v:Viewer,raw:string){grantHistorical(v);const id=checkCase(raw),caseRecord=await getDamageIntake(id),db=financeDb();const saved=await store(db,()=>db.prepare('SELECT idx_key,payload FROM '+table+' WHERE case_id=?').bind(id).all<{idx_key:string;payload:string}>());
+ const photos=await Promise.all(saved.results.map(async row=>{const x=await decode(row.payload) as Saved;const source=caseRecord.references.find(z=>z.messageId===x.source.sourceMessageId);if(!source)throw new ConflictError('This source needs case review before its preview can be opened.');return {id:row.idx_key,name:x.source.name,documentType:x.source.otherDocumentType||x.source.documentType,width:x.photo.width,height:x.photo.height,redacted:!!x.photo.redacted,on:source.on,subject:source.subject,original:indexedFile(caseRecord,x.source).state,fileId:indexedFile(caseRecord,x.source).fileId,filedAt:x.filedAt,filedBy:x.filedBy};}));return photos.sort((a,b)=>a.on.localeCompare(b.on)||a.name.localeCompare(b.name)||a.id.localeCompare(b.id));}
+export async function readCasePhotoPreview(v:Viewer,raw:string,key:string){grantHistorical(v);const id=checkCase(raw);if(!/^[0-9a-f]{64}$/.test(key))throw new AppError('Choose a saved preview.',404);const db=financeDb(),r=await store(db,()=>db.prepare('SELECT idx_key,case_id,signature,payload,image FROM '+table+' WHERE case_id=? AND idx_key=?').bind(id,key).first<Entry>());if(!r)throw new AppError('Preview not found on this claim.',404);const x=await decode(r.payload) as Saved;const c=await getDamageIntake(id);if(r.idx_key!==idx(id,x.source.sha256)||r.signature!==hash(JSON.stringify(x.photo))||!c.references.some(m=>m.messageId===x.source.sourceMessageId))throw new ConflictError('The saved preview could not be verified against the claim.');return verifiedImage(r,x.photo);}
+
+// Native rows are encrypted; paginate via the indexed case key first, and decrypt only the page the owner opens.
+export async function filedPreviewDirectory(v:Viewer,offsetInput:unknown,queryInput:unknown='',scanInput:unknown=0){
+ grantHistorical(v);const db=financeDb();const raw=String(offsetInput??'0');if(!/^\d{1,7}$/.test(raw))throw new AppError('Choose a valid result page.');const offset=Number(raw);if(typeof queryInput!=='string'||queryInput.length>160)throw new AppError('Use a shorter claim search.');const search=queryInput.trim().toLowerCase(),page=12;
+ type Summary={id:string;title:string;status:string;reportedOn:string;photos:number;claimReference:string;vehicle:string;propertyName:string};
+ async function entries(skip:number,limit:number,exact?:string){const condition=exact?' WHERE case_id=?':'';const source=await store(db,()=>db.prepare('SELECT k.case_id,k.photos,v.payload FROM (SELECT case_id,COUNT(*) photos FROM '+table+condition+' GROUP BY case_id ORDER BY case_id LIMIT ? OFFSET ?) k JOIN ccr_damage_intake_versions v ON v.id=k.case_id AND v.version=(SELECT MAX(e.version) FROM ccr_damage_intake_versions e WHERE e.id=k.case_id) ORDER BY k.case_id').bind(...(exact?[exact,limit,skip]:[limit,skip])).all<{case_id:string;photos:number;payload:string}>());
+ return Promise.all(source.results.map(async k=>{const c=await decode(k.payload) as import('./damage-intake-model').DamageIntake;if(c.id!==k.case_id)throw new ConflictError('A claim directory entry could not be verified.');return {id:c.id,title:c.title,status:c.status,reportedOn:c.reportedOn||'',photos:Number(k.photos),claimReference:c.claimReference||'',vehicle:c.vehicle||'',propertyName:c.propertyName||''} satisfies Summary;}));}
+ if(search&&/^dmi_[0-9a-f]{64}$/.test(search)){const rows=await entries(0,1,search);return {total:rows.length,rows:offset?[]:rows,offset};}
+ const amount=Number((await store(db,()=>db.prepare('SELECT COUNT(DISTINCT case_id) AS n FROM '+table).first<{n:number}>()))?.n||0);
+ if(!search)return {total:amount,rows:await entries(offset,page),offset};
+ // Return bounded search windows. The private client merges matches, cancels obsolete searches,
+ // and paginates locally. Growing the archive never turns a keyword into an unbounded Worker request.
+ const window=String(scanInput??'0');if(!/^\d{1,7}$/.test(window))throw new AppError('Invalid search window.');
+ const scan=Number(window),end=Math.min(scan+60,amount),hits:Summary[]=[];
+ for(let i=scan;i<end;i+=15){const section=await entries(i,Math.min(15,end-i));hits.push(...section.filter(x=>[x.title,x.claimReference,x.vehicle,x.propertyName,x.status,x.reportedOn].some(a=>a.toLowerCase().includes(search))));}
+ return {total:hits.length,rows:hits,offset:0,nextScan:end<amount?end:null};
+}

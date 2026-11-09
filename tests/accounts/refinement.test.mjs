@@ -12,14 +12,22 @@ const row=(kind,id,extra={})=>({kind,id,name:id,version:0,...extra});
 const am={person:'am',id:'am',name:'AM',email:'am@test.test',department:'Account Managers',role:'Employee',owner:false},ops={...am,person:'ops',id:'ops',name:'Ops',department:'Operations',role:'Department Head'},owner={...am,person:'owner',owner:true};
 const staff=[row('person','am',{department:'Account Managers',status:'Active'}),row('person','ops',{department:'Operations',title:'Operations Director',status:'Active'})];
 const account=row('account','a',{assignee:'am'}),evidence=row('file','e',{accountId:'a',category:'Claim evidence'}),all=[account,evidence];
-const base=row('claim','claim',{accountId:'a',date:'2026-09-01',plate:'ABC123',plateState:'TX',assignee:'am',allegation:'Claimant alleges bumper damage.',investigation:'Reviewed both photo sets and operator statement.',finding:'Inconclusive',attachmentIds:['e'],propertyCommunication:'Property informed; next update Friday.',proposedSettlement:100});
+const base=row('claim','claim',{accountId:'a',date:'2026-09-01',plate:'ABC123',plateState:'TX',assignee:'am',allegation:'Claimant alleges bumper damage.',accidentInvolved:'Unknown',driverInjury:'Unknown',ownerInjury:'Unknown',investigation:'Reviewed both photo sets and operator statement.',finding:'Inconclusive',attachmentIds:['e'],propertyCommunication:'Property informed; next update Friday.',proposedSettlement:100});
 const input=r=>Object.fromEntries(['id','kind','version','name','accountId',...api.forms[r.kind].map(f=>f.key)].filter(k=>r[k]!==undefined).map(k=>[k,r[k]]));
 test('health uses all nine weights and requires complete applicable evidence',()=>{
  assert.equal(api.healthScore(account).status,'Not assessed');
- const assessed={...account,service:'Full Patrol'};for(const [key,,max] of api.healthFactors)assessed['health_'+key]=max;
+ const assessed={...account,service:'Full Patrol'};for(const [key,,max] of api.healthFactors)assessed['health_'+key]=key==='pause'?0:max;
  assert.deepEqual([api.healthScore(assessed).score,api.healthScore(assessed).status],[100,'Healthy']);
  assessed.health_relationship=0;assessed.health_checkin=0;assert.equal(api.healthScore(assessed).status,'Watch');
  delete assessed.health_permits;assessed.service='Basic Patrol';assert.equal(api.healthScore(assessed).score,72);
+});
+test('pause risk is inverted and the profile breakdown exposes earned percentages',()=>{
+ const healthy={...account,service:'Full Patrol'};for(const [key,,max] of api.healthFactors)healthy['health_'+key]=key==='pause'?0:max;
+ const imminent={...healthy,health_pause:15};
+ assert.equal(api.healthScore(healthy).score,100);assert.equal(api.healthScore(imminent).score,85);
+ const pause=api.healthBreakdown(imminent).find(item=>item.key==='pause');
+ assert.deepEqual({raw:pause.raw,earned:pause.earned,percentOfMax:pause.percentOfMax},{raw:15,earned:0,percentOfMax:100});
+ assert.equal(api.healthBreakdown(healthy).reduce((sum,item)=>sum+item.shareOfEarned,0),100);
 });
 test('vehicle identity search is exact and state disambiguates duplicate plates',()=>{
  const a=row('claim','c',{vin:'1HGCM82633A004352',plate:'ABC-123',plateState:'TX'});
@@ -48,4 +56,31 @@ test('source collections preserve multiple payments per call and unknown tow dat
  assert.equal(report.total,data.payments.filter(p=>!p.void).reduce((s,p)=>s+p.cents,0)/100);assert.equal(report.unattributed,report.total);
  assert.equal(new Set(data.payments.map(p=>p.id)).size,data.payments.length);assert(data.payments.length>new Set(data.payments.map(p=>p.callNumber)).size);
  assert(data.vehicles.filter(v=>!v.towDate).length>4000);assert(data.vehicles.every(v=>!('plate' in v)));assert(Object.values(data.profileDefaults).every(p=>Object.keys(p).every(k=>['address','phone'].includes(k))));
+});
+test('property monthly performance keeps tow dates scoped to the property and separates missing dates',()=>{
+ const a=row('account','monthly-a'),b=row('account','monthly-b');
+ const calls=[
+  row('vehicle','call-jan',{accountId:'monthly-a',towDate:'2026-01-05',receivedDate:'2026-01-05'}),
+  row('vehicle','call-feb',{accountId:'monthly-a',towDate:'2026-02-20',receivedDate:'2026-02-20'}),
+  row('vehicle','call-missing',{accountId:'monthly-a',receivedDate:'2026-03-09'}),
+  row('vehicle','call-other',{accountId:'monthly-b',towDate:'2026-01-07',receivedDate:'2026-01-07'}),
+ ];
+ const payments=[
+  {accountId:'monthly-a',paymentDate:'2026-01-06',cents:10000,vehicleId:'call-jan'},
+  {accountId:'monthly-a',paymentDate:'2026-02-21',cents:20000,vehicleId:'call-feb'},
+  {accountId:'monthly-a',paymentDate:'2026-03-10',cents:30000,vehicleId:'call-missing'},
+  {accountId:'monthly-a',paymentDate:'2026-04-02',cents:40000,vehicleId:'call-old-tow'},
+  {accountId:'monthly-b',paymentDate:'2026-01-08',cents:99900,vehicleId:'call-other'},
+ ];
+ calls.push(row('vehicle','call-old-tow',{accountId:'monthly-a',towDate:'2025-12-28',receivedDate:'2025-12-28'}));
+ const performance=api.propertyMonthlyPerformance([a,b,...calls],'monthly-a',2026,'2026-09-07',payments);
+ assert.deepEqual(performance.years,[2026,2025]);
+ assert.equal(performance.ytdCollected,1000);assert.equal(performance.confirmedTowCount,2);assert.equal(performance.receivedDateCount,1);assert.equal(performance.ytdTowRevenue,300);
+ assert.deepEqual(performance.monthly.slice(0,3).map(m=>({month:m.month,collected:m.collected,towRevenue:m.towRevenue,towCount:m.towCount,receivedDateCount:m.receivedDateCount})),[
+  {month:'2026-01',collected:100,towRevenue:100,towCount:1,receivedDateCount:0},
+  {month:'2026-02',collected:200,towRevenue:200,towCount:1,receivedDateCount:0},
+  {month:'2026-03',collected:300,towRevenue:0,towCount:0,receivedDateCount:1},
+ ]);
+ const prior=api.propertyMonthlyPerformance([a,b,...calls],'monthly-a',2025,'2026-09-07',payments);
+ assert.equal(prior.confirmedTowCount,1);assert.equal(prior.ytdTowRevenue,400);assert.equal(prior.monthly[11].towRevenue,400);
 });

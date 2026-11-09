@@ -1,3 +1,5 @@
+import {tidyBusinessTopics} from './business-topics';
+import {stagesFor,stageId} from '@/lib/sales/config';
 import {safetyAccess,safetyKinds} from '@/lib/safety/access';
 import {numberError} from './field-rules';
 import { canAccess } from '@/lib/finance/access';
@@ -6,7 +8,7 @@ import { AppError, ForbiddenError } from '@/lib/shared/errors';
 import { healthFactors, vehicleKey } from './insights';
 import { contactName, checklistProgress, isWaiting, orderStatuses } from './work';
 import { forms, areas, current, today, type Row, type Kind } from './model';
-import { workTypeOptions, woStatuses } from './work-options';
+import { workTypeOptions } from './work-options';
 import { normalizeContact } from './contact-details';
 const legacy: Record<string, string[]> = { relationships: ['accounts', 'setup'], work: ['today', 'lifecycle'], activity: ['interactions', 'notes'], signage: ['compliance'], files: ['agreement', 'compliance'], decisions: ['lifecycle'], performance: ['accounts'] };
 export function access(v: Viewer, area: string, edit = false): boolean {
@@ -28,8 +30,7 @@ export function canEdit(v: Viewer, r: Row, all: Row[], staff: FinRecord[]): bool
     if(r.kind==='salesActivity') {const lead=all.find(a=>a.id===r.opportunityId&&a.kind==='opportunity');return !!lead&&canEdit(v,lead,all,staff);}
     if(r.kind==='workTypes') return access(v,'workOrders',true);
     if(r.kind==='comment') {const parent=all.find(p=>p.id===r.parentId); return !!parent && (!r.authorId||r.authorId===v.person) && canEdit(v,parent,all,staff);}
-    if(r.kind==='workOrder' && canAccess(v,'Work Orders','orders')) return !r.readOnly;
-    if(['fleetVehicle','fleetInspection','fleetDefect','fleetPM','woAsset','woProvider','woRecurring','woProject'].includes(r.kind) && canAccess(v,'Work Orders','orders',true)) return true;
+    if(r.kind==='workOrder' && canAccess(v,'Work Orders','orders',true)) return !r.readOnly;
     if (r.readOnly || !access(v, areas[r.kind], true))
         return false;
     if (r.kind === 'email' && r.authorId && r.authorId !== v.person)
@@ -53,10 +54,11 @@ export function canEdit(v: Viewer, r: Row, all: Row[], staff: FinRecord[]): bool
         return all.some(a => a.companyId === r.companyId && assigned(v, a));
     return false;
 }
-export function canRead(v: Viewer, r: Row) { return access(v, areas[r.kind]) && (r.kind !== 'email' || r.authorId === v.person || !!r.accountId && ['Linked','Sent'].includes(String(r.status))); }
+export function canRead(v: Viewer, r: Row) { if(r.kind==='salesRoute')return canAccess(v,'Sales CRM','routes')&&(v.owner||r.authorId===v.person);if(r.kind==='salesSettings')return canAccess(v,'Sales CRM');return access(v, areas[r.kind]) && (r.kind !== 'email' || r.authorId === v.person || !!r.accountId && ['Linked','Sent'].includes(String(r.status))); }
 export function canReadFile(v: Viewer, r: Row) {
     if (r.kind !== 'file')
         return false;
+    if (r.category === 'Sales property exterior') return false; // source-scoped Sales route only before handoff
     if (r.category === 'Trespass evidence') return safetyAccess(v);
     if (r.category === 'Contact photo') return access(v,'relationships');
     if (r.category === 'Account photo') return access(v,'accounts') || canAccess(v,'Accounts','overview');
@@ -76,7 +78,9 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
     const p = input as Record<string, unknown>, kind = p.kind as Kind;
     if (!forms[kind] || !/^[A-Za-z0-9:_-]{1,150}$/.test(String(p.id)) || !Number.isSafeInteger(p.version) || Number(p.version) < 0)
         throw new AppError('Invalid record identity.');
+    if(String(p.id).startsWith('sales-history:')||String(p.id).startsWith('sales-handoff-source:')||String(p.id).startsWith('sales-affiliation:')&&!old)throw new ForbiddenError('Sales handoff history is managed by the system.');
     if(kind==='accountView'||safetyKinds.includes(kind)||old?.kind==='file'&&old.category==='Trespass evidence'||p.category==='Trespass evidence')throw new ForbiddenError('Use the trespass register.');
+    if(['salesSettings','salesRoute','salesRelationship'].includes(kind))throw new ForbiddenError('Use Sales CRM.');
     if(kind==='workTypes') throw new ForbiddenError('Use Manage work types.');
     if (old && (old.kind !== kind || old.id !== p.id))
         throw new AppError('Record identity cannot change.');
@@ -113,7 +117,7 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
                 throw new AppError('Invalid ' + f.label + '.');
             result[key] = value.trim();
         }
-        if (f.options && result[key] && !(kind==='workOrder'&&key==='type'?workTypeOptions(all):f.options).includes(String(result[key])) && result[key] !== old?.[key])
+        if (f.options && result[key] && !(kind==='opportunity'&&key==='stage'?stagesFor(all).map(s=>s.id):kind==='workOrder'&&key==='type'?workTypeOptions(all):f.options).includes(String(result[key])) && result[key] !== old?.[key])
             throw new AppError('Choose a valid ' + f.label + '.');
         if (f.type === 'date' && result[key] && (!/^\d{4}-\d{2}-\d{2}$/.test(String(result[key])) || !Number.isFinite(Date.parse(String(result[key]))) || new Date(String(result[key]) + 'T00:00:00Z').toISOString().slice(0, 10) !== result[key]))
             throw new AppError('Choose a valid date.');
@@ -124,6 +128,7 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
         if (result.plateState) {result.plateState=vehicleKey(result.plateState); if(!/^[A-Z]{2}$/.test(String(result.plateState))) throw new AppError('Use a two-letter plate state.');}
     }
     if (kind === 'contact') {
+        if (p.businessTopics!==undefined){const tags=tidyBusinessTopics(p.businessTopics);if(!tags)throw new AppError('Choose up to 15 business topics of 1–52 characters each.');result.businessTopics=tags;}
         Object.assign(result,normalizeContact(result));
         if(result.linkedInUrl && !/^https:\/\/(?:[a-z]{2,3}\.)?linkedin\.com\/in\/[A-Za-z0-9_%.-]+\/?$/.test(String(result.linkedInUrl))) throw new AppError('Use a LinkedIn profile URL beginning https://www.linkedin.com/in/.');
         if(result.dateOfBirth && String(result.dateOfBirth)>today()) throw new AppError('Date of birth cannot be in the future.');
@@ -169,7 +174,7 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
     if(kind==='opportunity'&&old?.onboardingAccountId&&result.stage!=='Won')throw new AppError('This property has been handed off. Manage its service status in Account Management.');
     if(kind==='opportunity'&&result.stage==='Lost'&&!result.lossReason)throw new AppError('Record why this opportunity was lost.');
     if (kind === 'account') {
-        for(const [key,label,max] of healthFactors) if(typeof result['health_'+key]==='number' && Number(result['health_'+key])>max) throw new AppError(label+' cannot exceed '+max+'.');
+        for(const [key,label,max] of healthFactors) if(typeof result['health_'+key]==='number' && (!Number.isFinite(Number(result['health_'+key])) || Number(result['health_'+key])<0 || Number(result['health_'+key])>max)) throw new AppError(label+' must be between 0 and '+max+'.');
         if (healthFactors.some(([key])=>result['health_'+key]!==old?.['health_'+key]) && (!result.healthReviewedOn || !result.healthReason)) throw new AppError('Record the assessment date and supporting relationship context.');
         if(result.healthReviewedOn && String(result.healthReviewedOn)>today()) throw new AppError('Assessment date cannot be in the future.');
         if(['internalNightLimit','internalWeekLimit'].some(k=>typeof result[k]==='number') && (!result.internalLimitReason || !result.internalLimitBy)) throw new AppError('Record who set the internal limit and why.');
@@ -202,14 +207,13 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
     }
     if (kind === 'workOrder') {
         const ops=canAccess(v,'Work Orders','orders',true);
-        const allowedStatuses = [...new Set([...orderStatuses, ...woStatuses])];
-        if(!old) {result.authorId=v.person;result.requestedAt=new Date().toISOString(); if(!ops && (!['New','Requested'].includes(String(result.status))||result.assignee)) throw new ForbiddenError('Submit the request to Operations for assignment.');}
+        if(!old) {result.authorId=v.person;result.requestedAt=new Date().toISOString(); if(!ops && (result.status!=='Requested'||result.assignee)) throw new ForbiddenError('Submit the request to Operations for assignment.');}
         if(!ops&&!old && ['actualCost','estimatedCost','scheduledDate','resolution'].some(k=>result[k]!==undefined&&result[k]!=='')) throw new ForbiddenError('Operations records scheduling, cost and completion.');
         if(result.assignee && !staff.some(p=>p.id===result.assignee && p.department==='Operations' && p.status==='Active')) throw new AppError('Choose an active Operations employee.');
         if(!ops && old && ['checklist','assignee','scheduledDate','status','actualCost','estimatedCost','resolution','completedSteps'].some(k=>JSON.stringify(result[k])!==JSON.stringify(old[k]))) throw new ForbiddenError('Operations manages assignment and completion. Add a comment to follow up.');
-        if(!allowedStatuses.includes(String(result.status))) throw new AppError('Choose a work order status.');
+        if(!orderStatuses.includes(String(result.status))) throw new AppError('Choose a work order status.');
         if(result.status==='Scheduled'&&!result.scheduledDate) throw new AppError('Choose a scheduled date.');
-        if(['In progress','Ready for review','Completed','In Progress','Ready for Verification'].includes(String(result.status))&&!result.assignee) throw new AppError('Assign an Operations employee.');
+        if(['In progress','Ready for review','Completed'].includes(String(result.status))&&!result.assignee) throw new AppError('Assign an Operations employee.');
         if(result.status==='Completed'&&!result.resolution) throw new AppError('Add completion notes.');
     }
     if (kind === 'task') {
@@ -231,6 +235,7 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
     if(kind==='account'&&old&&result.companyId!==old.companyId){result.managementReviewedAt=new Date().toISOString();delete result.managementSource;delete result.managementCheckedOn;}
     if (kind === 'file' && old && ['Internal policy', 'Email attachment', 'Claim evidence', 'Account photo', 'Contact photo'].includes(String(old.category)) && result.category !== old.category)
         throw new ForbiddenError('This file classification is fixed by its source.');
+    if(kind==='file'&&(old?.category==='Sales property exterior'||result.category==='Sales property exterior'))throw new ForbiddenError('Use the Sales property exterior uploader.');
     if(kind==='file' && ['Account photo','Contact photo'].includes(String(result.category))) throw new ForbiddenError('Use the profile photo uploader.');
     if (kind === 'file' && result.inspectionId && !all.some(r => r.id === result.inspectionId && r.accountId === result.accountId || r.id === result.inspectionId && !r.accountId && head(v, staff)))
         throw new AppError('Choose an inspection for this property.');

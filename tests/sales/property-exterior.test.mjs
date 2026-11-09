@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';import {join} from 'node:path';import {pathToFileURL} from 'node:url';
+import {build} from 'esbuild';
+
+test('Sales exterior is optional, role-scoped, and carried to the canonical property photo without copying bytes',async t=>{
+ const sql=new DatabaseSync(':memory:'),dir=await mkdtemp(join(tmpdir(),'sales-exterior-'));t.after(async()=>{sql.close();delete globalThis.exteriorFixture;await rm(dir,{recursive:true,force:true});});
+ for(const f of (await readdir('drizzle')).filter(x=>x.endsWith('.sql')).sort())sql.exec(await readFile('drizzle/'+f,'utf8'));
+ const db={prepare(s){const q=sql.prepare(s);let a=[];return {bind(...xs){a=xs;return this;},run(){return {meta:{changes:q.run(...a).changes}};},all(){return{results:q.all(...a)};},first(){return q.get(...a)||null;}};},batch(ops){sql.exec('BEGIN');try{const ret=ops.map(x=>x.run());sql.exec('COMMIT');return ret;}catch(e){sql.exec('ROLLBACK');throw e;}}};
+ const blobs=new Map();const bucket={get:async k=>{const b=blobs.get(k);return b&&{arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};},put:async(k,b)=>blobs.set(k,b),delete:async k=>blobs.delete(k)};
+ const grant=(module,tab,level='View')=>({module,tab,level});const role={rep:[grant('Sales CRM','record','Edit')],other:[grant('Sales CRM','record','Edit')],reader:[grant('Sales CRM','pipeline')],dispatch:[grant('Accounts','overview')],admin:[]};
+ const staff=Object.keys(role).map(id=>({id,kind:'person',version:1,status:'Active',name:id,role:'Employee',department:'Fixture branch',access:role[id]}));const views=Object.fromEntries(staff.map(p=>[p.id,{...p,person:p.id,owner:p.id==='admin',canManage:false,canRelease:false,customAccess:true}]));
+ globalThis.exteriorFixture={db,bucket,staff,views};
+ const fake=new Map([['next/server','export const NextResponse=Response;'],['cloudflare:workers','export const env={DB:globalThis.exteriorFixture.db,BUCKET:globalThis.exteriorFixture.bucket};'],['@/lib/finance/server','export const allRecords=async()=>globalThis.exteriorFixture.staff;export const identify=(r,h)=>globalThis.exteriorFixture.views[h.get("test-subject")];export const branch=()=>new Set();export const validate=()=>{throw Error("unexpected unrelated validation")};']]);
+ await build({entryPoints:{photo:'app/api/sales/property-photo/route.ts',files:'app/api/accounts/files/route.ts',sales:'lib/sales/server.ts',records:'lib/accounts/server.ts',profile:'lib/accounts/contact-details.ts'},outdir:dir,outExtension:{'.js':'.mjs'},bundle:true,format:'esm',platform:'node',logLevel:'silent',plugins:[{name:'fixture',setup(b){b.onResolve({filter:/.*/},a=>fake.has(a.path)?{path:a.path,namespace:'fake'}:undefined);b.onLoad({filter:/.*/,namespace:'fake'},a=>({contents:fake.get(a.path)}));}}]});
+ const [photo,files,sales,records,profile]=await Promise.all(['photo','files','sales','records','profile'].map(k=>import(pathToFileURL(join(dir,k+'.mjs')).href)));
+ const leadId='test-private-photo-lead',lead={id:leadId,kind:'opportunity',version:1,name:'Private Test Property',address:'Test Street 01',assignee:'rep',stage:'Contract Pending'};
+ const ins=sql.prepare('INSERT INTO account_records(id,kind,account_id,payload,version,updated_at) VALUES(?,?,NULL,?,?,?)');ins.run(lead.id,lead.kind,JSON.stringify(lead),1,'2026-01-01');
+ const origin='https://fixture.test',req=(who,path,body,method)=>{const r=new Request(origin+path,{method:method||(body?'POST':'GET'),headers:{origin,'test-subject':who,...(body&&!(body instanceof FormData)?{'content-type':'application/json'}:{})},...(body?{body:body instanceof FormData?body:JSON.stringify(body)}:{})});r.nextUrl=new URL(r.url);return r;};
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABwAAAAUCAIAAAARPMquAAAAIUlEQVR4nGNcoBHAQG3ARHUTRw0dNXTU0FFDRw0dgYYCAM1dAUDDd4MrAAAAAElFTkSuQmCC','base64');
+ const post=(who,ver,id,data=png,mime='image/png',photoId)=>{const f=new FormData();f.set('leadId',leadId);f.set('requestId',id);f.set('version',ver);if(photoId!==undefined)f.set('photoId',photoId);f.set('file',new File([data],'Exterior.png',{type:mime}));return photo.POST(req(who,'/api/sales/property-photo',f));};
+ const get=(who,link)=>photo.GET(req(who,link));const rows=()=>sql.prepare('SELECT payload FROM account_records').all().map(r=>JSON.parse(r.payload));
+ assert.equal((await post('other','1',crypto.randomUUID())).status,403);assert.equal((await post('reader','1',crypto.randomUUID())).status,403);assert.equal((await post('rep','1',crypto.randomUUID(),Buffer.from('<html>bad</html>'))).status,400);assert.equal((await post('rep','1',crypto.randomUUID(),png,'image/jpeg')).status,400);
+ const op=crypto.randomUUID(),r=await post('rep','1',op);assert.equal(r.status,200,await r.clone().text());const saved=await r.json();assert.equal(saved.version,2);assert.equal(blobs.size,1);
+ assert.deepEqual(await (await post('rep','1',op)).json(),saved);assert.equal(blobs.size,1);
+ assert.deepEqual(Buffer.from(await (await get('reader',saved.propertyPhotoUrl)).arrayBuffer()),png);assert.equal((await get('dispatch',saved.propertyPhotoUrl)).status,403);
+ const accountUrl='/api/accounts/files?id='+saved.propertyPhotoId+'&preview=1';assert.equal((await files.GET(req('admin',accountUrl))).status,403);
+ // Exercise the ordinary stage transition, including concurrent-version guards, not a test-only promotion.
+ const existing=rows().find(p=>p.id===lead.id),ctx={viewer:views.rep,staff,all:await records.records()};await sales.saveSales({action:'save',record:{id:existing.id,version:existing.version,kind:'opportunity',name:existing.name,stage:'Won',address:existing.address}},ctx);
+ const after=rows(),won=after.find(p=>p.id===leadId),ac=after.find(p=>p.id===won.onboardingAccountId),f=after.find(p=>p.id===saved.propertyPhotoId);assert.equal(f.accountId,ac.id);assert.equal(f.category,'Account photo');assert.equal(f.width,28);assert.equal(f.height,20);assert.equal(blobs.size,1);assert.equal(profile.profilePhoto(after,ac),accountUrl);assert.equal((await files.GET(req('admin',accountUrl))).status,200);assert.equal((await files.GET(req('dispatch',accountUrl))).status,403);
+ await sales.saveSales({action:'handoff',id:leadId,version:won.version},{viewer:views.rep,staff,all:after});assert.equal(blobs.size,1);
+ const form=new FormData();form.set('file',new File([png],'replacement.png',{type:'image/png'}));form.set('accountId',ac.id);form.set('category','Account photo');form.set('id',crypto.randomUUID());
+ const replace=await files.POST(req('admin','/api/accounts/files',form));assert.equal(replace.status,200,await replace.clone().text());const active=rows().find(r=>r.kind==='file'&&r.accountId===ac.id&&r.status==='Current');assert.notEqual(active.id,saved.propertyPhotoId);
+ assert.equal((await get('reader',saved.propertyPhotoUrl)).status,404);const changed=sales.salesProjection({viewer:views.rep,staff,all:rows()}).records.find(r=>r.id===leadId);assert.equal(changed.propertyPhotoId,active.id);assert.equal((await get('reader',changed.propertyPhotoUrl)).status,200);
+ const del=(version,photoId,requestId)=>photo.DELETE(req('rep','/api/sales/property-photo',{leadId,version,requestId,photoId},'DELETE'));
+ assert.equal((await del(won.version,saved.propertyPhotoId,crypto.randomUUID())).status,409);
+ const clear=crypto.randomUUID(),removed=await del(won.version,active.id,clear);assert.equal(removed.status,200);assert.equal((await removed.json()).propertyPhotoUrl,'');assert.equal((await del(won.version,active.id,clear)).status,200);
+});

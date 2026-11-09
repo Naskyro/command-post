@@ -14,18 +14,15 @@ export function mayUpload(v:Viewer,all:Row[],staff:FinRecord[],category:string,a
   return canEdit(v,account,all,staff)&&access(v,'files',true);
 }
 export function uploadMime(file:{name:string;type:string},bytes:Uint8Array,category:string) {
-  const s=String.fromCharCode(...bytes.slice(0,32)); let mime='';
+  const s=String.fromCharCode(...bytes.slice(0,12)); let mime='';
   if(s.startsWith('%PDF-'))mime='application/pdf';
   else if(bytes[0]===255&&bytes[1]===216&&bytes[2]===255)mime='image/jpeg';
   else if([137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v))mime='image/png';
-  else if(s.startsWith('RIFF')&&s.slice(8,12)==='WEBP')mime='image/webp';
-  else if(s.slice(4,8)==='ftyp' && /^video\//.test(file.type))mime=file.type;
-  else if([0x1a,0x45,0xdf,0xa3].every((v,i)=>bytes[i]===v) && /^video\//.test(file.type))mime=file.type;
+  else if(s.startsWith('RIFF')&&s.slice(8)==='WEBP')mime='image/webp';
   else if(category==='Claim evidence'&&/\.eml$/i.test(file.name)) {
     const headers=new TextDecoder().decode(bytes.slice(0,64000)).split(/\r?\n\r?\n/)[0];
     if(/^(From|To|Subject|Date|MIME-Version):[^\r\n]+/im.test(headers)&&!headers.includes('\0'))mime='message/rfc822';
   } else if(category==='Claim evidence'&&/\.msg$/i.test(file.name)&&[208,207,17,224,161,177,26,225].every((v,i)=>bytes[i]===v))mime='application/vnd.ms-outlook';
-  const ok=mime && (mime.startsWith('image/') || mime==='application/pdf' || (category==='Signage' && mime.startsWith('video/')));
-  if(!ok) throw new AppError(category==='Claim evidence'?'Choose a valid photo, PDF, EML or MSG file.':category==='Signage'?'Choose a valid JPEG, PNG, WebP, PDF or video (MP4, MOV, WebM).':'Choose a valid JPEG, PNG, WebP or PDF; photos require an image.');
+  if(!mime || (category==='Signage'||photoCategories.includes(category))&&!mime.startsWith('image/')) throw new AppError(category==='Claim evidence'?'Choose a valid photo, PDF, EML or MSG file.':'Choose a valid JPEG, PNG, WebP or PDF; photos require an image.');
   return mime;
 }

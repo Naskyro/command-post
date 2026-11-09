@@ -9,10 +9,10 @@ import {pathToFileURL} from 'node:url';
 
 const temporary=await mkdtemp(join(tmpdir(),'account-workflows-'));
 const bundle=join(temporary,'logic.mjs');
-await build({stdin:{contents:"export * from './lib/safety/server'; export * from './lib/safety/model'; export * from './lib/accounts/field-rules'; export * from './lib/shared/save-feedback'; export * from './lib/accounts/model'; export * from './lib/accounts/policy'; export * from './lib/accounts/releases'; export * from './lib/accounts/server'; export * from './lib/accounts/onboarding'; export * from './lib/accounts/dashboard'; export * from './lib/accounts/profile-summary'; export * from './lib/sales/server'; export * from './lib/sales/model'; export * from './lib/accounts/dispatch-notes'; export * from './lib/shared/notifications';",resolveDir:process.cwd(),loader:'ts'},outfile:bundle,bundle:true,format:'esm',platform:'node',logLevel:'silent',plugins:[{name:'database-fixture',setup(b){b.onResolve({filter:/^cloudflare:workers$/},()=>({path:'env',namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:'export const env=new Proxy({}, {get:(_,key)=>globalThis.accountTestBindings[key]});',loader:'js'}));}}]});
+await build({stdin:{contents:"export * from './lib/safety/server'; export * from './lib/safety/model'; export * from './lib/accounts/field-rules'; export * from './lib/shared/save-feedback'; export * from './lib/accounts/model'; export * from './lib/accounts/policy'; export * from './lib/accounts/releases'; export * from './lib/accounts/server'; export * from './lib/accounts/onboarding'; export * from './lib/accounts/dashboard'; export * from './lib/accounts/profile-summary'; export * from './lib/sales/server'; export * from './lib/sales/routes'; export * from './lib/preferences/sample-dismissals'; export * from './lib/sales/model'; export * from './lib/accounts/dispatch-notes'; export * from './lib/shared/notifications';",resolveDir:process.cwd(),loader:'ts'},outfile:bundle,bundle:true,format:'esm',platform:'node',logLevel:'silent',plugins:[{name:'database-fixture',setup(b){b.onResolve({filter:/^cloudflare:workers$/},()=>({path:'env',namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:'export const env=new Proxy({}, {get:(_,key)=>globalThis.accountTestBindings[key]});',loader:'js'}));}}]});
 const api=await import(pathToFileURL(bundle));
 const db=new DatabaseSync(':memory:');
-for(const file of ['drizzle/0005_perfect_blue_marvel.sql'])db.exec(await readFile(file,'utf8'));
+for(const file of ['drizzle/0005_perfect_blue_marvel.sql','drizzle/0015_hr_job_descriptions.sql','drizzle/0024_sales_practice.sql'])db.exec(await readFile(file,'utf8'));
 db.exec('CREATE TABLE finance_records(id TEXT PRIMARY KEY, kind TEXT, payload TEXT, version INTEGER, updated_by TEXT, updated_at TEXT); CREATE TABLE finance_audit(id TEXT PRIMARY KEY,record_id TEXT,actor TEXT,actor_id TEXT,at TEXT,reason TEXT,before TEXT,after TEXT);');
 const binding={prepare(sql){return {sql,args:[],bind(...args){return {...this,args};},async all(){return {results:db.prepare(this.sql).all(...this.args)};},async first(){return db.prepare(this.sql).get(...this.args)||null;},async run(){return {meta:db.prepare(this.sql).run(...this.args)};}};},async batch(statements){db.exec('BEGIN');try{const results=statements.map(s=>({meta:db.prepare(s.sql).run(...s.args)}));db.exec('COMMIT');return results;}catch(e){db.exec('ROLLBACK');throw e;}}};
 globalThis.accountTestBindings={DB:binding};
@@ -79,7 +79,7 @@ const prepare=(r,old,v=am,all=fixture,action='approveRelease')=>api.prepareRelea
 const context=(all,viewer=am)=>({all,viewer,staff});
 
 test('assigned AM approves within policy without owner or finance release privileges',()=>{const r=release('approve',{status:'Pending review'});const result=prepare(r,r);assert.equal(result.next.status,'Approved');assert.equal(result.next.amountWaived,300);assert.equal(result.next.approvedById,'am');assert.equal(result.next.policyOccurrence,1);assert.equal(result.serialize,true);});
-test('dispatcher can submit but cannot approve or change approved dollar amounts',()=>{const r=release('dispatch');const pending=prepare(r,undefined,dispatcher,fixture,'submitRelease').next;assert.equal(pending.status,'Pending review');assert.throws(()=>prepare(pending,pending,dispatcher),/assigned Account Manager/);const approved={...pending,status:'Approved'};assert.throws(()=>prepare({...approved,amountCharged:25,correctionReason:'Adjustment'},approved,dispatcher,fixture,'save'),/corrected request/);});
+test('dispatcher can submit but cannot approve or change approved dollar amounts',()=>{const r=release('dispatch');const pending=prepare(r,undefined,dispatcher,fixture,'submitRelease').next;assert.equal(pending.status,'Pending review');assert.ok(Number.isFinite(Date.parse(pending.requestedAt)));assert.equal(prepare(pending,pending,dispatcher,fixture,'submitRelease').next.requestedAt,pending.requestedAt);assert.throws(()=>prepare(pending,pending,dispatcher),/assigned Account Manager/);const approved={...pending,status:'Approved'};assert.throws(()=>prepare({...approved,amountCharged:25,correctionReason:'Adjustment'},approved,dispatcher,fixture,'save'),/corrected request/);});
 test('courtesy corrections never silently bypass a completed policy review',()=>{const r=release('correction',{status:'Released'});assert.throws(()=>prepare({...r,amountCharged:20,correctionReason:'Wrong figure'},r,head,fixture,'save'),/new policy review/);});
 test('second clerical event allows fifty percent and third none; head exceptions are documented',()=>{const old=release('prior',{status:'Released'}),r=release('repeat',{status:'Pending review'});assert.throws(()=>prepare(r,r,am,[...fixture,old]),/Department Head/);assert.equal(prepare({...r,amountCharged:150,releaseType:'Reduced charge'},r,am,[...fixture,old]).next.policyOccurrence,2);assert.equal(api.assessment(r,[old,{...old,id:'another'}]).maxPercent,0);assert.equal(prepare({...r,exceptionReason:'Documented relationship preservation exception'},r,head,[...fixture,old]).next.status,'Approved');});
 test('staff repeat allowance follows the person across different vehicles and properties',()=>{const r=release('staff',{category:'Property staff vehicle',subjectContactId:'resident'}),prior={...r,id:'past',accountId:'other-property',vehicle:'Different vehicle',status:'Released'};assert.equal(api.assessment(r,[prior]).maxPercent,50);assert.equal(api.assessment({...r,subjectContactId:'another-person'},[prior]).maxPercent,100);});
@@ -92,7 +92,7 @@ test('custom view grants cannot become edits via a legacy tab or job title',()=>
 test('dispatch payload omits relationship intelligence, financial data and private email drafts',()=>{const secret={...account,healthReason:'Internal account strategy',ownerId:'private-owner'},mail=row('email','private',{accountId:account.id,status:'Draft',authorId:am.person,body:'Private'}),fin=row('financial','private-cost',{accountId:account.id,amount:99});const projected=api.projection([secret,company,pm,tenure,mail,fin,release('shared')],dispatcher,'dispatch');assert.equal(projected.find(x=>x.id===account.id).healthReason,undefined);assert.equal(projected.find(x=>x.id==='private-cost'),undefined);assert.equal(projected.find(x=>x.id==='private'),undefined);assert.equal(projected.find(x=>x.id==='shared').vin,'1HGCM82633A004352');assert.equal(api.canRead(head,mail),false);});
 test('protected file categories cannot be relabeled to bypass sharing controls',()=>{const file=row('file','policy',{category:'Internal policy',accountId:account.id});assert.throws(()=>api.clean(payload({...file,category:'Other'}),file,head,[...fixture,file],staff),/fixed by its source/);assert.equal(api.canReadFile({...dispatcher,access:[{module:'Accounts',tab:'overview',level:'View'}]},file),false);});
 test('signage six-month deadline uses a confirmed inspection, never the upload date',()=>{const confirmed=row('inspection','inspection',{accountId:account.id,date:'2026-03-31',dateConfirmed:true,complete:true}),upload=row('inspection','upload',{accountId:account.id,date:'2026-09-01',dateConfirmed:false,complete:false});assert.equal(api.signageDue([confirmed,upload],account.id),'2026-09-30');assert.equal(api.addMonths('2026-01-31',1),'2026-02-28');});
-test('monthly follow-up excludes internal notes and future scheduled contacts',()=>{const visited=row('activity','visit',{accountId:account.id,date:'2026-04-01',channel:'Onsite visit'}),scheduled={...visited,id:'scheduled',date:'2026-07-01',response:'Scheduled'};assert.equal(api.lastContact([visited,scheduled,{...visited,id:'note',date:'2026-05-10',channel:'Note'}],account.id,'2026-06-01'),'2026-04-01');assert.ok(api.queue([account,visited,scheduled],'2026-06-01').some(x=>x.name==='Monthly check-in'));});
+test('monthly follow-up excludes internal notes and future scheduled contacts',()=>{const visited=row('activity','visit',{accountId:account.id,date:'2026-04-01',channel:'Onsite visit'}),scheduled={...visited,id:'scheduled',date:'2026-07-01',response:'Scheduled'};assert.equal(api.lastContact([visited,scheduled,{...visited,id:'note',date:'2026-05-10',channel:'Note'}],account.id,'2026-06-01'),'2026-04-01');assert.ok(api.queue([account,visited,scheduled],'2026-06-01').some(x=>x.name==='Monthly Check-In'));});
 test('historical Drive imports retain evidence while unknown loss and VIN remain unknown',async()=>{const rows=JSON.parse(await readFile('lib/accounts/seed-data.json','utf8')),releases=rows.filter(r=>r.kind==='courtesy'),photos=rows.filter(r=>r.kind==='file'&&r.category==='Signage');assert.equal(releases.length,94);assert.equal(photos.length,271);assert.ok(releases.every(r=>r.sourceUrl&&r.vin===''&&r.amountWaived===undefined&&!r.managerContactId));assert.equal(new Set(rows.map(r=>r.id)).size,rows.length);assert.deepEqual([...new Set(photos.filter(p=>!p.accountId).map(p=>p.sourceFolder))],['Airport Valero']);for(const name of ['Yager Flats','Wildhorse Flats'])assert.equal(rows.find(r=>r.kind==='account'&&r.name===name).companyId,rows.find(r=>r.kind==='company'&&r.name==='Elmington Property Management').id);});
 test('single database record projects to both modules after an edit, with audit evidence',async()=>{const record=release('shared-storage',{status:'Draft'});const [saved]=await api.writeMany([{next:record}],dispatcher,'Created shared request');const [updated]=await api.writeMany([{old:saved,next:{...saved,details:'Updated by AM'}}],am,'Updated shared request');const all=await api.records();assert.equal(api.projection(all,dispatcher,'dispatch').find(r=>r.id===updated.id).details,'Updated by AM');assert.equal(api.projection(all,am,'manager').find(r=>r.id===updated.id).version,2);assert.equal(db.prepare('SELECT count(*) AS n FROM account_audit WHERE record_id=?').get(updated.id).n,2);});
 test('stale edits roll back the entire multi-record operation',async()=>{const [a]=await api.writeMany([{next:row('account','atomic-account',{assignee:'am'})}],am,'Create');await api.writeMany([{old:a,next:{...a,instructions:'Current'}}],am,'Update');await assert.rejects(api.writeMany([{next:row('task','should-not-save',{accountId:a.id})},{old:a,next:{...a,instructions:'Stale'}}],am,'Stale operation'),e=>e.status===409);assert.equal(db.prepare('SELECT id FROM account_records WHERE id=?').get('should-not-save'),undefined);});
@@ -210,8 +210,8 @@ test('adding another manager keeps the primary contact and enforces account edit
 
 test('sales prospects and contact history persist, with scheduled follow-ups and ownership checks',async()=>{
  const record={id:'crm-test-prospect',kind:'opportunity',version:0,name:'Test prospect',stage:'Prospect',assignee:am.person,address:'20 Sales St',service:'Full Patrol',contactName:'Prospect Manager',email:'prospect@example.com',units:200,estimatedAnnualRevenue:45000};
- const [lead]=await api.saveSales({record},{all:[],viewer:am,staff});assert.equal(lead.stage,'Prospect');assert(lead.createdAt);
- assert.equal(api.salesMetrics([lead]).estimatedAnnual,45000);
+ const [lead]=await api.saveSales({record},{all:[],viewer:am,staff});assert.equal(lead.stage,'Not Engaged');assert(lead.createdAt);
+ assert.equal(api.salesMetrics([lead]).estimatedAnnual,40000);
  const log=await api.saveSales({action:'activity',id:lead.id,version:lead.version,channel:'Phone call',date:api.today(),details:'Discussed service needs',nextAction:'Send proposal',dueDate:api.today()},{all:[lead],viewer:am,staff});
  assert(log.some(r=>r.kind==='salesActivity'&&r.opportunityId===lead.id));assert.equal(log.find(r=>r.kind==='opportunity').nextAction,'Send proposal');
  const all=await api.records();assert(all.some(r=>r.kind==='salesActivity'&&r.opportunityId===lead.id));
@@ -222,13 +222,13 @@ test('sales prospects and contact history persist, with scheduled follow-ups and
 
 test('won sales handoff creates one pending account and preserves contacts without activating service',async()=>{
  const record={id:'crm-test-won',kind:'opportunity',version:0,name:'CRM won test',companyName:'CRM company test',stage:'Won',assignee:am.person,address:'99 Sales St',propertyType:'Residential',service:'Full Patrol',contactName:'Leasing Manager',email:'leasing@example.com',phone:'512-555-0133',details:'Requested visitor validation.'};
- const [lead]=await api.saveSales({record},{all:[],viewer:am,staff});
  const template=row('playbook','sales-template',{type:'Onboarding',status:'Current',phase:'Before activation',required:true,name:'Signed agreement'});
- const saved=await api.saveSales({action:'handoff',id:lead.id,version:lead.version,assignee:am.person},{all:[lead,template],viewer:am,staff});
+ const saved=await api.saveSales({record,onboardingOwner:am.person},{all:[template],viewer:am,staff});
+ const lead=saved.find(r=>r.kind==='opportunity');
  const property=saved.find(r=>r.kind==='account'),updated=saved.find(r=>r.kind==='opportunity');
  assert.equal(property.status,'Onboarding');assert.equal(saved.find(r=>r.kind==='company').name,'CRM company test');assert.equal(property.companyId,saved.find(r=>r.kind==='company').id);assert.equal(updated.onboardingAccountId,property.id);assert(saved.some(r=>r.kind==='task'&&r.accountId===property.id));
- assert.equal(saved.find(r=>r.kind==='affiliation').workPhone,'512-555-0133');assert.equal(saved.find(r=>r.kind==='contact').personalPhone,undefined);
- const all=await api.records();const again=await api.saveSales({action:'handoff',id:lead.id,version:lead.version,assignee:am.person},{all,viewer:am,staff});assert.equal(again.find(r=>r.kind==='account').id,property.id);
+ const all=await api.records();const affiliation=all.find(r=>r.kind==='affiliation'&&r.accountId===property.id);assert.equal(affiliation.workPhone,'512-555-0133');assert.equal(all.find(r=>r.kind==='contact'&&r.id===affiliation.contactId).personalPhone,undefined);
+ const again=await api.saveSales({action:'handoff',id:lead.id,version:lead.version,assignee:am.person},{all,viewer:am,staff});assert.equal(again.find(r=>r.kind==='opportunity').onboardingAccountId,property.id);
  assert.equal((await api.records()).filter(r=>r.kind==='account'&&r.sourceOpportunityId===lead.id).length,1);
  await assert.rejects(()=>api.saveSales({record:{id:updated.id,kind:'opportunity',version:updated.version,stage:'Lost',lossReason:'Changed'}},{all,viewer:am,staff}),/handed off/);
 });
@@ -281,12 +281,13 @@ test('count fields reject fractions while money, mileage and durations retain me
 
 test('facility and permit follow-up questions require the applicable parent choice',()=>{
  const a={...account,permitSystem:'Digital only',carportParking:'No',garageParking:'No',parkingGarage:'No',visitorSection:'No',evParkingEnforcement:'No'};
- for(const key of ['physicalPermitType','physicalPermitDisplay','carportEnforcement','carportRules','garageEnforcement','garageRules','parkingGarageFloors','parkingGarageVisitorParking','parkingGarageVisitorLocation','visitorSectionLocation','evParkingRules'])assert.equal(api.fieldVisible(a,key),false,key);
+ for(const key of ['physicalPermitType','physicalPermitDisplay','carportEnforcement','carportSpaceCallAuthority','carportRules','garageEnforcement','garageRules','parkingGarageFloors','parkingGarageVisitorParking','parkingGarageVisitorLocation','visitorSectionLocation','evParkingRules'])assert.equal(api.fieldVisible(a,key),false,key);
  assert.equal(api.fieldVisible(a,'permitPlatform'),true);
  assert.equal(api.fieldVisible({...a,permitSystem:'Physical only'},'visitorApproval'),false);
  for(const key of ['physicalPermitType','physicalPermitDisplay','permitPlatform','visitorApproval'])assert.equal(api.fieldVisible({...a,permitSystem:'Physical and digital'},key),true);
  assert.equal(api.fieldVisible({...a,permitSystem:'No permits required'},'physicalPermitType'),false);
  assert.equal(api.fieldVisible({...a,carportParking:'Yes'},'carportEnforcement'),true);
+ assert.equal(api.fieldVisible({...a,carportParking:'Yes'},'carportSpaceCallAuthority'),true);
  assert.equal(api.fieldVisible({...a,garageParking:'Yes'},'garageRules'),true);
  assert.equal(api.fieldVisible({...a,parkingGarage:'Yes'},'parkingGarageVisitorParking'),true);
  assert.equal(api.fieldVisible({...a,parkingGarage:'Yes',parkingGarageVisitorParking:'Designated areas / floors'},'parkingGarageVisitorLocation'),true);
@@ -371,4 +372,59 @@ test('all staff receive active safety guidance without receiving case or evidenc
  const driver={...dispatcher,department:'Drivers'},r=row('trespass','private-safety',{name:'Fixture',behavior:'Restricted detailed allegation',incidentDate:'2026-08-01',location:'Yard',caseStatus:'Open',watchEnabled:true,vehiclesJson:'[]'}),e=row('safetyEvent','private-safety-alert',{caseId:r.id,raiseAlert:true,staffGuidance:'Check with Dispatch.',encounterDate:api.today()}),f=row('file','private-id',{category:'Trespass evidence',caseId:r.id,name:'ID copy',storageKey:'private/path'}),ctx={all:[r,e,f],viewer:driver,staff};
  const result=api.safetyData(ctx,true);assert.equal(result.alerts.length,1);assert.equal(result.canView,false);assert(!JSON.stringify(result).includes('Restricted detailed'));assert(!JSON.stringify(result).includes('private/path'));assert.throws(()=>api.safetyData(ctx),/access/);
  assert(!api.projection([r,e,f],am,'manager').length);assert(!api.projection([r,e,f],dispatcher,'dispatch').length);
+});
+
+
+test('lost leads require a reason and manager-specific re-solicitation, with history',async()=>{
+ const record=row('opportunity','crm-loss-validation',{stage:'Lost',assignee:am.person,propertyManager:'Original Manager'});
+ await assert.rejects(()=>api.saveSales({record},{all:[],viewer:am,staff}),/why/);
+ await assert.rejects(()=>api.saveSales({record:{...record,lossReason:'Loyal to provider'}},{all:[],viewer:am,staff}),/loss category/);
+ const saved=await api.saveSales({record:{...record,lossReason:'Loyal to provider',lossCategory:'Loyal to Current Provider',resolicitEligible:'No'}},{all:[],viewer:am,staff});
+ const lead=saved.find(r=>r.kind==='opportunity');assert.equal(lead.lostManagerName,'Original Manager');assert(saved.some(r=>r.kind==='salesActivity'&&r.details.includes('Re-solicit Original Manager: No')));
+});
+test('relationships follow one person to a new property while retaining former tenure',async()=>{
+ let all=await api.records();const lead=all.find(r=>r.id==='crm-test-prospect');
+ const added=await api.saveSales({action:'relationship',id:lead.id,version:lead.version,name:'Moving Manager',role:'Property Manager',startDate:'2026-01-01',decisionMaker:true},{all,viewer:am,staff});
+ const relation=added.find(r=>r.kind==='salesRelationship'),person=added.find(r=>r.kind==='contact'),updated=added.find(r=>r.kind==='opportunity');assert.equal(updated.contactId,person.id);
+ all=await api.records();await assert.rejects(()=>api.saveSales({action:'relationship',id:updated.id,version:updated.version,name:'Second Manager',role:'Property Manager',startDate:'2026-01-02'},{all,viewer:am,staff}),/End the current/);
+ const ended=await api.saveSales({action:'endRelationship',id:updated.id,version:updated.version,relationshipId:relation.id,endDate:api.today(),reason:'Moved to another property'},{all,viewer:am,staff});assert.equal(ended.find(r=>r.kind==='opportunity').propertyManager,'');assert.equal(ended.find(r=>r.kind==='salesRelationship').endDate,api.today());
+ const [second]=await api.saveSales({record:row('opportunity','crm-second-property',{stage:'Engaged',assignee:am.person})},{all:await api.records(),viewer:am,staff});
+ const moved=await api.saveSales({action:'relationship',id:second.id,version:second.version,contactId:person.id,role:'Property Manager',startDate:api.today()},{all:await api.records(),viewer:am,staff});assert.equal(moved.find(r=>r.kind==='salesRelationship').contactId,person.id);assert.equal((await api.records()).filter(r=>r.kind==='salesRelationship'&&r.contactId===person.id).length,2);
+});
+test('routes persist user itinerary only and calculate each next departure after visits and breaks',async()=>{
+ const viewer={...am,access:[{module:'Sales CRM',tab:'routes',level:'Edit'}]},lead1=row('opportunity','route-a',{address:'100 Main St'}),lead2=row('opportunity','route-b',{address:'200 Main St'}),c={viewer,staff,all:[lead1,lead2]};
+ const plan={name:'Route Test',origin:'7511 Dee Gabriel Collins Rd',end:'',startDate:'2099-01-15',startTime:'09:00',stops:[{leadId:lead1.id,minutes:45,pauseMinutes:15},{leadId:lead2.id,minutes:30,pauseMinutes:0}]};
+ const saved=await api.routeAction({action:'save',plan},c);assert(saved.records[0].dataJSON.includes('100 Main St'));assert(!saved.records[0].dataJSON.includes('polyline'));
+ assert.equal(api.routeProjection({...c,viewer:{...viewer,person:'other'},all:saved.records}).plans.some(p=>p.id===saved.records[0].id),false);
+ const original=globalThis.fetch;const departures=[];globalThis.accountTestBindings.GOOGLE_ROUTES_API_KEY='test';globalThis.accountTestBindings.GOOGLE_MAPS_BROWSER_KEY='test';globalThis.fetch=async(url,init)=>{departures.push(JSON.parse(init.body).departureTime);return new Response(JSON.stringify({routes:[{duration:'600s',distanceMeters:1609,polyline:{encodedPolyline:'test'},legs:[{startLocation:{latLng:{latitude:30,longitude:-97}},endLocation:{latLng:{latitude:31,longitude:-97}}}]}]}));};
+ try{const result=await api.routeAction({action:'calculate',plan},c);assert.equal(result.totalMinutes,110);assert.equal(Date.parse(departures[1])-Date.parse(departures[0]),70*60000);assert.equal(result.driveSeconds,1200);}finally{globalThis.fetch=original;delete globalThis.accountTestBindings.GOOGLE_ROUTES_API_KEY;delete globalThis.accountTestBindings.GOOGLE_MAPS_BROWSER_KEY;}
+ await assert.rejects(()=>api.routeAction({action:'save',plan},{...c,viewer:{...viewer,access:[{module:'Sales CRM',tab:'routes',level:'View'}]}}),e=>e.status===403);
+});
+
+test('viewers can dismiss sample leads or a route for themselves without changing shared records or other users’ practice data',async()=>{
+ const c={viewer:am,staff,all:await api.records()},rows=api.salesProjection(c).records,demo=rows.find(r=>r.example&&r.stage==='Engaged');assert(demo);assert(rows.some(r=>r.example&&r.stage==='Won'));assert(rows.some(r=>r.example&&r.stage==='Lost'));assert(!c.all.some(r=>r.kind==='account'&&r.sourceOpportunityId===demo.id));
+ const viewOnly={...c,viewer:{...am,access:[{module:'Sales CRM',tab:'pipeline',level:'View'},{module:'Sales CRM',tab:'routes',level:'View'}]}}, blocked={...c,viewer:{...am,customAccess:true,access:[],department:'None'}}, peer={...viewOnly,viewer:{...viewOnly.viewer,person:'peer'}};
+ assert(!api.salesProjection(viewOnly).editable.includes(demo.id));
+ const before=(await api.records()).length;
+ await assert.rejects(()=>api.saveSales({action:'deleteExample',id:demo.id},blocked),e=>e.status===403);
+ await assert.rejects(()=>api.saveSales({action:'deleteExample',id:'real-lead'},viewOnly),/training lead/);
+ const get=ctx=>api.dismissedSampleIds(ctx.viewer.person,'sales');
+ for(let n=0;n<2;n++)await api.saveSales({action:'deleteExample',id:demo.id,personId:'peer'},viewOnly);
+ const visible=api.salesProjection(viewOnly,await get(viewOnly)).records;assert(!visible.some(r=>r.id===demo.id||r.opportunityId===demo.id));assert(visible.some(r=>r.example&&r.stage==='Lost'));
+ const fresh=api.salesProjection(peer,await get(peer)).records;assert(fresh.some(r=>r.id===demo.id));
+ const route=api.routeProjection(viewOnly,await get(viewOnly)).plans.find(r=>r.example);assert(!route.plan.stops.some(s=>s.leadId===demo.id));
+ assert(api.routeProjection(peer,await get(peer)).plans.find(r=>r.example).plan.stops.some(s=>s.leadId===demo.id));
+ await assert.rejects(()=>api.routeAction({action:'dismissExample',id:'real-route'},viewOnly),/training route/);
+ await assert.rejects(()=>api.routeAction({action:'dismissExample',id:route.id},blocked),e=>e.status===403);
+ await api.routeAction({action:'dismissExample',id:route.id},viewOnly);
+ const savedWithPractice=row('salesRoute','historic-mixed-route',{authorId:viewOnly.viewer.person,dataJSON:JSON.stringify({...route.plan,stops:[{leadId:demo.id,name:'Practice'},{leadId:'real-id',name:'Actual stop'}]})});
+ assert.deepEqual(api.routeProjection({...viewOnly,all:[savedWithPractice]},await get(viewOnly)).plans.find(r=>r.id===savedWithPractice.id).plan.stops.map(s=>s.leadId),['real-id']);assert.equal(JSON.parse(savedWithPractice.dataJSON).stops.length,2);
+ assert(!api.routeProjection(viewOnly,await get(viewOnly)).plans.some(r=>r.example));assert(api.routeProjection(peer,await get(peer)).plans.some(r=>r.example));
+ assert.equal((await api.records()).length,before);
+ const legacy={...peer,all:[...peer.all,row('salesSettings','removed:'+demo.id,{authorId:peer.viewer.person,removedLead:demo.id})]};
+ assert(!api.salesProjection(legacy).records.some(r=>r.id===demo.id));assert(api.salesProjection({...legacy,viewer:{...peer.viewer,person:'new-staff'}}).records.some(r=>r.id===demo.id));
+});
+
+test('lead assignments require current CRM access even on direct writes',async()=>{
+ const custom={...staff[2],accessMode:'Custom',access:[{module:'Sales CRM',tab:'pipeline',level:'View'}]},noCRM={...custom,access:[]},blocked={...custom,accountStatus:'Disabled'};assert(api.eligibleSalesRep(custom));for(const r of [noCRM,blocked,{...custom,status:'Former'}])assert(!api.eligibleSalesRep(r));const ctx={viewer:head,staff:[...staff.filter(p=>p.id!==custom.id),noCRM],all:[]};assert(!api.salesProjection(ctx).salesAssigneeIds.includes(custom.id));await assert.rejects(()=>api.saveSales({record:row('opportunity','no-permission-owner',{stage:'Engaged',assignee:custom.id})},ctx),/Sales CRM access/);
 });

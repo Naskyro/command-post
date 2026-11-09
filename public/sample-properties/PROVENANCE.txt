@@ -1,0 +1,14 @@
+Command Sales CRM — illustrative sample exteriors
+
+These four illustrations are original AI-generated photorealistic exteriors for fictional sample leads. They do not document any particular real property. They were not taken from a client, listing service, or photographer. Use them only as sample media, never as a substitute for a verified client's property photograph.
+
+Asset mapping (all 600 x 400 WebP):
+cedar.webp  — Cedar Gate: shaded tan courtyard with cedar posts and sage doors.
+oak.webp    — Oak Terrace: pale limestone midrise with balconies and live oak.
+willow.webp — Willow Bend: red brick garden apartments with a weeping willow.
+laurel.webp — Laurel Park: angular terra cotta and ochre multifamily exterior.
+
+Creation: OpenAI built-in image generation; no input photos or external assets. Four equal landscape photographs in a single contact sheet, cropped at their centers, resized proportionally and encoded as WebP at quality 86.
+
+Original prompt:
+One original asset: a 3:2 landscape contact sheet of exactly four separate photorealistic editorial photographs of fictional Austin, Texas apartment exteriors. Arrange in a precise edge-to-edge 2 by 2 grid; every panel is a separate horizontal 3:2 photograph of equal size; straight center divisions, absolutely no gutters, frames or borders. TOP LEFT: a two-story warm tan courtyard apartment complex with natural cedar timber posts, gently shaded garden walkway, sage entry doors in morning light. TOP RIGHT: contemporary four-story pale Texas limestone apartment block, staggered dark-metal balconies, architectural street corner and spreading live oak, clear blue sky. BOTTOM LEFT: well-kept older two-story dark red brick garden apartments with gables near a drooping willow and gently curving lawn walk, soft overcast light. BOTTOM RIGHT: modern angular multifamily development with muted terra cotta and ochre walls, charcoal window frames, tidy contemporary xeriscape, warm evening light. Each photo is a truthful-looking commercial real-estate exterior thumbnail shot from eye-level, distinct dominant silhouette and materials, realistic light and construction. No text, no logos, no signs, no people, no vehicles, no watermarks. Completely fictional architecture. Do not draw a collage within any panel. Full bleed photographs, no transparent area.

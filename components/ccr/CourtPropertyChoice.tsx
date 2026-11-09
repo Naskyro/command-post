@@ -1,0 +1,12 @@
+'use client';
+import {useId,useState} from 'react';
+import {Building2,Check,Search,X} from 'lucide-react';
+export type CourtPropertyOption={id:string;name:string;address?:string;status?:string;historical?:boolean};
+export default function CourtPropertyChoice({options,value,onChange,label='Linked Property',allowClear=true}:{options:CourtPropertyOption[];value:string;onChange:(s:string)=>void;label?:string;allowClear?:boolean}){
+ const [open,setOpen]=useState(false),[query,setQuery]=useState(''),[former,setFormer]=useState(false),key=useId(),picked=options.find(p=>p.id===value);
+ const visible=options.filter(p=>(former||!p.historical||p.id===value)&&[p.name,p.address].join(' ').toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name)||a.id.localeCompare(b.id));
+ const unknown=!!value&&!picked;
+ return <div className="cd-full court-property-choice"><strong>{label}</strong><div><button type="button" className="cd-secondary" aria-expanded={open} aria-controls={key} disabled={!options.length||unknown} onClick={()=>{setOpen(!open);setQuery('');}}><Building2 size={15}/>{picked?picked.name+(picked.historical?' · Former Account':''):unknown?'Restricted Linked Property':'Choose a Property'} {!unknown&&Boolean(options.length)&&<Search size={14}/>}</button>{picked&&allowClear&&<button type="button" className="cd-text" onClick={()=>{onChange('');setOpen(false);}}><X size={14}/>Remove Link</button>}</div>
+ {!options.length&&!unknown&&<small>No eligible accounts are available with your current access. The case can be saved without a property.</small>}{unknown&&<small>The saved property link will be preserved.</small>}
+ {open&&<section id={key} aria-label="Find an account"><label>Search Properties<input autoFocus type="search" placeholder="Name or Street Address" value={query} onChange={e=>setQuery(e.target.value)}/></label><label className="court-former-toggle"><input type="checkbox" checked={former} onChange={e=>setFormer(e.target.checked)}/>Include Former Accounts</label><div className="court-property-results">{visible.map(p=><button key={p.id} type="button" aria-pressed={p.id===value} onClick={()=>{onChange(p.id);setOpen(false);}}><span><b>{p.name}</b><small>{[p.address,p.status].filter(Boolean).join(' · ')}</small></span>{p.id===value&&<Check size={14}/>}</button>)}{!visible.length&&<small>No matching accounts. Try a different name or include former accounts.</small>}</div></section>}</div>;
+}

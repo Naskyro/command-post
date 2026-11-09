@@ -5,7 +5,7 @@ import {context,writeMany} from '@/lib/accounts/server';
 import {access,canEdit,clean} from '@/lib/accounts/policy';
 import {annualRevenue} from '@/lib/accounts/profile-summary';
 import {today} from '@/lib/accounts/model';
-import {vehicles,results,importedPayments} from '@/lib/accounts/history';
+import {vehicles,results,importedPayments,propertyMonthlyPerformance} from '@/lib/accounts/history';
 import {vehicleMatch} from '@/lib/accounts/insights';
 import {AppError,ForbiddenError,ConflictError,readPayload,safeFailure} from '@/lib/shared/errors';
 import type {Row} from '@/lib/accounts/model';
@@ -19,6 +19,13 @@ export async function GET(req:NextRequest){try{
     if(!all.some(r=>r.kind==='account'&&r.id===accountId))throw new AppError('Choose an existing account.');
     if(!Number.isInteger(year)||year<2000||year>Number(today().slice(0,4)))throw new AppError('Choose a recorded year.');
     return json(annualRevenue(importedPayments,accountId,year));
+  }
+  if(p.get('mode')==='monthly') {
+    if(!access(v,'performance'))throw new ForbiddenError();
+    const accountId=p.get('accountId')||'', year=Number(p.get('year')||today().slice(0,4));
+    if(!all.some(r=>r.kind==='account'&&r.id===accountId))throw new AppError('Choose an existing account.');
+    if(!Number.isInteger(year)||year<2000||year>Number(today().slice(0,4)))throw new AppError('Choose a recorded year.');
+    return json(propertyMonthlyPerformance(all,accountId,year));
   }
   if(p.get('mode')==='results') {
     if(!access(v,'performance'))throw new ForbiddenError();

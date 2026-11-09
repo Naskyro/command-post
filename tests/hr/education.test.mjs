@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {canReadEducation,canEditEducation,educationRecordId,prepareEducation,highestCompletedEducation,readEducationEntries} from '../../lib/hr/education.ts';
+import {canReadRecord,listRecord,validateSave} from '../../lib/hr/workflow.ts';
+const people=[{id:'w',supervisor:'m'},{id:'m'},{id:'p'},{id:'hr'}].map(p=>({...p,kind:'person',status:'Active',workerType:'Employee',version:1,department:p.id==='p'?'Tow':'Dispatch'}));
+const viewer=(person,action,scope='Team')=>({person,id:'auth-'+person,name:person,role:'Employee',department:'Dispatch',owner:false,canManage:false,canRelease:false,access:[{module:'People & HR',tab:'people',level:'View'}],hrResponsibilities:action?[{action,scope}]:[]});
+const self=viewer('w'),manager=viewer('m','managePersonnel'),at='2026-11-01T01:00:00.000Z';
+const save=(v,old,level,status,opts={})=>prepareEducation({action:'save',version:old?.version||0,personId:'w',entry:{level,status,...opts}},old,v,people,at).record;
+test('education honors self, explicit scope, onboarding restrictions, and read-only delegated reviews',()=>{
+ assert.ok(canEditEducation(self,'w',people));assert.ok(canEditEducation(manager,'w',people));
+ assert.ok(canReadEducation(viewer('m','viewPersonnel'),'w',people));assert.equal(canEditEducation(viewer('m','viewPersonnel'),'w',people),false);
+ assert.equal(canReadEducation(viewer('m'),'w',people),false);assert.equal(canReadEducation(manager,'p',people),false);
+ assert.equal(canEditEducation({...manager,onboardingOnly:true},'w',people),false);assert.ok(canEditEducation({...self,onboardingOnly:true},'w',people));
+ assert.equal(canReadEducation({...self,access:[]},'w',people),false);
+ assert.throws(()=>save(viewer('p'),undefined,'High School Diploma / GED','Completed'),/permission/);
+});
+test('highest attainment uses actual completed credentials and retains unknowns and in-progress programs',()=>{
+ assert.equal(highestCompletedEducation(readEducationEntries({})),null);
+ const first=save(self,undefined,'Bachelor’s Degree','In Progress');
+ assert.equal(highestCompletedEducation(readEducationEntries(first.data)),null);
+ const second=save(self,first,'Associate Degree','Completed',{fieldOfStudy:' Business ',school:'ACC'});
+ const third=save(self,second,'Other / Unclassified','Completed',{degree:'First Aid Certificate'});
+ assert.equal(highestCompletedEducation(readEducationEntries(third.data)),'Associate Degree');
+ assert.equal(readEducationEntries(third.data)[1].fieldOfStudy,'Business');
+ assert.equal(readEducationEntries(third.data)[1].completedOn,undefined);
+ assert.throws(()=>save(self,third,'Master’s Degree','Completed',{completedOn:'2026-11-01'}),/completion date/,'It is still October 31 in Austin');
+ assert.throws(()=>save(self,third,'Master’s Degree','In Progress',{completedOn:'2026-10-01'}),/completion date/);
+ assert.throws(()=>save(self,third,'Master’s Degree','Completed',{completedOn:'2026-02-30'}),/completion date/);
+ assert.throws(()=>save(self,third,'Master’s Degree','Completed',{socialSecurityNumber:'123'}),/not recognized/);
+});
+test('editing and correction use versions and preserve prior audit payloads; generic HR APIs cannot expose or mutate education',()=>{
+ const old=save(self,undefined,'High School Diploma / GED','Completed');
+ const entry=readEducationEntries(old.data)[0];
+ const changed=prepareEducation({action:'save',personId:'w',version:old.version,entryId:entry.id,entry:{level:'Associate Degree',status:'Completed',school:'ACC',completedOn:'2024-05-10'}},old,manager,people).record;
+ assert.equal(changed.updatedBy,'m');assert.equal(changed.createdBy,'w');assert.equal(readEducationEntries(old.data)[0].level,'High School Diploma / GED');assert.equal(changed.id,educationRecordId('w'));
+ assert.throws(()=>prepareEducation({action:'remove',entryId:entry.id,personId:'w',version:1,reason:'Correction'},changed,self,people),/changed/);
+ assert.throws(()=>prepareEducation({action:'remove',entryId:entry.id,personId:'w',version:2},changed,self,people),/reason/);
+ const removed=prepareEducation({action:'remove',entryId:entry.id,personId:'w',version:2,reason:'Duplicate entry'},changed,self,people);
+ assert.equal(removed.record.data.entries.length,0);assert.equal(removed.record.data.removalReason,'Duplicate entry');assert.equal(removed.record.version,3);
+ const exec={...self,owner:true};
+ assert.equal(canReadRecord(changed,exec,people,[changed]),false);assert.deepEqual(listRecord(changed).data,{});
+ assert.throws(()=>validateSave(undefined,changed,exec,people,[]),/Use Education/);
+});

@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtemp,rm,readFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {build} from 'esbuild';
+test('scoped picker, immutable citations, employee delivery, and transaction-time revision protection',async t=>{
+ const dir=await mkdtemp(path.join(tmpdir(),'perf-sop-')),db=new DatabaseSync(':memory:');t.after(async()=>{db.close();await rm(dir,{recursive:true,force:true});delete globalThis.perfSopStaff;delete globalThis.perfSopDb});
+ for(const n of ['0006','0012','0013']){const name=(await import('node:fs')).readdirSync('drizzle').find(s=>s.startsWith(n+'_'));db.exec(await readFile('drizzle/'+name,'utf8'));}
+ globalThis.perfSopDb={prepare(sql){const c=db.prepare(sql);return {args:[],bind(...args){this.args=args;return this},all(){return {results:c.all(...this.args)}},run(){return {meta:c.run(...this.args)}}}}};
+ const hr={module:'People & HR',tab:'performance',level:'View'},sop={module:'SOP Library',tab:'library',level:'View'};
+ const make=(id,m={})=>({kind:'person',id,name:id,email:id+'@test.invalid',status:'Active',workerType:'Employee',role:'Employee',department:'Dispatch',departmentId:'d',accessMode:'Custom',access:[hr,sop],...m});
+ const boss=make('boss',{authorityLevel:'Manager',hrResponsibilities:[{action:'recordPerformance',scope:'Team'},{action:'issueCorrective',scope:'Team'}]}),report=make('report',{supervisor:'boss'}),other=make('other'),limited=make('limited',{access:[hr],hrResponsibilities:[{action:'recordPerformance',scope:'Company'}]});
+ const staff=[{id:'d',kind:'department',name:'Dispatch'},boss,report,other,limited];globalThis.perfSopStaff=staff;
+ const mocks={'next/server':'export const NextResponse=Response','@/db/finance':'export const financeDb=()=>globalThis.perfSopDb','@/lib/finance/server':'export const allRecords=async()=>[...globalThis.perfSopStaff]'};
+ await build({entryPoints:{api:'app/api/hr/performance/sop-options/route.ts',helpers:'lib/hr/performance-sop-links.ts',identity:'lib/finance/identity.ts'},bundle:true,platform:'node',format:'esm',outExtension:{'.js':'.mjs'},outdir:dir,plugins:[{name:'mock',setup(b){b.onResolve({filter:/^(?:next\/server|@\/db\/finance|@\/lib\/finance\/server)$/},a=>({path:a.path,namespace:'mock'}));b.onLoad({filter:/.*/,namespace:'mock'},a=>({contents:mocks[a.path]}))}}]});
+ const [api,h,identity]=await Promise.all(['api','helpers','identity'].map(n=>import(path.join(dir,n+'.mjs'))));
+ const hdr=p=>new Headers({'oai-authenticated-user-email':p.email}),viewer=identity.financeIdentity(hdr(boss),staff),reportViewer=identity.financeIdentity(hdr(report),staff);
+ const get=(p,target,kind='note',q='',offset=0)=>api.GET(new Request('https://unit.test/api/hr/performance/sop-options?'+new URLSearchParams({personId:target,kind,q,offset}),{headers:hdr(p)})),body=async(...args)=>(await(await get(...args)).json());
+ const all={all:true,people:[],departments:[],levels:[]},forBoss={...all,all:false,people:['boss']},forOther={...all,all:false,people:['other']};
+ const seed=(id,version,status,title,audience=all,sections=[{heading:'Conduct Standard',text:'Return credentials at handoff.',visibility:'employee'},{heading:'Manager Procedure',text:'SUPERVISOR BODY MUST NEVER LEAVE',visibility:'management'}])=>db.prepare('INSERT OR REPLACE INTO sop_versions(key,policy_id,status,payload) VALUES(?,?,?,?)').run(id+'|'+version,id,status,JSON.stringify({id,version,status,topicId:id.split('-')[0]==='HR'?'HR-CA':id.split('-')[0],code:id,audience,content:{title,revision:'R'+version,keywords:'restricted-keyword',sections}}));
+ seed('OPS-001',1,'Archived','Earlier Equipment Title');seed('OPS-001',2,'Published','Current Equipment Title');seed('DSP-002',1,'Draft','Pending Draft');seed('MGT-003',1,'Published','Supervisor Only',forBoss);seed('MGT-004',1,'Published','Outside Audience',forOther);seed('HR-CA-001',1,'Published','Conduct',forOther);
+ assert.deepEqual((await body(boss,'report')).options.map(x=>x.id),['HR-CA-001','MGT-003','OPS-001']);const found=await body(boss,'report','corrective','equipment r2');assert.deepEqual(found.options,[{id:'OPS-001',code:'OPS-001',title:'Current Equipment Title',version:2,revision:'R2',topicId:'OPS',topic:'Operations & Facilities'}]);assert(!JSON.stringify(found).includes('MUST NEVER'));assert.equal(found.nextOffset,null);
+ assert.equal((await get(boss,'other')).status,403);assert.equal((await get(report,'boss')).status,403);assert.deepEqual((await body(limited,'report')).options.map(p=>p.id),['HR-CA-001']);assert.deepEqual((await body(limited,'report','note','restricted-keyword')).options,[]);assert.equal((await get(limited,'report','corrective')).status,403);
+ const employeeText=await body(limited,'report','note','credentials at handoff');assert.equal(employeeText.options.length,1);assert.match(employeeText.options[0].matchExcerpt,/Return credentials at handoff/);assert.equal((await body(limited,'report','note','SUPERVISOR BODY')).options.length,0);
+ const managerText=await body(boss,'report','note','SUPERVISOR BODY');assert(managerText.options.some(p=>p.id==='HR-CA-001'&&p.matchExcerpt.includes('SUPERVISOR BODY')));assert(!managerText.options.some(p=>p.id==='MGT-004'));
+ for(let n=1;n<=52;n++)seed('TOW-'+String(n).padStart(3,'0'),1,'Published','Tow record '+n,all,[{heading:'Retrieving Vehicles',text:'Check the '+(n===52?'unusual locking collar':'normal safety pin')+' before departure.'}]);
+ assert.equal((await body(boss,'report','note','unusual locking collar')).options[0].id,'TOW-052');const page1=await body(boss,'report','note','retrieving vehicles'),page2=await body(boss,'report','note','retrieving vehicles',page1.nextOffset);assert.equal(page1.options.length,40);assert.equal(page2.options.length,12);assert.equal(page2.nextOffset,null);
+ const resolve=(input,previous)=>h.resolvePerformanceSopCitations({input,previous,viewer,records:[...staff],personId:'report',kind:'corrective'});
+ const first=await resolve([{id:'OPS-001',version:2,title:'FORGED'},{id:'MGT-003',version:1}]);assert.equal(first.citations[0].title,'Current Equipment Title');first.guards.forEach(g=>g.run());assert.equal(db.prepare('SELECT COUNT(*) n FROM hr_write_guard').get().n,0);
+ await assert.rejects(()=>resolve([{id:'MGT-004',version:1}]),e=>e.status===403);await assert.rejects(()=>resolve([{id:'OPS-001',version:1}]),e=>e.status===409);
+ const show=await h.describeRecipientPerformanceSopCitations(first.citations,report,[...staff]);assert.equal(show.length,1);assert.equal(show[0].publicationState,'current');
+ const viewAsReport=await h.describePerformanceSopCitations(first.citations,reportViewer,[...staff]);assert.deepEqual(show,viewAsReport);
+ seed('OPS-001',2,'Archived','Current Equipment Title');seed('OPS-001',3,'Published','Revised Equipment Title');
+ db.exec('BEGIN');try{db.prepare('INSERT INTO hr_records(id,kind,payload,version,created_at,created_by,updated_at,updated_by) VALUES(?,?,?,?,?,?,?,?)').run('race','note','fake',1,'today','test','today','test');first.guards.forEach(g=>g.run());assert.fail('must conflict')}catch(err){assert.match(String(err),/hr_write_succeeded/);db.exec('ROLLBACK')}
+ assert(!db.prepare("SELECT id FROM hr_records WHERE id='race'").get());
+ const historical=await h.describePerformanceSopCitations(first.citations,viewer,[...staff]);assert.equal(historical[0].publicationState,'historical');assert.equal(historical[0].title,'Current Equipment Title');
+ const stable=await resolve([{id:'OPS-001',version:2}],first.citations);assert.equal(stable.citations[0].version,2);
+ seed('OPS-001',3,'Published','Revised Equipment Title',forBoss);assert.deepEqual(await h.describeRecipientPerformanceSopCitations(first.citations,report,[...staff]),[]);
+});

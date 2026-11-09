@@ -6,6 +6,7 @@ export const hangarPolicy = {
   enforcementHours: 'Authorized calls only; no patrol service.',
   carportParking: 'Yes',
   carportEnforcement: 'Authorized call-in only',
+  carportSpaceCallAuthority: 'Property Manager only',
   towAuthorization: 'Property manager only',
   spaceCallAuthority: 'Property manager only',
   towAuthorizationNotes: 'Only the property manager may initiate a tow, including an occupied paid carport space. Assistant property managers and residents cannot authorize a tow. Service must wait for the property manager’s call; this may prevent service late at night or overnight.',

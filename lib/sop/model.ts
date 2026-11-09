@@ -1,0 +1,11 @@
+/** Client-safe policy types. Never import private seed data into a client component. */
+export type CorrectiveEdition='employee'|'management';
+export type SopContent={title:string;shortName:string;policyOwner:string;preparedDate:string;effectiveDate:string;revision:string;approvalStatus:string;keywords:string;sections:{heading:string;text:string;visibility?:CorrectiveEdition}[];relatedIds:string[]};
+export type Audience={all:boolean;departments:string[];levels:string[];people:string[]};
+export type SopReceipt={accessEdition?:CorrectiveEdition;personId:string;accountId:string;personnelName:string;signerName:string;signedAt:string;policyId:string;code:string;title:string;revision:string;version:number;attestation:string;contentHash:string;batchId?:string;openedAt?:string;reviewMethod?:'self-attested'|'in-app-opened'};
+export type SopSignature=SopReceipt;
+export type SopPublication={policyId:string;code:string;version:number;revision:string;signerName:string;publishedAt:string;attestation:string;batchId:string;contentHash:string;personId?:string;accountId?:string};
+export type Policy={canEditPolicy?:boolean;accessEdition?:CorrectiveEdition;publication?:SopPublication;publishBlocker?:string;openedAt?:string;assignedToViewer?:boolean;requireOnboardingSignature?:boolean;signature?:SopReceipt;previousVersionSigned?:number;id:string;code:string;topicId:string;version:number;etag:number;status:'Draft'|'Published'|'Archived';audience:Audience;content:SopContent;updatedAt:string;updatedBy:string;sourceStatus?:string;acknowledged?:boolean;originalReference?:string;originalPdf?:boolean};
+export type Topic={id:string;prefix:string;name:string;archived:boolean;etag?:number};
+export type SopRequest={id:string;sample?:boolean;kind:string;topicId:string;policyId:string;question:string;reason:string;requestedBy:string;createdAt:string;status:'New'|'In Review'|'Completed'|'Declined';note:string;updatedBy:string;updatedAt:string};
+export type SopData={canRequest:boolean;canManageCorrective?:boolean;hrcaOnly?:boolean;signerNames:string[];attestation:string;policies:Policy[];topics:Topic[];requests:SopRequest[];departments:{id:string;name:string}[];people:{id:string;name:string}[];levels:string[];canEdit:boolean;canInbox:boolean;canManageInbox:boolean};

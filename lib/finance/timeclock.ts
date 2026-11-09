@@ -50,15 +50,25 @@ export function deriveTime(records: FinRecord[]): FinRecord[] {
     }
     return [...result.values()];
 }
-export const isExempt = (p: FinRecord) => p.workerType === 'Employee' && p.exempt === true && !String(p.payType).includes('Hourly');
+export const isExempt = (p: FinRecord) => p.workerType === 'Employee' && p.exempt === true && (Array.isArray(p.payComponents)||!String(p.payType).includes('Hourly'));
 export const overtimeEligible = (p: FinRecord) => p.workerType === 'Employee' && !isExempt(p);
+/** A department delegate expands review scope only until an explicit valid end date.
+ * It never changes the department head, reporting tree, or module permission grants. */
+export function validDepartmentDelegateExpiry(value:unknown):boolean {
+    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+    const date=Date.parse(value+'T12:00:00Z');
+    return Number.isFinite(date)&&new Date(date).toISOString().slice(0,10)===value;
+}
+export function isDepartmentDelegate(department:FinRecord,personId:string,day=localDate(Date.now())):boolean {
+    return department.kind==='department'&&department.status!=='Retired'&&department.backup===personId&&validDepartmentDelegateExpiry(department.expires)&&String(department.expires)>=day;
+}
 export function managesPerson(v: Viewer, person: string, records: FinRecord[]): boolean {
     if (v.canManage)
         return true;
     if (v.person === person)
         return false;
     const department = records.find(r => r.kind === 'person' && r.id === person)?.department;
-    if (records.some(r => r.kind === 'department' && r.name === department && (r.head === v.person || r.backup === v.person && String(r.expires) >= (localDate(Date.now())))))
+    if (records.some(r => r.kind === 'department' && r.status !== 'Retired' && r.name === department && (r.head === v.person || isDepartmentDelegate(r,v.person))))
         return true;
     if (!['Supervisor', 'Department Head'].includes(v.role))
         return false;
@@ -104,7 +114,7 @@ export function coverageGaps(records: FinRecord[], start: string, endExclusive: 
         end: number;
     }[] = [];
     for (const role of ['Dispatcher', 'Driver']) {
-        const shifts = records.filter(r => r.kind === 'shift' && r.coverageRole === role && r.status !== 'Cancelled' && r.person && records.some(p => p.kind === 'person' && p.id === r.person && p.status === 'Active')).map(r => ({ start: Math.max(lower, localInstant(r.start)), end: Math.min(upper, localInstant(r.end)) })).filter(r => r.end > r.start).sort((a, b) => a.start - b.start);
+        const shifts = records.filter(r => r.kind === 'shift' && r.coverageRole === role && r.status === 'Published' && r.person && records.some(p => p.kind === 'person' && p.id === r.person && p.status === 'Active')).map(r => ({ start: Math.max(lower, localInstant(r.start)), end: Math.min(upper, localInstant(r.end)) })).filter(r => r.end > r.start).sort((a, b) => a.start - b.start);
         let cursor = lower;
         for (const s of shifts) {
             if (s.start > cursor)
@@ -117,29 +127,19 @@ export function coverageGaps(records: FinRecord[], start: string, endExclusive: 
     return gaps;
 }
 export function departmentGaps(records: FinRecord[], start: string, endExclusive: string, department: string) {
-    if (department === 'Dispatch' || department === 'Drivers')
-        return coverageGaps(records, start, endExclusive).filter(g => g.role === (department === 'Dispatch' ? 'Dispatcher' : 'Driver'));
-    const gaps: {
-        role: string;
-        start: number;
-        end: number;
-    }[] = [];
-    const config = records.find(r => r.kind === 'department' && r.name === department);
-    const days = String(config?.coverageDays || '1,2,3,4,5').split(',').map(Number);
-    for (let ms = Date.parse(start + 'T12:00Z'); ms < Date.parse(endExclusive + 'T12:00Z'); ms += 86400000) {
-        const day = new Date(ms);
-        if (!days.includes(day.getUTCDay()))
-            continue;
-        const date = day.toISOString().slice(0, 10), a = localInstant(date + 'T' + String(config?.coverageStart || '09:00')), b = localInstant(date + 'T' + String(config?.coverageEnd || '17:00'));
-        const assigned = records.filter(r => r.kind === 'shift' && r.department === department && r.person && r.status !== 'Cancelled').map(r => ({ start: Math.max(a, localInstant(r.start)), end: Math.min(b, localInstant(r.end)) })).filter(r => r.end > r.start).sort((x, y) => x.start - y.start);
-        let cursor = a;
-        for (const s of assigned) {
-            if (s.start > cursor)
-                gaps.push({ role: department, start: cursor, end: s.start });
-            cursor = Math.max(cursor, s.end);
-        }
-        if (cursor < b)
-            gaps.push({ role: department, start: cursor, end: b });
-    }
-    return gaps;
+    const departmentRecord = records.find(r=>r.kind==='department'&&(r.name===department||r.id===department||(Array.isArray(r.aliases)&&r.aliases.some(alias=>alias===department))));
+    if(departmentRecord?.status==='Retired')return [];
+    const names=new Set([department,String(departmentRecord?.name||''),String(departmentRecord?.id||''),...(Array.isArray(departmentRecord?.aliases)?departmentRecord.aliases as string[]:[])]);
+    const coverageRole = departmentRecord?.id === 'department-1' || names.has('Dispatch') ? 'Dispatcher' : departmentRecord?.id === 'department-2' || names.has('Drivers') ? 'Driver' : '';
+    // Dispatch and driving are the two explicitly continuous operating roles.
+    if (coverageRole) return coverageGaps(records,start,endExclusive).filter(g=>g.role===coverageRole);
+    // Leadership accountability is continuous; it is not a staffing rota. Other
+    // departments have no inferred 9–5 or 24/7 staffing minimum. Only a published
+    // required shift with no active assignee is a real coverage gap. Legacy
+    // coverageDays/start/end remain in record history but have no scheduling effect.
+    const lower=localInstant(start+'T00:00'),upper=localInstant(endExclusive+'T00:00');
+    return records.filter(r=>r.kind==='shift'&&names.has(String(r.department))&&['Published','Open'].includes(String(r.status))&&r.flexible!==true&&(!r.person||!records.some(p=>p.kind==='person'&&p.id===r.person&&p.status==='Active')))
+      .map(r=>({role:String(departmentRecord?.name||department),start:Math.max(lower,localInstant(r.start)),end:Math.min(upper,localInstant(r.end))}))
+      .filter(r=>Number.isFinite(r.start)&&Number.isFinite(r.end)&&r.end>r.start)
+      .sort((a,b)=>a.start-b.start||a.end-b.end);
 }

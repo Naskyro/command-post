@@ -1,25 +1,45 @@
+import {commandUsername,prepareContactIdentity,workContactEmail} from './work-contact.ts';
+import {isDelegatedGrant,isResetGrant,hasAdminPair} from '../admin/delegated-grants.ts';
 import { importedJobTitles } from './imported-titles.ts';
 import type { FinRecord, Viewer, Value } from '../finance/model';
 import { canAccess, accessCatalog, type AccessGrant } from '../finance/access.ts';
 import { managesPerson, isExempt } from '../finance/timeclock.ts';
 import { AppError, ForbiddenError } from '../shared/errors.ts';
+import { hrCan } from '../hr/permissions.ts';
+import { genderOptions, canViewDemographics } from '../hr/demographics.ts';
+import { departmentFor } from './departments.ts';
+import { publicPersonIdentity, legalPersonName } from './display-name.ts';
 export const roles = ['Owner', 'Department Head', 'Supervisor', 'Employee'];
+/** Internal software authority tiers; job titles and reporting lines remain separate. */
+export const authorityLevels = ['Coordinator', 'Manager', 'Department Lead / Director', 'Executive'] as const;
+export function normalizeAuthorityLevel(value: unknown): string {
+    return value === 'Department Lead' || value === 'Director' ? 'Department Lead / Director' : typeof value === 'string' ? value : '';
+}
+export function authorityLevelOf(person: FinRecord): string {
+    return normalizeAuthorityLevel(person.authorityLevel !== undefined ? person.authorityLevel : person.organizationalLevel);
+}
 export function allowedRoles(v: Viewer) { const rank: Record<string, number> = { Owner: 4, 'Department Head': 3, Supervisor: 2, Employee: 1 }; return roles.filter(r => r === 'Owner' ? v.owner : rank[r] <= (rank[v.role] || 1)); }
-export const profileFields = ['name', 'email', 'emailAliases', 'title', 'department', 'supervisor', 'status', 'startDate', 'endDate', 'workerType', 'onboardingStatus', 'onboardingChecks', 'profileNotes'];
-export const payFields = ['payType', 'rate', 'netTarget', 'exempt', 'date', 'notes', 'overtimeEstimateRate', 'commissionNotes'];
-export const accessFields = ['role', 'accessMode', 'access', 'userId', 'accountStatus'];
-export const bankFields = ['stripe_customer_id', 'stripe_bank_account_id', 'stripe_connected_account_id', 'stripe_connected_account_status', 'bank_last_4', 'bank_name', 'bank_account_type', 'bank_verified', 'bank_account_added_at'];
+export const profileFields = ['name', 'preferredName', 'pronouns', 'username', 'email', 'companyEmail', 'title', 'authorityLevel', 'department', 'departmentId', 'employmentClass', 'setupPath', 'supervisor', 'status', 'startDate', 'endDate', 'workerType', 'gender', 'profileNotes'];
+export const payFields = ['payComponents','payTimeline','payBaseline','payType', 'rate', 'netTarget', 'exempt', 'date', 'notes', 'overtimeEstimateRate'];
+export const accessFields = ['role', 'authorityLevel', 'accessMode', 'access', 'userId', 'accountStatus', 'hrResponsibilities'];
 const baseFields = ['id', 'kind', 'version', 'updatedBy', 'updatedAt'];
 export function pickPerson(p: FinRecord, fields: string[]): FinRecord { return Object.fromEntries([...baseFields, ...fields].filter(k => p[k] !== undefined).map(k => [k, p[k]])) as FinRecord; }
-export function canReadPay(v: Viewer, p: FinRecord, records: FinRecord[]) { return (canAccess(v, 'Finance', 'Payroll') || canAccess(v, 'People & HR', 'pay')) && (v.owner || v.canRelease || p.id === v.person || managesPerson(v, p.id, records)); }
-export function personView(p: FinRecord, v: Viewer, records: FinRecord[], surface = 'finance') {
+export function canReadPay(v: Viewer, p: FinRecord, records: FinRecord[]) { return (canAccess(v, 'Finance', 'Payroll') || canAccess(v, 'People & HR', 'pay')) && (v.owner || v.canRelease || p.id === v.person || hrCan(v, 'manageCompensation', p.id, records) || managesPerson(v, p.id, records)); }
+export function canViewAuthorityLevel(v: Viewer, p: FinRecord, records: FinRecord[]) {
+    return v.owner || p.id !== v.person && (canEditAccess(v,p,records) || hrCan(v,'managePersonnel',p.id,records) || hrCan(v,'manageOnboarding',p.id,records));
+}
+export function personView(p: FinRecord, v: Viewer, records: FinRecord[], surface = 'finance'):FinRecord {
+    const authority = canViewAuthorityLevel(v,p,records) && authorityLevelOf(p) ? {authorityLevel:authorityLevelOf(p)} : {};
+    const identity=publicPersonIdentity(p),workContact={companyEmail:workContactEmail(p,records)},standalone={username:commandUsername(p)};
+    const canReadLegalName=v.owner||p.id===v.person||(surface==='hr'?['viewPersonnel','managePersonnel','manageOnboarding','issueCorrective','manageTaxBank','manageCompensation','manageOffboarding','manageTwc'].some(action=>hrCan(v,action,p.id,records)):surface==='admin'?canEditAccess(v,p,records):surface==='finance'?canReadPay(v,p,records):false);
+    const legal=canReadLegalName&&surface!=='timeclock'?{legalName:legalPersonName(p)}:{};
     if (surface === 'admin')
-        return pickPerson(p, ['name', 'email', 'emailAliases', 'title', 'department', 'supervisor', 'status', ...accessFields, ...bankFields]);
+        return {...pickPerson(p, ['title', 'department', 'departmentId', 'supervisor', 'status', 'setupPath','onboardingRequired','onboardingStatus','onboardingClearedAt','accountDeactivatedAt','accountDeactivatedBy','accountDeactivationReason','accountReactivatedAt','accountReactivatedBy','schoolAccessConfigured','accessTemplateId','accessTemplateName','accessTemplateVersion','accessTemplateAppliedAt','accessTemplateAppliedBy','accessTemplateBaseline','accessTemplateHrBaseline', ...accessFields.filter(k=>k!=='authorityLevel')]),...identity,...legal,...authority,...standalone,...workContact};
     if (surface === 'hr')
-        return pickPerson(p, [...profileFields, ...bankFields]);
+        return {...pickPerson(p, [...profileFields.filter(k => k !== 'authorityLevel' && k !== 'email' && k !== 'username' && (k !== 'gender' || canViewDemographics(v,p.id,records)) && (k !== 'profileNotes' || v.owner || p.id !== v.person && (hrCan(v, 'managePersonnel', p.id, records) || hrCan(v, 'recordPerformance', p.id, records)))), 'onboardingStatus', 'onboardingRequired', 'onboardingClearedAt']),...identity,...legal,...authority,...workContact,...(canReadLegalName?standalone:{})};
     if (surface === 'timeclock')
-        return { ...pickPerson(p, ['name', 'title', 'department', 'supervisor', 'status', 'workerType', ...bankFields]), exempt: isExempt(p) };
-    return pickPerson(p, [...profileFields.filter(k => k !== 'profileNotes' && k !== 'onboardingChecks'), ...(canReadPay(v, p, records) ? payFields : []), ...bankFields]);
+        return { ...pickPerson(p, ['title', 'department', 'departmentId', 'departmentKey', 'employmentClass', 'supervisor', 'status', 'workerType', 'startDate', 'onboardingRequired', 'onboardingClearedAt']),...identity, exempt: isExempt(p) };
+    return {...pickPerson(p, [...profileFields.filter(k => k !== 'authorityLevel' && k !== 'email' && k !== 'username' && k !== 'profileNotes' && k !== 'gender' && k !== 'onboardingChecks'), ...(canReadPay(v, p, records) ? payFields : [])]),...identity,...legal,...workContact};
 }
 export function canEditAccess(v: Viewer, p: FinRecord, records: FinRecord[]) { return canAccess(v, 'Admin', 'users', true) && (v.owner || p.id !== v.person && p.role !== 'Owner' && managesPerson(v, p.id, records)); }
 export function boundedGrants(input: unknown, v: Viewer): AccessGrant[] {
@@ -38,6 +58,8 @@ export function boundedGrants(input: unknown, v: Viewer): AccessGrant[] {
         seen.add(key);
         grants.push({ module: g.module, tab: g.tab, level: g.level });
     }
+    if(grants.some(isResetGrant)&&(!v.owner||!['users','password-resets'].every(tab=>grants.some(g=>g.module==='Admin'&&g.tab===tab&&g.level==='Edit'))))throw new ForbiddenError('Only a company owner may assign Reset Staff Passwords and Users & Access together with Edit permission.');
+    if(grants.some(isDelegatedGrant)&&(!v.owner||!hasAdminPair(grants)))throw new ForbiddenError('A company owner must assign Users & Access and Delegated Access together with Edit permission.');
     return grants;
 }
 export function validateRole(role: unknown, v: Viewer, targetId: string) {
@@ -50,9 +72,18 @@ export function validateRole(role: unknown, v: Viewer, targetId: string) {
 }
 export function sanitizeFields(input: Record<string, unknown>, allowed: string[]): Record<string, Value> {
     const out: Record<string, Value> = {};
-    for (const [k, v] of Object.entries(input)) {
+    for (const [inputKey, v] of Object.entries(input)) {
+        const k = inputKey === 'organizationalLevel' ? 'authorityLevel' : inputKey;
         if (!allowed.includes(k))
             throw new AppError('This form cannot change ' + k + '.');
+        if (k === 'authorityLevel') {
+            if (typeof v !== 'string') throw new AppError('Choose a valid authority level.');
+            const level = normalizeAuthorityLevel(v.trim());
+            if (level && !authorityLevels.includes(level as typeof authorityLevels[number])) throw new AppError('Choose Coordinator, Manager, Department Lead / Director, or Executive.');
+            if (out.authorityLevel !== undefined && out.authorityLevel !== level) throw new AppError('Submit one authority level.');
+            out.authorityLevel = level;
+            continue;
+        }
         if (typeof v === 'string') {
             if (v.length > 5000)
                 throw new AppError('A field exceeds 5,000 characters.');
@@ -65,31 +96,39 @@ export function sanitizeFields(input: Record<string, unknown>, allowed: string[]
     }
     return out;
 }
-export function validateProfile(next: FinRecord, old: FinRecord | undefined, v: Viewer, records: FinRecord[]) {
-    for (const k of ['name', 'email', 'title', 'department', 'supervisor', 'status', 'startDate', 'endDate', 'workerType', 'profileNotes'])
+export function validateProfile(next: FinRecord, old: FinRecord | undefined, v: Viewer, records: FinRecord[], contactFields?:Record<string,unknown>) {
+    for (const k of ['name', 'preferredName', 'pronouns', 'username', 'email', 'companyEmail', 'title', 'authorityLevel', 'department', 'departmentId', 'employmentClass', 'setupPath', 'supervisor', 'status', 'startDate', 'endDate', 'workerType', 'gender', 'profileNotes'])
         if (next[k] !== undefined && typeof next[k] !== 'string')
             throw new AppError('Invalid ' + k + ' value.');
+    for(const [key,limit] of [['preferredName',150],['pronouns',100]] as const){if(next[key]!==undefined){next[key]=String(next[key]).trim();if(String(next[key]).length>limit)throw new AppError(key==='preferredName'?'Use a preferred name of 150 characters or fewer.':'Use pronouns of 100 characters or fewer.');}}
+    if (next.gender && !genderOptions.includes(String(next.gender) as typeof genderOptions[number])) throw new AppError('Choose a valid self-reported gender or leave it blank.');
+    if (next.authorityLevel !== undefined) {
+        next.authorityLevel = normalizeAuthorityLevel(next.authorityLevel);
+        if (next.authorityLevel && !authorityLevels.includes(next.authorityLevel as typeof authorityLevels[number])) throw new AppError('Choose Coordinator, Manager, Department Lead / Director, or Executive.');
+    }
     if (!['Employee', 'Contractor', 'Owner'].includes(String(next.workerType)))
         throw new AppError('Choose an employment type.');
     if (next.workerType === 'Owner' && !v.owner && old?.workerType !== 'Owner')
         throw new ForbiddenError('Only owners can assign owner records.');
     if (!String(next.name || '').trim())
         throw new AppError('Enter the employee’s name.');
-    if (!['Operations', 'Dispatch', 'Drivers', 'Account Managers'].includes(String(next.department)))
+    const department = departmentFor(records, next.departmentId || next.department);
+    if (!department || department.status === 'Retired' && old?.departmentId !== department.id && old?.department !== department.name)
         throw new AppError('Choose a department.');
+    next.department = department.name;
+    next.departmentId = department.id;
+    if (next.employmentClass && !['Full-Time', 'Part-Time', 'Temporary', 'Seasonal'].includes(String(next.employmentClass)))
+        throw new AppError('Choose a valid employment class.');
     if (!['Active', 'Former', 'Leave', 'Onboarding'].includes(String(next.status)))
         throw new AppError('Choose a valid employment status.');
-    const email = String(next.email || '').toLowerCase(), match = email.match(/^([a-z0-9._+-]+)@(gtowingtransport\.com|parkingtowingenforcement\.com)$/);
-    if (!match)
-        throw new AppError('Use the employee’s company email address.');
-    next.email = email;
-    next.emailAliases = [match[1] + '@gtowingtransport.com', match[1] + '@parkingtowingenforcement.com'].filter(e => e !== email);
-    if (records.some(r => r.kind === 'person' && r.id !== next.id && [r.email, ...(Array.isArray(r.emailAliases) ? r.emailAliases : [])].some(e => [email, ...next.emailAliases as string[]].includes(String(e)))))
-        throw new AppError('That mailbox belongs to another user.');
-    if (!v.owner) {
-        if (next.supervisor !== old?.supervisor && next.supervisor !== v.person && !managesPerson(v, String(next.supervisor), records))
+    for (const key of ['startDate','endDate']) if (next[key] && (!/^\d{4}-\d{2}-\d{2}$/.test(String(next[key])) || !Number.isFinite(Date.parse(String(next[key]))) || new Date(String(next[key])).toISOString().slice(0,10) !== next[key])) throw new AppError('Enter a valid '+key+'.');
+    if (!old && !next.startDate && next.setupPath !== 'Existing Worker') throw new AppError('Enter the original hire or start date.');
+    prepareContactIdentity(next,old,records,contactFields);
+    if (!v.owner && !hrCan(v, 'manageOnboarding', undefined, records) && !hrCan(v, 'managePersonnel', undefined, records)) {
+        const supervisorAllowed = next.supervisor === v.person || managesPerson(v, String(next.supervisor), records) || hrCan(v, 'manageOnboarding', String(next.supervisor), records) || hrCan(v, 'managePersonnel', String(next.supervisor), records);
+        if (next.supervisor !== old?.supervisor && !supervisorAllowed)
             throw new ForbiddenError('Choose a supervisor in your own team.');
-        if (!old && next.supervisor !== v.person && !managesPerson(v, String(next.supervisor), records))
+        if (!old && !supervisorAllowed)
             throw new ForbiddenError('New hires must report within your team.');
     }
     const seen = new Set([next.id]);

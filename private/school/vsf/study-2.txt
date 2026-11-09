@@ -1,0 +1,272 @@
+﻿Vehicle Storage Facility Study Guide Exam 2
+Terms and Definitions
+1. TCSO (Travis County Sheriff’s Office) - The law enforcement agency responsible for Travis County areas not covered by the Austin Police Department (APD). For towing operations in TCSO jurisdictions, vehicles must be reported using the “Private Property Impounds & Repossession” form, available online through Microsoft.
+2. APD (Austin Police Department) - APD oversees law enforcement within Austin city limits. Vehicles towed within APD’s jurisdiction, meaning from addresses APD responds to, are reported using an online system called Autura (formerly Auto Return), which processes impound reports for APD.
+3. WilCo (Williamson County) - This is an abbreviation for Williamson County, a region north of Travis County that includes cities like Round Rock, Georgetown, and Cedar Park. Towed vehicles from addresses in WilCo jurisdictions also need to be reported through Autura (formerly Auto Return).
+4. APD Jurisdiction - Refers to areas where the Austin Police Department has authority. Vehicles towed from these areas fall under APD jurisdiction and must be reported through Autura, an online system used to handle vehicle impound reports for APD.
+5. TCSO Jurisdiction - Refers to areas where TCSO has authority rather than APD. For vehicles towed within TCSO jurisdiction, reporting must be done through the “Private Property Impounds & Repossession” Microsoft form. This applies to vehicles towed from addresses in TCSO-covered parts of Travis County.
+6. WilCo Jurisdiction - Vehicles towed from Williamson County, covering cities such as Round Rock, Georgetown, and Cedar Park, are considered within WilCo jurisdiction. These impounds must be reported through Autura, which manages tow reports for Williamson County.
+7. Buda Jurisdiction - Vehicles towed from the city of Buda are managed differently because Buda does not use an online reporting form. Instead, any vehicle impound report must be made by calling Buda’s non-emergency line at 512-393-7896. This ensures accurate records for tows in Buda, as Buda jurisdiction does not use the Autura system or an online reporting form.
+8. Autura - Autura, previously called Auto Return, is an online system increasingly used nationwide by local governments to receive vehicle impound reports. Towing companies in areas like Austin and Williamson County must submit reports to Autura for any tows within those jurisdictions.
+9. TCSO Private Property Impounds and Repossessions - This is the name of the specific Microsoft form used to report private property tows and repossessions from TCSO jurisdiction. It is required for any tows managed by the Travis County Sheriff’s Office, ensuring the towed vehicle’s status is accurately logged.
+
+
+10. ADD (Auto Data Direct) - ADD is an online tool that helps Vehicle Storage Facilities (VSFs) access information on a vehicle’s ownership, lienholders, and related details. Each query has a fee: Texas VIN checks are $0.26, Texas license plate checks are $0.26, and mailing fees for 1st and 2nd certified notification letters are $15.79 each. ADD can be used directly or accessed through TowBook for easy integration with towing records.
+11. Drop Fee - A $50 fee is charged if a tow truck is completely ready to transport a vehicle (fully hooked and prepared to leave), but the vehicle’s owner arrives on-site and requests the vehicle be released. In this case, the vehicle must be immediately removed from the scene by the owner.
+12. No Drop Fee - If the tow truck has not fully prepared the vehicle for transport, meaning it is not yet ready to leave with the car, the truck operator must release the vehicle at no charge to the owner. The owner must still move the vehicle promptly if it’s not legally parked.
+13. Courtesy Release - As a goodwill policy, some towing companies offer a “courtesy release,” allowing a property manager or owner to retrieve a vehicle without a fee. This is done as a courtesy since all tows performed are legal at the time, and such releases are not required by law. Approval of a courtesy release depends on company policy and management discretion.
+14. Tow Hearing - If a vehicle owner believes their car was towed unlawfully or was overcharged, they can request a tow hearing. This hearing occurs at a Justice of the Peace court and must be filed within 14 days of the tow. This process gives the vehicle owner a formal way to dispute the tow’s legality or costs.
+15. Tow Codes - In Texas, specific laws, known as tow codes, govern vehicle towing operations, ensuring vehicle owners’ rights and detailing penalties for violations. These rules can be found in the Texas Transportation Code Chapter 2308 and the Occupations Code Chapter 2303.
+16. Cab Card - This TDLR-issued card proves a tow truck’s license status. When a tow truck comes to retrieve a vehicle from a VSF, the driver must present the Cab Card. It includes details like the permit type (CT, PP, IM), unit number, and vehicle identification number (VIN).
+17. TDLR Tow Operator Card - Issued by the Texas Department of Licensing and Regulation, this card confirms a tow truck driver’s license status. Tow truck drivers retrieving a vehicle from a VSF must present this card along with the Cab Card.
+18. Driver’s License (DL) - A valid state-issued driver’s license, required for all tow truck drivers. This license must be shown when picking up a vehicle at a VSF. Vehicle owner may present an ID such as a driver’s license to remove a car from a VSF.
+19. Pull Out Fee - An $80 fee charged when a vehicle with mechanical issues (such as a flat tire) needs to be pulled out of a VSF’s yard by a tow truck. Vehicle owners are not allowed to make repairs on-site, so the pull-out fee covers the cost of moving the car to an accessible area outside the fence.
+20. Credit Card Fee - A 3% fee applied to debit or credit card payments to cover processing costs.
+21. Winch Fee - When a vehicle requires winching (being pulled by a rotating cable), an extra fee is added to the towing charges. The fee varies based on the effort and time required, and it is set by the tow truck driver according to the specific job.
+22. Separation of VSF Charges and Towing Charges - TDLR mandates that VSF charges (such as daily storage or impound fees) and towing charges (like APD or TCSO private property towing) be listed separately on receipts. This distinction helps clearly differentiate storage and towing-related expenses.
+23. Impound Fee - A one-time fee of $22.85, charged for securing a vehicle at a VSF. This fee covers actions like checking doors, securing windows, and running an MVR (Motor Vehicle Report) through ADD. If these actions aren’t taken, the impound fee cannot be charged.
+24. Notification Fee - A $50 fee for notifying a vehicle’s owner or lienholder about the vehicle’s impoundment or storage. This fee is only charged once, no matter how many notifications are sent.
+25. Daily Storage Fee - A fee of $22.85 per day (or less, depending on local limits) for each day a vehicle is stored at a VSF. This daily fee is regulated by TDLR and local governments; for example, if Austin’s city limit for storage is $22.85, this rate applies even if the state maximum is higher.
+26. Release Photos - Photos documenting a vehicle’s condition at the time of release, typically taken as soon as the vehicle arrives or within 30 minutes before pickup. These photos are added to the vehicle’s record in TowBook, providing a visual record of its state upon release.
+27. Parking Addendum - An extra document added to a tenant’s lease or mobile app parking permit registration that explains parking terms, including assigned spaces, fees, and vehicle rules for the property. Tenants are responsible for keeping this information current with the leasing office.
+28. Public Roads - Towing from public roads requires law enforcement authorization, such as an incident managed by APD. In private cases, towing from public roads is not allowed without a police request. For private property towing, consent from the homeowner and proof of residency or authorization (e.g., a real estate agreement) are required when the vehicle blocks driveways or encroaches onto private property.
+Knowledge Check: 
+________________
+
+
+Section 1: Jurisdiction-Specific Reporting
+
+Which jurisdiction requires using the "Private Property Impounds & Repossession" form?
+* A. APD
+* B. TCSO
+* C. WilCo
+* D. Buda
+
+
+Where should a tow report be submitted for a vehicle towed within WilCo jurisdiction?
+* A. Buda’s non-emergency line
+* B. Autura
+* C. APD
+* D. ADD
+How are impound reports made in Buda jurisdiction?
+* A. Through Autura
+* B. Using the TCSO form
+* C. Calling 512-393-7896
+* D. Submitting a paper form
+Open Ended Question: In what situations might it be challenging to determine whether a tow should be reported through APD, TCSO, or WilCo? How would you ensure proper jurisdictional compliance?
+
+Section 2: Vehicle and Towing Fees
+When is a $50 Drop Fee charged?
+* A. If the vehicle is not fully prepared for transport
+* B. When the tow truck is ready to transport but the owner arrives
+* C. Only if the vehicle has a flat tire
+* D. During a courtesy release
+What is the Winch Fee for?
+* A. Processing card payments
+* B. Vehicles that need to be winched
+* C. Releasing a vehicle to the owner on the scene
+* D. Daily storage
+True or False: A Pull Out Fee is only charged when a vehicle with mechanical issues needs moving within a VSF.
+
+
+Open Ended Question: Why might a Winch Fee vary depending on the situation, and how do you think this affects the towing company’s approach to unique towing jobs?
+
+
+Section 3: VSF and Notification Requirements
+What is the Impound Fee charged for?
+* A. Vehicle transportation
+* B. Securing and documenting a vehicle in the VSF
+* C. Owner notifications
+* D. Daily storage
+
+
+Which document system stores vehicle condition photos at release?
+* A. Autura
+* B. TowBook
+* C. TDLR
+* D. ADD
+True or False: The Notification Fee is charged once, no matter how many times the vehicle’s owner is contacted.
+
+
+Open Ended Question: How do you think the requirement for Release Photos within 30 minutes of release affects the handling of disputes related to vehicle condition?
+
+
+Section 4: Required Documents for Tow Operators
+Which three documents must a tow truck driver present to pick up a vehicle at a VSF?
+* A. Autura form, TDLR Card, VSF 13 
+* B. TDLR Card, Cab Card & Driver’s License
+* C. Driver’s License, ADD report, Insurance Card
+* D. Impound Fee receipt, TDLR Card, Driver’s License
+True or False: A state-issued driver’s license alone is enough to retrieve a vehicle from a VSF.
+
+
+BONUS: Which VSF form would a tow truck driver picking up for a repo company need to fill out?
+
+
+Open Ended Question: What challenges might a tow operator face if they do not have one of these required documents, and how could this impact their work or the vehicle owner?
+
+
+
+
+
+
+Open Ended Question: How does the requirement for multiple types of documentation help reinforce industry standards and regulatory compliance for tow operators?
+
+
+Section 5: Legal and Compliance Standards
+Where can you find the Texas laws on vehicle towing operations?
+   * A. APD Website
+   * B. Texas Transportation Code Chapter 2308 and Occupations Code Chapter 2303
+   * C. City of Austin Parking Code
+   * D. Local VSF guidelines
+How long does a vehicle owner have to file a tow hearing dispute?
+   * A. 7 days
+   * B. 10 days
+   * C. 14 days
+   * D. 30 days
+True or False: Tows from public roads always require authorization from law enforcement.
+
+
+Open Ended Question: Why might a tenant be required to keep parking information updated with their leasing office, and how could a Parking Addendum help clarify parking rules for both tenants and property managers?
+
+
+
+
+
+
+
+
+Open Ended Question: What issues could arise if law enforcement authorization is not obtained for towing a vehicle from a public road, and how does this requirement impact public and private towing practices?
+
+
+Scenario-Based Question 
+You work at a Vehicle Storage Facility (VSF) and a tow truck arrives with a vehicle that was impounded from a private property in Travis County. The owner of the vehicle arrives later looking to pick up their car. Here’s the situation:
+1. Determine Jurisdiction
+   * Question: Since the vehicle was towed from Travis County (TCSO), which system should be used to report the impound, and why?
+
+
+   2. Review Documentation
+   * Question: What document or information do you need from the vehicle owner or operator to start the release?
+
+
+
+      3. Assess Fees
+      * Question: The vehicle has been in storage for 5 days. How much would you charge for the Daily Storage Fee, and what other fees might be applicable to the vehicle’s release?
+
+
+
+         4. Impound Fee and Notification Fee
+         * Question: Before the vehicle can be released, you check the records and see that the Impound Fee has been applied. How do you verify that this fee is justified, and what information do you need to confirm the Notification Fee has been charged properly?
+
+
+
+            5. Parking Addendum Considerations
+            * Question: The property manager calls to inquire about the vehicle’s release, and mentions there might be a Parking Addendum involved. What is a Parking Addendum, and how would you verify whether it applies in this situation?
+
+
+
+
+               6. Courtesy Release Request
+               * Question: The property managers asks for a Courtesy Release. How do you determine if the release can be granted, and what are the factors that influence your decision?
+
+
+
+
+                  7. Credit Card Processing and Fees
+                  * Question: The vehicle owner decides to pay the fees with a credit card. What steps must you take to ensure the payment is processed correctly, and what additional fees will apply to the transaction?
+
+
+
+
+  
+  
+
+  
+Can this vehicle be released to this tow truck based on the Cab Card Presented on the next page?
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Can this driver’s TDLR card be used to pick up a vehicle? Why or why not? 
+
+
+
+
+
+
+
+
+If this tow truck driver worked for us, could this driver use this card to impound cars?
+
+
+
+
+
+
+Could this driver repossess a vehicle with this license type?

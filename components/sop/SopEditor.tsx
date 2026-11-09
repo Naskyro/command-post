@@ -1,0 +1,122 @@
+'use client';
+import ResponsiveSearchInput from '@/components/shared/ResponsiveSearchInput';
+import {useEffect,useRef,useState} from 'react';
+import {ArrowDown,ArrowLeft,ArrowRight,ArrowUp,Check,Eye,FileDown,Plus,Save,ShieldCheck,Upload,X} from 'lucide-react';
+import {requestJson} from '@/lib/shared/client';
+import {Dialog,DialogContent,DialogDescription,DialogTitle} from '@/components/ui/dialog';
+import SopPdfPages from './SopPdfPages';
+import {CorrectiveAudience,CorrectiveDraftPreview} from './CorrectiveAudience';
+import {isCorrectivePolicy,isCorrectiveTopic,correctiveSectionVisibility,employeeCorrectiveHeadings,hasCorrectiveEmployeeGuide} from '@/lib/sop/corrective-content';
+import type {Audience,Policy,SopContent} from '@/lib/sop/model';
+
+type Choice={id:string;name:string};
+type Topic=Choice&{prefix:string;archived:boolean};
+type EditorData={canManageCorrective?:boolean;signerNames:string[];policies:Policy[];topics:Topic[];departments:Choice[];people:Choice[];levels:string[];canEdit:boolean};
+type Step='Details'|'Policy Sections'|'Audience & References'|'PDF Preview';
+const steps:Step[]=['Details','Policy Sections','Audience & References','PDF Preview'];
+const defaultSections=['Purpose','Scope','Policy Standard','Supplies & Equipment','Responsibilities','Procedure','Definitions & Abbreviations','Corrective Action References','Source References & Revision History'];
+const emptyAudience=():Audience=>({all:false,departments:[],levels:[],people:[]});
+function localDate(){const now=new Date();return [now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');}
+const emptyContent=():SopContent=>({title:'',shortName:'',policyOwner:'',preparedDate:localDate(),effectiveDate:'',revision:'1.0',approvalStatus:'Draft',keywords:'',sections:defaultSections.map(heading=>({heading,text:''})),relatedIds:[]});
+function pdfUrl(p:Policy,download=false){return '/api/sop/pdf?'+new URLSearchParams({id:p.id,version:String(p.version),...(download?{download:'1'}:{})}).toString();}
+function compare(content:SopContent,audience:Audience,topic:string,signature:boolean){return JSON.stringify([content,audience,topic,signature]);}
+const short='sop-btn',primary='sop-btn primary';
+const muted:React.CSSProperties={fontSize:13,color:'var(--sop-muted,#51616b)',margin:'4px 0 10px'};
+function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="sop-field"><span>{label}</span>{children}</label>}
+export function SearchChoices({label,options,selected,onChange}:{label:string;options:Choice[];selected:string[];onChange:(ids:string[])=>void}){
+ const [query,setQuery]=useState('');
+ const visible=options.filter(c=>c.name.toLowerCase().includes(query.trim().toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
+ return <fieldset style={{minWidth:0,margin:0,padding:'10px 12px',border:'1px solid #d4dee0',borderRadius:8}}><legend>{label}{selected.length>0?' ('+selected.length+')':''}</legend>
+ {options.length>8&&<ResponsiveSearchInput aria-label={'Find '+label} placeholder={'Find '+label.toLowerCase()+'…'} value={query} onChange={e=>setQuery(e.target.value)}/>}
+ <div style={{display:'grid',maxHeight:170,overflowY:'auto',gap:4,marginTop:4}}>{visible.map(c=><label key={c.id} style={{display:'flex',alignItems:'center',gap:8,fontWeight:400}}><input type="checkbox" style={{width:16,height:16,flex:'none'}} checked={selected.includes(c.id)} onChange={()=>onChange(selected.includes(c.id)?selected.filter(x=>x!==c.id):[...selected,c.id])}/>{c.name}</label>)}{!visible.length&&<small>No matching options.</small>}</div></fieldset>;
+}
+const rowSchemas:Record<string,string[]>={'procedure':['Step / Heading','Instructions'],'responsibilities':['Role','Responsibility'],'definitions & abbreviations':['Term','Definition'],'corrective action references':['Policy Reference','When It Applies','Category']};
+function SectionText({heading,text,onChange}:{heading:string;text:string;onChange:(v:string)=>void}){
+ const schema=rowSchemas[heading.trim().toLowerCase()]||['Heading','Details'];
+ const [raw,setRaw]=useState(false);
+ const [asTable,setAsTable]=useState(false);
+ const structured=!raw&&(asTable||(!text.trim()&&rowSchemas[heading.trim().toLowerCase()])||text.split('\n').some(r=>r.includes(' | ')));
+ const lines=text?text.split('\n'):[];
+ const change=(line:number,col:number,val:string)=>{const parts=lines[line].split(' | ');parts[col]=val.replace(/[\r\n]+/g,' ');onChange(lines.map((v,i)=>i===line?parts.join(' | '):v).join('\n'));};
+ return <div><div className="sop-tools" style={{marginBottom:8}}><strong>Section Content</strong><button className="sop-btn" type="button" onClick={()=>{if(structured){setRaw(true)}else{setRaw(false);setAsTable(true)}}}>{structured?'Edit as Text':'Edit as Rows'}</button></div>
+ {structured?<><div style={{display:'grid',gap:10}}>{lines.map((row,i)=>{const cols=row.split(' | ');return <fieldset key={i} style={{minWidth:0,padding:'10px 12px',border:'1px solid #d6e0e2',borderRadius:8}}><legend>Row {i+1}</legend><div className={cols.length>1?'sop-grid2':''}>{cols.map((v,j)=><Field key={j} label={cols.length===1?'Paragraph':schema[j]||'Column '+(j+1)}><textarea rows={cols.length>1&&j===0?2:3} value={v} onChange={e=>change(i,j,e.target.value)}/></Field>)}</div><button className="sop-btn" type="button" onClick={()=>{if(row.trim().replace(/\|/g,'').trim()&&!confirm('Remove row '+(i+1)+' from this draft?'))return;onChange(lines.filter((_,n)=>i!==n).join('\n'));}}>Remove Row</button></fieldset>})}</div><button className="sop-btn" type="button" onClick={()=>{setAsTable(true);onChange([...lines,schema.map(()=>'').join(' | ')].join('\n'))}}><Plus size={14}/>Add Row</button></>:<Field label="Section Text"><textarea rows={11} value={text} onChange={e=>onChange(e.target.value)}/></Field>}</div>;
+}
+export default function SopEditor({data,policy,onExit,onSaved}:{data:EditorData;policy?:Policy;onExit:()=>void;onSaved:(id:string,version:number)=>void}){
+ const [current,setCurrent]=useState<Policy|undefined>(policy),[content,setContent]=useState<SopContent>(()=>policy?structuredClone(policy.content):emptyContent()),[audience,setAudience]=useState<Audience>(()=>policy?structuredClone(policy.audience):emptyAudience()),[topicId,setTopicId]=useState(policy?.topicId||'');
+ const [requireOnboardingSignature,setSignature]=useState(policy?.requireOnboardingSignature!==false);
+ const [baseline,setBaseline]=useState(()=>compare(content,audience,topicId,requireOnboardingSignature)),[topics,setTopics]=useState(data.topics),[step,setStep]=useState<Step>('Details'),[idx,setIdx]=useState(0),[query,setQuery]=useState(''),[err,setErr]=useState(''),[note,setNote]=useState(''),[busy,setBusy]=useState(false),locked=useRef(false);
+ const [topicForm,setTopicForm]=useState(false),[topicPrefix,setTopicPrefix]=useState(''),[topicName,setTopicName]=useState(''),[publishing,setPublishing]=useState(false),[confirmDiscard,setConfirmDiscard]=useState(false);
+ const dirty=baseline!==compare(content,audience,topicId,requireOnboardingSignature);
+ useEffect(()=>{if(!dirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirty]);
+ const topic=topics.find(t=>t.id===topicId),section=content.sections[idx];
+ const corrective=!!(current&&isCorrectivePolicy(current)||topic&&isCorrectiveTopic(topic));
+ const employeeSlot=(h:string)=>content.sections.findIndex(s=>s.heading===h&&correctiveSectionVisibility(s)==='employee');
+ const publicSection=section&&correctiveSectionVisibility(section)==='employee';
+ function topicChange(id:string){const next=topics.find(t=>t.id===id);if(next&&isCorrectiveTopic(next)&&!corrective){
+   setContent(c=>({...c,sections:[...employeeCorrectiveHeadings.slice(0,2).map(heading=>({heading,text:'',visibility:'employee' as const})),...(c.sections.some(s=>s.text.trim())?c.sections.filter(s=>s.text.trim()):[{heading:'Manager Guidance',text:''}]).map(s=>({...s,visibility:'management' as const}))]}));setIdx(0);
+  }else if(corrective&&next&&!isCorrectiveTopic(next)&&content.sections.some(s=>s.text.trim())){setErr('This draft contains separate employee and manager sections. Save it under the corrective action topic or start a new draft.');return;}else if(corrective&&next&&!isCorrectiveTopic(next)){setContent(c=>({...c,sections:emptyContent().sections}));setIdx(0);}
+  setTopicId(id);
+ }
+ function addEmployeeSection(heading:string){const existing=employeeSlot(heading);if(existing>=0){setIdx(existing);return;}setContent(c=>({...c,sections:[...c.sections,{heading,text:'',visibility:'employee'}]}));setIdx(content.sections.length);}
+ const update=(field:keyof SopContent,value:string)=>{setContent(c=>({...c,[field]:value}));setNote('')};
+ const updateSection=(field:'heading'|'text',value:string)=>setContent(c=>({...c,sections:c.sections.map((s,i)=>i===idx?{...s,[field]:value}:s)}));
+ function move(delta:number){const to=idx+delta;if(to<0||to>=content.sections.length)return;const arr=[...content.sections];[arr[idx],arr[to]]=[arr[to],arr[idx]];setContent({...content,sections:arr});setIdx(to);}
+ function close(){if(dirty)setConfirmDiscard(true);else onExit()}
+ async function execute(fn:()=>Promise<void>){if(locked.current)return;setErr('');setNote('');setBusy(true);locked.current=true;try{await fn()}catch(e){setErr(e instanceof Error?e.message:'Could not save this change. Your edits are still open.')}finally{setBusy(false);locked.current=false}}
+ async function persist():Promise<Policy>{
+  if(!topicId||!content.title.trim()){setStep('Details');throw new Error('Choose a policy topic and enter a title before saving.');}
+  if(current&&!dirty)return current;
+  const change=current?{action:'save',id:current.id,version:current.version,etag:current.etag}:{action:'create',topicId};
+  const result=await requestJson<{id:string;version:number;policy?:Policy}>('/api/sop',{...change,content,audience:corrective?{all:true,departments:[],levels:[],people:[]}:audience,requireOnboardingSignature});
+  const saved=result.policy||(await requestJson<EditorData>('/api/sop')).policies.find(p=>p.id===result.id&&p.version===result.version);
+  if(!saved){throw new Error('Draft saved, but it could not be reopened. Return to Drafts and find the saved draft before retrying.');}
+  setCurrent(saved);setContent(structuredClone(saved.content));setAudience(structuredClone(saved.audience));setTopicId(saved.topicId);setSignature(saved.requireOnboardingSignature!==false);setBaseline(compare(saved.content,saved.audience,saved.topicId,saved.requireOnboardingSignature!==false));return saved;
+ }
+ async function addTopic(){await execute(async()=>{const prefix=topicPrefix.trim().toUpperCase(),name=topicName.trim();if(!name||!prefix)throw new Error('Enter a topic name and abbreviation.');await requestJson('/api/sop',{action:'topic',prefix,name,archived:false});const fresh=await requestJson<EditorData>('/api/sop');setTopics(fresh.topics);const match=fresh.topics.find(t=>t.prefix===prefix&&!t.archived);if(match)setTopicId(match.id);setTopicForm(false);setTopicName('');setTopicPrefix('');setNote('Topic added.');});}
+ const ids=[...new Set(data.policies.map(p=>p.id))];const choices=ids.map(id=>data.policies.filter(p=>p.id===id).sort((a,b)=>Number(b.status==='Published')-Number(a.status==='Published')||b.version-a.version)[0]).filter(p=>p.id!==current?.id&&p.status!=='Archived');
+ const hits=query.trim()?choices.filter(p=>(p.code+' '+p.content.shortName+' '+p.content.title).toLowerCase().includes(query.trim().toLowerCase())&&!content.relatedIds.includes(p.id)).slice(0,10):[];
+ const audienceNames=corrective||audience.all?['All Employees']:[...audience.departments.map(id=>data.departments.find(d=>d.id===id)?.name||id),...audience.levels,...audience.people.map(id=>data.people.find(p=>p.id===id)?.name||id)];
+ if(!data.canEdit||corrective&&(!data.canManageCorrective||current?.canEditPolicy===false))return <div role="alert">Draft editing is restricted.</div>;
+ return <section className="sop-editor" aria-label="Policy Editor" style={{display:"grid",gap:14}}>
+ <div className="sop-tools"><button className={short} onClick={close} disabled={busy}><ArrowLeft size={16}/>Back</button><span className="sop-tag">{current?current.code:'New Draft'}</span>{current&&<span className="sop-tag">Version {current.version}</span>}</div>
+ <h2>{current?'Edit Draft':'Create a Draft'}</h2>
+ <div className="sop-tools" style={{gap:7,flexWrap:'wrap'}}>{steps.map(s=><button key={s} type="button" className={step===s?primary:short} aria-pressed={step===s} disabled={busy} onClick={()=>{if(s==='PDF Preview'){void execute(async()=>{await persist();setStep(s)})}else setStep(s)}}>{s==='PDF Preview'&&<Eye size={15}/>} {s}</button>)}</div>
+ {err&&<p className="sop-notice" role="alert">{err}</p>}{note&&<p className="sop-notice" role="status">{note}</p>}
+ {confirmDiscard&&<section className="sop-notice"><strong>Leave Without Saving?</strong><p>Changes since your last save will be discarded.</p><div className="sop-tools"><button className={short} onClick={()=>setConfirmDiscard(false)}>Keep Editing</button><button className={short} onClick={onExit}>Discard Changes</button></div></section>}
+ <fieldset disabled={busy} style={{padding:0,border:0,minWidth:0,margin:0}}>
+ {step==='Details'&&<section className="sop-surface sop-form"><h3>Document Details</h3><div className="sop-grid2">
+ <Field label="Policy Topic *"><select value={topicId} disabled={!!current} onChange={e=>{if(e.target.value==='__new'){setTopicForm(true);return;}topicChange(e.target.value)}}><option value="">Choose a Topic</option>{topics.filter(t=>(!t.archived||t.id===topicId)&&(!isCorrectiveTopic(t)||data.canManageCorrective)).sort((a,b)=>a.prefix.localeCompare(b.prefix)).map(t=><option key={t.id} value={t.id}>{t.prefix} · {t.name}{t.archived?' (Archived)':''}</option>)}{!current&&<option value="__new">+ Create a Topic</option>}</select></Field>
+ <Field label="Policy Reference"><output style={{display:'block',padding:'9px 0'}}>{current?.code||(topic?topic.prefix+' · Number assigned when you save':'Choose a topic first')}</output></Field></div>
+ {topicForm&&<div className="sop-notice"><strong>New Policy Topic</strong><div className="sop-grid2"><Field label="Abbreviation"><input value={topicPrefix} placeholder="e.g., MEC" onChange={e=>setTopicPrefix(e.target.value.toUpperCase())}/></Field><Field label="Topic Name"><input value={topicName} placeholder="e.g., Mechanics" onChange={e=>setTopicName(e.target.value)}/></Field></div><div className="sop-tools"><button className={short} onClick={()=>void addTopic()}><Plus size={14}/>Add Topic</button><button className={short} onClick={()=>setTopicForm(false)}>Cancel</button></div></div>}
+ <Field label="Policy Title *"><input value={content.title} onChange={e=>update('title',e.target.value)} placeholder="What does this procedure cover?"/></Field>
+ <div className="sop-grid2">{([['shortName','Short Name / Acronym','text'],['policyOwner','Policy Owner','text'],['preparedDate','Date Prepared','date'],['effectiveDate','Effective Date','date'],['revision','Revision Number','text'],['approvalStatus','Approval Status on PDF','text']] as const).map(([key,label,type])=><Field key={key} label={label}><input type={type} value={content[key]||''} onChange={e=>update(key,e.target.value)}/></Field>)}</div>
+ <Field label="Search Keywords"><input value={content.keywords||''} onChange={e=>update('keywords',e.target.value)} placeholder="Aliases, common questions, or terms employees use"/></Field></section>}
+ {step==='Policy Sections'&&<section className="sop-surface sop-form"><h3>Policy Sections</h3>{corrective?<CorrectiveAudience/>:<p style={muted}>Choose a section to edit. The PDF uses the same section order.</p>}
+ <Field label="Section to Edit"><select value={section?idx:''} onChange={e=>setIdx(Number(e.target.value))}>{!section&&<option value="">Choose a Section</option>}{corrective?(['employee','management'] as const).map(v=><optgroup key={v} label={v==='employee'?'All Employees':'Managers and Above Only'}>{content.sections.map((s,i)=>correctiveSectionVisibility(s)===v?<option key={i} value={i}>{s.heading||'Untitled Section'}</option>:null)}</optgroup>):content.sections.map((s,i)=><option key={i} value={i}>{i+1}. {s.heading||'Untitled Section'}</option>)}</select></Field>
+ {section&&<>{corrective&&<div className="sop-corrective-section-info"><strong>{publicSection?'Visible to All Employees':'Managers and Above Only'}</strong>{publicSection?'Write the employee-facing rule, typical consequences, or rights here.':'Document supervisor instructions here. This text will not appear in the employee edition.'}</div>}
+ {corrective&&publicSection?<Field label="Employee Section Heading"><select value={section.heading} onChange={e=>updateSection('heading',e.target.value)}>{employeeCorrectiveHeadings.filter(h=>employeeSlot(h)<0||h===section.heading).map(h=><option key={h}>{h}</option>)}</select></Field>:<Field label="Section Heading"><input value={section.heading} onChange={e=>updateSection('heading',e.target.value)}/></Field>}<SectionText key={idx} heading={section.heading} text={section.text} onChange={v=>updateSection('text',v)}/>
+ <div className="sop-tools"><button className={short} disabled={idx===0} onClick={()=>move(-1)}><ArrowUp size={14}/>Move Up</button><button className={short} disabled={idx===content.sections.length-1} onClick={()=>move(1)}><ArrowDown size={14}/>Move Down</button><button className={short} onClick={()=>{if(section.text.trim()&&!window.confirm('Remove this section from the working draft?'))return;setContent({...content,sections:content.sections.filter((_,i)=>i!==idx)});setIdx(Math.max(0,idx-1))}}>Remove Section</button></div></>}
+ <div className="sop-tools"><button className={short} onClick={()=>{setContent({...content,sections:[...content.sections,{heading:'',text:'',...(corrective?{visibility:'management' as const}:{})}]});setIdx(content.sections.length)}}><Plus size={14}/>{corrective?'Add Manager Section':'Add Section'}</button>{corrective&&employeeCorrectiveHeadings.filter(h=>employeeSlot(h)<0).map(h=><button key={h} type="button" className={short} onClick={()=>addEmployeeSection(h)}><Plus size={14}/>{h}</button>)}{section&&idx<content.sections.length-1&&<button className={short} onClick={()=>setIdx(idx+1)}>Next Section <ArrowRight size={14}/></button>}</div></section>}
+ {step==='Audience & References'&&<><section className="sop-surface sop-form"><h3>Who Can Read This Policy?</h3>{corrective?<CorrectiveAudience/>:<><p style={muted}>These choices apply to the published version. A match in any selected group grants access.</p>
+ <div className="sop-tools"><button className={!audience.all?primary:short} aria-pressed={!audience.all} onClick={()=>setAudience({...audience,all:false})}><ShieldCheck size={14}/>Selected Audience</button><button className={audience.all?primary:short} aria-pressed={audience.all} onClick={()=>setAudience({...audience,all:true})}>All Employees</button></div>
+ {!audience.all&&<div className="sop-grid2"><SearchChoices label="Departments" options={data.departments} selected={audience.departments} onChange={v=>setAudience({...audience,departments:v})}/><SearchChoices label="Organizational Levels" options={data.levels.map(l=>({id:l,name:l}))} selected={audience.levels} onChange={v=>setAudience({...audience,levels:v})}/><SearchChoices label="Individual Employees" options={data.people} selected={audience.people} onChange={v=>setAudience({...audience,people:v})}/></div>}</>}</section>
+ <section className="sop-surface sop-form"><h3>New Hire Onboarding</h3><label style={{display:'flex',alignItems:'center',gap:9}}><input type="checkbox" style={{width:18,height:18,flex:'none'}} checked={requireOnboardingSignature} onChange={e=>setSignature(e.target.checked)}/>Require a Signature During Onboarding</label><p style={muted}>When published, new hires in the selected audience must sign this policy during onboarding.</p></section>
+ <section className="sop-surface sop-form"><h3>Related Policies</h3><Field label="Find a Policy to Reference"><ResponsiveSearchInput type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search policy number, short name, or title"/></Field>
+ {query.trim()&&!hits.length&&<p style={muted}>No matching policies to add.</p>}
+ {hits.map(p=><button className={short} key={p.id} onClick={()=>{setContent({...content,relatedIds:[...content.relatedIds,p.id]});setQuery('')}}><Plus size={14}/>{p.code} · {p.content.title}</button>)}
+ <ul>{content.relatedIds.map(id=>{const p=data.policies.find(p=>p.id===id);return <li key={id}><span>{p?p.code+' · '+p.content.title:id}</span>{' '}<button className={short} aria-label={'Remove reference '+(p?.code||id)} title={'Remove reference '+(p?.code||id)} onClick={()=>setContent({...content,relatedIds:content.relatedIds.filter(x=>x!==id)})}><X size={13}/>Remove</button></li>})}</ul></section></>}
+ {step==='PDF Preview'&&current&&<section className="sop-surface sop-form"><div className="sop-tools"><h3>Draft PDF</h3>{!corrective&&<a className={short} href={pdfUrl(current,true)} download><FileDown size={15}/>Download PDF</a>}</div>{corrective?<CorrectiveDraftPreview policy={current} url={pdfUrl(current)+'&edit='+encodeURIComponent(current.etag)}/>:<SopPdfPages title={'Draft PDF: '+current.code} url={pdfUrl(current)+'&edit='+encodeURIComponent(current.etag)}/>}</section>}
+ <Dialog open={publishing} onOpenChange={value=>{if(!busy)setPublishing(value)}}>
+ <DialogContent className="sop-pub-dialog" showCloseButton={!busy}>
+ <DialogTitle>Approve and Publish This Policy?</DialogTitle>
+ <DialogDescription>{content.title||'Untitled Policy'}{current?' · '+current.code+' · Version '+current.version:''}</DialogDescription>
+ {corrective&&<CorrectiveAudience/>}<div className="sop-notice"><strong>Who Must Sign</strong><p>{audienceNames.join(', ')}. Each employee in this audience must open and acknowledge this edition, including employees who signed an earlier version.</p>
+ <p>{requireOnboardingSignature?'New hires in this audience must also sign during onboarding.':'This policy does not block new-hire onboarding.'}</p></div>
+ <p>Published copies will show your name and the time of approval. Any previous edition and its signatures stay in history.</p>
+ <p style={muted}>Titles and codes of related policies printed in the PDF are visible to this audience. Check those references before approving.</p>
+ {err&&<p className="sop-notice" role="alert">{err}</p>}
+ <div className="sop-tools"><button className={short} disabled={busy} onClick={()=>setPublishing(false)}>Continue Editing</button><button className={primary} disabled={busy||!data.signerNames[0]} onClick={()=>void execute(async()=>{const p=await persist();const result=await requestJson<{id:string;version:number}>('/api/sop',{action:'publish',id:p.id,version:p.version,etag:p.etag,signerName:data.signerNames[0],assent:true,content:p.content,audience:p.audience,requireOnboardingSignature:p.requireOnboardingSignature!==false});setPublishing(false);onSaved(result.id,result.version)})}><Check size={16}/>{busy?'Publishing…':'Approve & Publish as '+(data.signerNames[0]||'…')}</button></div>
+ </DialogContent></Dialog>
+ <div className="sop-tools" style={{marginTop:14,flexWrap:'wrap'}}><button className={primary} onClick={()=>void execute(async()=>{const p=await persist();setNote('Saved '+p.code+' as a draft.')})}><Save size={16}/>{busy?'Working…':'Save Draft'}</button><button className={short} onClick={()=>void execute(async()=>{await persist();setStep('PDF Preview');setNote('PDF generated from the saved draft.')})}><FileDown size={16}/>Generate PDF</button><button className={short} onClick={()=>{if(corrective&&!hasCorrectiveEmployeeGuide(content)){setStep('Policy Sections');const missing=employeeCorrectiveHeadings.slice(0,2).find(h=>!content.sections.some(s=>s.heading===h&&correctiveSectionVisibility(s)==='employee'&&s.text.trim()));if(missing)addEmployeeSection(missing);setErr('Complete the employee conduct standard and typical consequences before publishing.');return;}if(!audienceNames.length){setStep('Audience & References');setErr('Select an audience before publishing.');return;}setErr('');setPublishing(true)}}><Upload size={16}/>Publish</button><small role="status">{dirty?'Unsaved Changes':current?'Saved Draft':''}</small></div>
+ </fieldset></section>;
+}

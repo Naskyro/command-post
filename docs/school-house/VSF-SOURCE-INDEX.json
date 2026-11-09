@@ -1,0 +1,56 @@
+[
+  {
+    "unit": 1,
+    "type": "exam",
+    "title": "VSF Exam Unit 1",
+    "id": "1n4QIWJRdoNTCP8C5FyzjdqS5pBYrdQD1w8p6r7e_0jw",
+    "url": "https://docs.google.com/document/d/1n4QIWJRdoNTCP8C5FyzjdqS5pBYrdQD1w8p6r7e_0jw/edit?usp=drivesdk",
+    "modified": "2026-08-05T21:25:06.312Z",
+    "extraction": "Google Drive fetch readable text"
+  },
+  {
+    "unit": 2,
+    "type": "exam",
+    "title": "VSF Exam Unit 2",
+    "id": "1PuyEJbhPfmnqE8oe4g-Iv8J3OhEz5It_Lz1IAkzR0wE",
+    "url": "https://docs.google.com/document/d/1PuyEJbhPfmnqE8oe4g-Iv8J3OhEz5It_Lz1IAkzR0wE/edit?usp=drivesdk",
+    "modified": "2026-08-05T21:25:33.635Z",
+    "extraction": "Google Drive fetch readable text"
+  },
+  {
+    "unit": 3,
+    "type": "exam",
+    "title": "VSF Exam Unit 3",
+    "id": "1-UOX4Bb3WjpNgzxnSFwJOWXjkpOtNmgz2uTZ8mfvggM",
+    "url": "https://docs.google.com/document/d/1-UOX4Bb3WjpNgzxnSFwJOWXjkpOtNmgz2uTZ8mfvggM/edit?usp=drivesdk",
+    "modified": "2026-08-05T21:26:30.692Z",
+    "extraction": "Google Drive fetch readable text"
+  },
+  {
+    "unit": 1,
+    "type": "study-guide",
+    "title": "Vehicle Storage Facility Glossary Study Guide #1",
+    "id": "1ZwF9DqJdoSsgrzz2-AX7wPddT8yM5rS2nLyIxUM52N0",
+    "url": "https://docs.google.com/document/d/1ZwF9DqJdoSsgrzz2-AX7wPddT8yM5rS2nLyIxUM52N0/edit?usp=drivesdk",
+    "modified": "2026-08-05T21:19:08.112Z",
+    "extraction": "Google Drive fetch readable text"
+  },
+  {
+    "unit": 2,
+    "type": "study-guide",
+    "title": "Vehicle Storage Facility Glossary Study Guide #2",
+    "id": "17saAUZA5bRcC57aVChWB_s2C2GnFlZ2ncue5tqjtTFk",
+    "url": "https://docs.google.com/document/d/17saAUZA5bRcC57aVChWB_s2C2GnFlZ2ncue5tqjtTFk/edit?usp=drivesdk",
+    "modified": "2026-08-05T21:24:40.731Z",
+    "extraction": "Google Drive fetch readable text"
+  },
+  {
+    "unit": 3,
+    "type": "study-guide",
+    "title": "Vehicle Storage Facility Study Guide #3",
+    "id": "14Fv0UryrQEgveRqCBGlknqNV3z1BOzhTOli_v8ivukg",
+    "url": "https://docs.google.com/document/d/14Fv0UryrQEgveRqCBGlknqNV3z1BOzhTOli_v8ivukg/edit?usp=drivesdk",
+    "modified": "2026-08-05T21:19:35.291Z",
+    "extraction": "Google Drive fetch readable text"
+  }
+]

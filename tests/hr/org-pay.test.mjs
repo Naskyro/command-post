@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {orgChartNodes} from '../../lib/hr/org-chart.ts';
+import {effectivePay,validatePayAgreement} from '../../lib/hr/pay-agreements.ts';
+test('org scope includes ancestors and descendants but excludes sibling branches',()=>{const rows=[['top',''],['manager','top'],['self','manager'],['child','self'],['peer','manager'],['other','top']].map(([id,supervisor])=>({id,supervisor,kind:'person',version:1,status:'Active',rate:123}));const nodes=orgChartNodes({person:'self',owner:false},rows);assert.deepEqual(nodes.map(n=>n.id),['top','manager','self','child']);assert.ok(nodes.every(n=>n.rate===undefined));});
+test('scheduled raise applies on its date and cancelled events do not',()=>{const p={kind:'person',id:'p',version:1,rate:99,payBaseline:[{rate:15,title:'Trainee'}],payTimeline:[{effectiveDate:'2026-10-01',rate:20,title:'Dispatcher'},{effectiveDate:'2026-11-01',rate:25,status:'Cancelled'}]};assert.equal(effectivePay(p,'2026-09-30').rate,15);assert.equal(effectivePay(p,'2026-10-01').rate,20);assert.equal(effectivePay(p,'2026-11-02').rate,20);assert.equal(effectivePay(p,'2026-10-01').title,'Dispatcher');});
+test('commission only has no hourly base; bonus requires a frequency and trigger',()=>{const d={payType:'Commission only',rate:100,exempt:false,bonusRules:[]};assert.equal(validatePayAgreement(d).rate,0);assert.throws(()=>validatePayAgreement({...d,bonusRules:[{name:'Goal',basis:'Fixed Amount',amount:100,trigger:'Performance'}]}));});

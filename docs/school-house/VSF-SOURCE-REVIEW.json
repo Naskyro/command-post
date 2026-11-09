@@ -1,0 +1,123 @@
+{
+  "checkedAt": "2026-11-01",
+  "scope": "Content imported from six user-requested Google Docs. Original raw PDFs and source text are preserved. Original exams require instructor review, and their answer keys are instructor-only. Published practice questions use stable, source-matched topics rather than silently adopting flawed keys.",
+  "sources": [
+    {
+      "unit": 1,
+      "type": "exam",
+      "title": "VSF Exam Unit 1",
+      "id": "1n4QIWJRdoNTCP8C5FyzjdqS5pBYrdQD1w8p6r7e_0jw",
+      "url": "https://docs.google.com/document/d/1n4QIWJRdoNTCP8C5FyzjdqS5pBYrdQD1w8p6r7e_0jw/edit?usp=drivesdk",
+      "modified": "2026-08-05T21:25:06.312Z",
+      "extraction": "Google Drive fetch readable text"
+    },
+    {
+      "unit": 2,
+      "type": "exam",
+      "title": "VSF Exam Unit 2",
+      "id": "1PuyEJbhPfmnqE8oe4g-Iv8J3OhEz5It_Lz1IAkzR0wE",
+      "url": "https://docs.google.com/document/d/1PuyEJbhPfmnqE8oe4g-Iv8J3OhEz5It_Lz1IAkzR0wE/edit?usp=drivesdk",
+      "modified": "2026-08-05T21:25:33.635Z",
+      "extraction": "Google Drive fetch readable text"
+    },
+    {
+      "unit": 3,
+      "type": "exam",
+      "title": "VSF Exam Unit 3",
+      "id": "1-UOX4Bb3WjpNgzxnSFwJOWXjkpOtNmgz2uTZ8mfvggM",
+      "url": "https://docs.google.com/document/d/1-UOX4Bb3WjpNgzxnSFwJOWXjkpOtNmgz2uTZ8mfvggM/edit?usp=drivesdk",
+      "modified": "2026-08-05T21:26:30.692Z",
+      "extraction": "Google Drive fetch readable text"
+    },
+    {
+      "unit": 1,
+      "type": "study-guide",
+      "title": "Vehicle Storage Facility Glossary Study Guide #1",
+      "id": "1ZwF9DqJdoSsgrzz2-AX7wPddT8yM5rS2nLyIxUM52N0",
+      "url": "https://docs.google.com/document/d/1ZwF9DqJdoSsgrzz2-AX7wPddT8yM5rS2nLyIxUM52N0/edit?usp=drivesdk",
+      "modified": "2026-08-05T21:19:08.112Z",
+      "extraction": "Google Drive fetch readable text"
+    },
+    {
+      "unit": 2,
+      "type": "study-guide",
+      "title": "Vehicle Storage Facility Glossary Study Guide #2",
+      "id": "17saAUZA5bRcC57aVChWB_s2C2GnFlZ2ncue5tqjtTFk",
+      "url": "https://docs.google.com/document/d/17saAUZA5bRcC57aVChWB_s2C2GnFlZ2ncue5tqjtTFk/edit?usp=drivesdk",
+      "modified": "2026-08-05T21:24:40.731Z",
+      "extraction": "Google Drive fetch readable text"
+    },
+    {
+      "unit": 3,
+      "type": "study-guide",
+      "title": "Vehicle Storage Facility Study Guide #3",
+      "id": "14Fv0UryrQEgveRqCBGlknqNV3z1BOzhTOli_v8ivukg",
+      "url": "https://docs.google.com/document/d/14Fv0UryrQEgveRqCBGlknqNV3z1BOzhTOli_v8ivukg/edit?usp=drivesdk",
+      "modified": "2026-08-05T21:19:35.291Z",
+      "extraction": "Google Drive fetch readable text"
+    }
+  ],
+  "findings": [
+    {
+      "source": "VSF Exam Unit 1",
+      "questionNumbers": [
+        45,
+        46,
+        48,
+        49,
+        51,
+        52,
+        53
+      ],
+      "severity": "review-required",
+      "detail": "Key is explicitly Outdated, lacks Q53, and has internal mismatches; never use it directly for scoring."
+    },
+    {
+      "source": "VSF Exam Unit 2",
+      "questionNumbers": [
+        1,
+        21
+      ],
+      "severity": "review-required",
+      "detail": "Q1 asks which jurisdiction uses the Private Property Impounds & Repossession Microsoft form; the source key says C (WilCo), while the study guide names TCSO (B). Q21 describes nonmatching truck and cab-card identifiers; key says A (temporary license), while option B describes a different truck. Both need instructor correction."
+    },
+    {
+      "source": "Study Guides 1–3",
+      "severity": "review-required",
+      "detail": "Source wording conflates legal maxima, permitted fees, and mandatory company charges. Preserve original but do not present all old wording as current legal authority."
+    },
+    {
+      "source": "Study Guide 2",
+      "severity": "review-required",
+      "detail": "References Transportation Code Chapter 2308; confirm correction to Occupations Code Chapter 2308 before publishing regulatory exam."
+    },
+    {
+      "source": "Study Guide 3",
+      "severity": "review-required",
+      "detail": "One-hour appointment language must not be taught as a universal requirement; current TDLR release guidance distinguishes 24-hour-accepting facilities and other facilities."
+    },
+    {
+      "source": "Study Guide 3",
+      "severity": "review-required",
+      "detail": "A notification fee is not automatically mandatory just because the clock reaches 24 hours. Current TDLR consumer guidance ties it to notice being sent and prohibits it for release within 24 hours or before notice."
+    }
+  ],
+  "verificationReferences": [
+    {
+      "url": "https://www.tdlr.texas.gov/towing/compliance/vsf/fees.htm",
+      "topic": "Current fee page and 12-hour storage exception; the fetched page still lists the 2023 adjustment amounts. Do not claim a newer fee merely based on today’s date."
+    },
+    {
+      "url": "https://www.tdlr.texas.gov/towing/compliance/vsf/vehicle-release.htm",
+      "topic": "Release hours, documents, and limitations on requiring insurance."
+    },
+    {
+      "url": "https://www.tdlr.texas.gov/towing/consumerinfo.htm",
+      "topic": "Notification charge conditions and consumer release rights."
+    },
+    {
+      "url": "https://tcss.legis.texas.gov/resources/OC/htm/OC.2303.htm",
+      "topic": "First notice timing and statutory fee provisions."
+    }
+  ]
+}

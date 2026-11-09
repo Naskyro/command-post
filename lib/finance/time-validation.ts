@@ -1,7 +1,9 @@
 import { canReviewOvertime, overtimeReasons } from './overtime.ts';
+import { benefitEligibility } from '../hr/leave.ts';
+import { hrCan } from '../hr/permissions.ts';
 import { canAccess } from './access.ts';
 import type { FinRecord, Viewer } from './model';
-import { isExempt, overtimeEligible, leaveBalance, localInstant, managesPerson } from './timeclock.ts';
+import { isExempt, leaveBalance, localInstant, managesPerson } from './timeclock.ts';
 export const timeKinds = ['shift', 'timeCorrection', 'leaveRequest', 'leaveCredit', 'overtime', 'time', 'shiftTemplate', 'shiftRequest'];
 export function validateTime(next: FinRecord, old: FinRecord | undefined, v: Viewer, records: FinRecord[]) {
     if (!timeKinds.includes(next.kind))
@@ -45,16 +47,27 @@ export function validateTime(next: FinRecord, old: FinRecord | undefined, v: Vie
     if (['leaveRequest', 'leaveCredit'].includes(next.kind)) {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(String(next.date)) || !Number.isFinite(Number(next.hours)) || Number(next.hours) === 0)
             throw new Error('Enter a date and hours.');
-        if (!['PTO', 'Comp time', 'Unpaid'].includes(String(next.type)) || next.kind === 'leaveCredit' && next.type === 'Unpaid')
+        if (!['PTO', 'Comp time', 'Sick', 'Personal', 'Bereavement', 'Unpaid', 'Protected Leave Review'].includes(String(next.type)) || next.kind === 'leaveCredit' && ['Unpaid', 'Protected Leave Review'].includes(String(next.type)))
             throw new Error('Choose a valid time-off type.');
         if (next.type === 'Comp time' && (!p || !isExempt(p)))
             throw new Error('Comp time is available only to workers marked salaried exempt in their pay agreement.');
+        const benefits = benefitEligibility(p!);
+        if (!benefits.eligible && !['Unpaid','Protected Leave Review'].includes(String(next.type))) throw new Error(benefits.pending ? 'HR must confirm the employment class before adding paid company benefits.' : 'This employment class uses unpaid time off with approved shift coverage. Use Protected Leave Review for a leave entitlement requiring individual review.');
         if (next.kind === 'leaveCredit' && (!manager || !canAccess(v, 'Timeclock', 'Time off', true) || !['Approved'].includes(String(next.status)) || !String(next.reason || '').trim()))
             throw new Error('Your supervisor must record the balance adjustment and reason.');
         if (next.kind === 'leaveRequest') {
+            if (!manager) { delete next.coverageConfirmed; delete next.protectedReviewCompleted; }
             if (Number(next.hours) <= 0 || Number(next.hours) > 24 || !['Requested', 'Approved', 'Denied', 'Cancelled'].includes(String(next.status)))
                 throw new Error('Request 0–24 hours for one date.');
-            if (next.status === 'Approved' && next.type !== 'Unpaid') {
+            if (next.status === 'Approved' && next.type === 'Unpaid' && ['Part-Time','Temporary','Seasonal'].includes(String(p?.employmentClass))) {
+                const coverage = records.find(r => r.kind === 'person' && r.id === next.coveragePerson && r.status === 'Active' && r.id !== next.person);
+                if (!coverage || next.coverageConfirmed !== true) throw new Error('Confirm an active replacement worker and shift coverage before approving unpaid time off.');
+            }
+            if (next.type === 'Protected Leave Review') {
+                next.protectedReviewRequired = true;
+                if (next.status === 'Approved' && (!hrCan(v, 'managePersonnel', String(next.person), records) || next.protectedReviewCompleted !== true)) throw new Error('An assigned personnel reviewer must complete the protected-leave review. Ordinary coverage requirements do not decide this request.');
+            }
+            if (next.status === 'Approved' && !['Unpaid','Protected Leave Review'].includes(String(next.type))) {
                 const b = leaveBalance(records.filter(r => r.id !== next.id), String(next.person), String(next.type));
                 if (!b.known || b.available < Number(next.hours))
                     throw new Error('Verify the leave balance and available hours before approving.');
@@ -113,20 +126,25 @@ export function validateTime(next: FinRecord, old: FinRecord | undefined, v: Vie
         }
     }
     if (next.kind === 'overtime') {
-        if (!p || !overtimeEligible(p) || p.status !== 'Active') throw new Error('Overtime requests are available to active nonexempt employees.');
-        if (old && ['Approved', 'Denied'].includes(String(old.decision))) throw new Error('This overtime decision is saved. Submit a new request for additional hours.');
+        if (!p || p.workerType !== 'Employee' || p.status !== 'Active') throw new Error('Additional-hours requests are available to active employees.');
+        if (old && ['Approved', 'Denied'].includes(String(old.decision))) throw new Error('This hours-authorization decision is saved. Submit a new request for additional hours.');
         const date = String(next.date || ''), hours = Number(next.hours);
         if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0,10) !== date || !Number.isFinite(hours) || hours <= 0 || hours > 128)
-            throw new Error('Enter a valid date and additional overtime hours greater than zero, up to 128 for one workweek.');
-        if (!overtimeReasons.includes(String(next.requestType)) && !(old && old.requestType === next.requestType)) throw new Error('Choose a reason for requesting overtime.');
+            throw new Error('Enter a valid date and additional work hours greater than zero, up to 128 for one workweek.');
+        if (!overtimeReasons.includes(String(next.requestType)) && !(old && old.requestType === next.requestType)) throw new Error('Choose a reason for requesting additional hours.');
         if (!['Pending', 'Approved', 'Denied'].includes(String(next.decision))) throw new Error('Choose a valid overtime decision.');
         const deciding = next.decision !== 'Pending';
         if (deciding && (!old || old.decision !== 'Pending' || !canReviewOvertime(v, String(next.person), records)))
-            throw new Error('A supervisor must review a saved request. You cannot approve your own overtime.');
+            throw new Error('A supervisor must review a saved request. You cannot approve your own additional hours.');
         if (deciding && ['date', 'hours', 'requestType', 'explanation'].some(k => next[k] !== old?.[k])) throw new Error('Review the request as submitted. Edit and save it before deciding.');
+        if (deciding && next.decision === 'Approved') {
+            const approved = next.approvedHours === undefined ? hours : Number(next.approvedHours);
+            if (!Number.isFinite(approved) || approved <= 0 || approved > hours) throw new Error('Approved hours must be greater than zero and no more than the requested hours.');
+            next.approvedHours = approved;
+        } else delete next.approvedHours;
         if (deciding && !String(next.reviewNote || '').trim()) throw new Error('Add a review note.');
-        if (!deciding && old && next.person !== v.person) throw new Error('Only the employee can edit their pending overtime request.');
-        if (!old && next.person !== v.person && !manager) throw new Error('You can only request your own overtime.');
+        if (!deciding && old && next.person !== v.person) throw new Error('Only the employee can edit their pending additional-hours request.');
+        if (!old && next.person !== v.person && !manager) throw new Error('You can only request your own additional hours.');
         next.status = deciding ? 'Reviewed' : 'Pending';
         next.submittedBy = old?.submittedBy || v.person;
         next.submittedAt = old?.submittedAt || new Date().toISOString();

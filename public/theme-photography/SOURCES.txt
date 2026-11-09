@@ -1,0 +1,43 @@
+COMMAND | Nature & Realistic theme art
+
+These photographic-style illustrations were generated specifically for this collection. They are not historical photographs, and do not depict named people, actual places of business, or company activity. No stock provider, third-party remote URL or image generation at runtime is used.
+
+Creative direction: original editorial nature photography, natural daylight or realistic nighttime exposure, restrained color, a legible primary subject, no text or logos. Each collection includes two distinct compositions. Source compositions were split at their panel boundaries, left in their natural proportions and individually encoded as WebP. Preserve proportions with object-fit: cover; use each mapped focal point if cropping for a thumbnail or banner.
+
+FILE  |  COLLECTION  |  EDITION  |  SUBJECT
+frosted-evergreen.webp  |  Christmas  |  Frosted Evergreen  |  Frost-tipped evergreen needles and a pine cone
+winter-holly.webp  |  Christmas  |  Winter Holly  |  Scarlet holly berries and evergreen leaves
+harvest-gourds.webp  |  Thanksgiving  |  Harvest Gourds  |  Autumn gourds and golden corn
+golden-wheat.webp  |  Thanksgiving  |  Golden Wheat  |  Ripe golden wheat against the sky
+crimson-rose.webp  |  Valentine’s Day  |  Crimson Rose  |  A deep crimson rose with morning dew
+blush-peonies.webp  |  Valentine’s Day  |  Blush Peonies  |  Soft pink peonies on white linen
+fireworks-over-water.webp  |  Independence Day  |  Fireworks Over Water  |  Fireworks reflected in a lake
+prairie-fireflies.webp  |  Independence Day  |  Prairie Fireflies  |  Summer fireflies above prairie grasses
+southern-live-oak.webp  |  Black History Month  |  Southern Live Oak  |  A sunlit live oak draped in Spanish moss
+magnolia-bloom.webp  |  Black History Month  |  Magnolia Bloom  |  Cream magnolia blooming among green leaves
+easter-lilies.webp  |  Easter  |  Easter Lilies  |  White lilies in a spring garden
+robins-nest.webp  |  Easter  |  Robin’s Nest  |  Pale blue eggs resting in a nest
+lantern-at-dusk.webp  |  Halloween  |  Lantern at Dusk  |  A glowing jack-o’-lantern at dusk
+moonlit-branches.webp  |  Halloween  |  Moonlit Branches  |  A crescent moon and bare branches
+first-light.webp  |  New Year  |  First Light  |  Sunrise above a sea of clouds
+midnight-sparklers.webp  |  New Year  |  Midnight Sparklers  |  Silver and gold sparklers in the night
+scarlet-canopy.webp  |  Fall  |  Scarlet Canopy  |  Sunlight through scarlet maple leaves
+autumn-creek.webp  |  Fall  |  Autumn Creek  |  Amber leaves on a still creek
+summer-surf.webp  |  Summer  |  Summer Surf  |  Turquoise surf on a sandy shore
+sunflower-field.webp  |  Summer  |  Sunflower Field  |  Golden sunflowers beneath a blue sky
+wildflower-meadow.webp  |  Spring  |  Wildflower Meadow  |  Purple and yellow meadow wildflowers
+cherry-blossom.webp  |  Spring  |  Cherry Blossom  |  Pink cherry blossoms on a branch
+alpine-lake.webp  |  Winter  |  Alpine Lake  |  A frozen alpine lake and snowy ridgeline
+snowy-birches.webp  |  Winter  |  Snowy Birches  |  White birch trunks in a snowy forest
+dove-of-peace.webp  |  Martin Luther King Jr. Day  |  Dove of Peace  |  A white dove on a branch
+reflecting-pool.webp  |  Martin Luther King Jr. Day  |  Reflecting Pool  |  Trees reflected in a still pool at dawn
+remembrance-poppies.webp  |  Memorial Day  |  Remembrance Poppies  |  Red poppies in morning light
+white-lily.webp  |  Memorial Day  |  White Lily  |  A white lily beside a weathered stone
+gulf-coast-sunrise.webp  |  Juneteenth  |  Gulf Coast Sunrise  |  Gentle Gulf Coast waves at sunrise
+coastal-hibiscus.webp  |  Juneteenth  |  Coastal Hibiscus  |  A deep red hibiscus in coastal light
+field-rows.webp  |  Labor Day  |  Field Rows  |  Orderly green farm rows in sunlight
+honeybee-at-work.webp  |  Labor Day  |  Honeybee at Work  |  A honeybee at work on golden comb
+blue-ridge-dawn.webp  |  Veterans Day  |  Blue Ridge Dawn  |  Dawn above misty blue mountain ridges
+redwood-grove.webp  |  Veterans Day  |  Redwood Grove  |  Sunlight between tall redwood trunks
+birthday-bouquet.webp  |  Birthday  |  Birthday Bouquet  |  A fresh bouquet of dahlias and roses
+candlelight.webp  |  Birthday  |  Candlelight  |  A birthday candle on a small cream cake

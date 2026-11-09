@@ -48,7 +48,7 @@ test('employee Home returns only their released paystubs, expenses and shifts',(
  ];
  const content=homeContent(employee,records,availableWidgets(employee,records),clockNow),json=JSON.stringify(content);
  assert.equal(content.pay.items.length,1);assert.equal(content.pay.items[0].value,'$640.00');assert.equal(content.spending.metric,'$25.00');
- assert.deepEqual(content.shifts.items.map(r=>r.id),['mine']);assert.ok(!json.includes('Private Other'));assert.ok(!json.includes('99,999'));assert.ok(!json.includes('77,777'));assert.ok(!json.includes('55,555'));
+ assert.deepEqual(content.shifts.items.map(r=>r.id),['mine']);assert.equal(content.shifts.items[0].title,'09-06-2026 08:00pm CT');assert.match(content.shifts.items[0].detail,/09-07-2026 08:00am CT/);assert.equal(content.pay.items[0].title,'08-23-2026 – 08-29-2026');assert.ok(!json.includes('Private Other'));assert.ok(!json.includes('99,999'));assert.ok(!json.includes('77,777'));assert.ok(!json.includes('55,555'));
  assert.equal(content.payroll,undefined);assert.equal(content.team_time,undefined);
 });
 test('supervisor team widget excludes peers and former employees, and exposes no pay rates',()=>{

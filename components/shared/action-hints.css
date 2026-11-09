@@ -1,0 +1,2 @@
+.command-action-hint{position:fixed;z-index:2147483000;max-width:min(290px,calc(100vw - 16px));padding:9px 12px;border:1px solid #ffffff24;border-radius:8px;background:#202523;color:#fff;font-family:Inter,Arial,sans-serif;font-size:12px;font-weight:550;line-height:1.45;letter-spacing:0;box-shadow:0 4px 16px #0003;pointer-events:none;overflow-wrap:anywhere;text-align:left}
+@media print{.command-action-hint{display:none!important}}

@@ -1,0 +1,23 @@
+.sh-cover{--sh-cover-base:#182429;--sh-cover-top:#223337;position:relative;isolation:isolate;overflow:hidden;display:block;width:100%;aspect-ratio:16/9;container-type:inline-size;background:linear-gradient(115deg,var(--sh-cover-base) 18%,var(--sh-cover-top) 100%);text-align:left;color:#fff}
+.sh-cover-dispatch{--sh-cover-base:#102637;--sh-cover-top:#154455}.sh-cover-field{--sh-cover-base:#12372f;--sh-cover-top:#235048}.sh-cover-executive{--sh-cover-base:#332435;--sh-cover-top:#48323b}
+.sh-cover-drawing{position:absolute;right:1%;bottom:0;width:44%;height:88%;color:var(--sh-cover-accent);transform:translateX(var(--sh-cover-shift,0px));z-index:-1}
+.sh-cover-type{position:absolute;inset:0;display:flex;flex-flow:column nowrap;justify-content:center;align-items:flex-start;gap:4%;padding:6% 5%;background:linear-gradient(90deg,var(--sh-cover-base) 24%,transparent 78%)}
+.sh-cover-brand{display:inline-flex;align-items:center;gap:5px;font-size:clamp(7px,2.55cqw,11px);font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#f4f8f7;white-space:nowrap}
+.sh-cover-brand img{display:block;width:clamp(27px,13cqw,55px);height:auto;aspect-ratio:2;object-fit:contain}
+.sh-cover .sh-cover-type>strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;width:78%;font-size:clamp(13px,6.8cqw,30px);letter-spacing:-.035em;line-height:1.04;color:#fff;font-weight:750;overflow-wrap:anywhere}
+.sh-cover-type .sh-cover-topic{font-size:clamp(8px,3.2cqw,13px);line-height:1.1;color:var(--sh-cover-accent);font-weight:650;letter-spacing:0;white-space:nowrap;max-width:75%;overflow:hidden;text-overflow:ellipsis}
+.sh-cover .sh-cover-upload{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;visibility:hidden;background:transparent}.sh-cover .sh-cover-upload.ready{visibility:visible}
+.sh-cover-editor{background:var(--sh-card,var(--ws-surface,#fff));border:1px solid var(--sh-line,var(--ws-line,#d7e3df));border-radius:11px;padding:15px;display:grid;gap:12px;min-width:0}
+.sh-cover-editor h3{margin:0;font-weight:700;font-size:16px;line-height:1.3}.sh-cover-editor p,.sh-cover-options>small,.sh-cover-editlayout figcaption{font-size:12px;line-height:1.5;margin:3px 0 0;color:var(--ws-muted,#506269)}
+.sh-cover-editlayout{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,1.5fr);gap:18px;align-items:start}
+.sh-cover-editlayout figure{margin:0;min-width:0}.sh-cover-editlayout .sh-cover,.sh-cover-course-thumb .sh-cover,.sha-review-hero>.sh-cover{border-radius:8px}
+.sh-cover-options{min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sh-cover-options>label{display:grid;gap:4px;min-width:0;font-size:12px;font-weight:650}.sh-cover-options>label>select{width:100%;min-width:0;min-height:34px;border:1px solid var(--ws-line,#cbd5d4);border-radius:7px;background:var(--ws-surface,#fff);color:var(--ws-ink,#193334);padding:5px}
+.sh-cover-actions,.sh-cover-options>small{grid-column:1/-1}.sh-cover-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sh-cover-upload-control{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ws-line,#cbd5d4);background:var(--ws-surface,#fff);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:650;cursor:pointer;overflow:hidden}
+.sh-cover-upload-control input[type=file]{position:absolute;inset:0;min-width:0;width:100%;height:100%;opacity:0;cursor:pointer}.sh-cover-upload-control.busy{opacity:.55}.sh-cover-upload-control:focus-within{outline:2px solid var(--ws-accent,#19634d);outline-offset:2px}
+.sh-cover-editor .sh-cover-message{color:var(--ws-ink,#1e352e);font-size:13px}
+.sh-cover-course-thumb{flex:0 1 160px;min-width:95px}.sh-course-banner>.sh-course-lede{flex:1;min-width:0}
+.sha-course-card>.sh-cover{border-radius:7px;margin-bottom:9px}.sha-review-hero>.sh-cover{width:min(36%,175px);flex:none}
+@media(max-width:850px){.sh-cover-editlayout{grid-template-columns:1fr}.sh-cover-editlayout figure{max-width:320px}.sh-course-banner .sh-cover-course-thumb{flex-basis:115px}}
+@media(max-width:540px){.sh-course-banner:has(.sh-cover-course-thumb){flex-wrap:wrap}.sh-course-banner>.sh-course-lede{flex-basis:100%}.sh-cover-course-thumb{flex-basis:130px!important}.sh-cover-options{grid-template-columns:1fr}.sh-cover-actions{align-items:stretch}}

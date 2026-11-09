@@ -1,0 +1,466 @@
+﻿Vehicle Storage Facility Study Guide Exam 1
+Terms and Definitions
+1. Lienholder
+A person or organization that holds a legal claim or interest (lien) on a vehicle due to a debt owed by the vehicle owner, typically as collateral for a loan.
+2. Vehicle Registrant
+The person or entity listed in the official records as having registered a vehicle with the state's department of motor vehicles or a similar agency.
+3. Vehicle Owner
+The individual or legal entity who possesses legal title or ownership of a vehicle, as recorded by the relevant state authority.
+4. PPI (Private Property Impound)
+When a vehicle is towed from private property without the owner’s consent, typically due to a violation of property rules.
+5. Consent Tow
+A tow authorized by the vehicle owner or someone authorized to act on their behalf.
+6. Incident Management
+The coordination of towing and recovery services after a vehicle accident, ensuring the roadway is cleared safely and quickly. Incident Management requests are made by law enforcement. 
+7. 24 Hours Notice
+The required notice period a VSF (Vehicle Storage Facility) must provide to a vehicle owner before additional actions are taken, such as charging additional fees or processing liens.
+8. Notification Fee
+A fee charged for notifying the vehicle owner or lienholder of the vehicle’s impoundment or storage.
+9. 3rd Party Credit Card Authorization Form
+A document that authorizes a third party to use their credit card to pay for vehicle release fees.
+10. Form VTR-265 (Licensed Vehicle Storage Facility Lien Foreclosure)
+A form used by a licensed VSF to initiate the process of foreclosing on a vehicle lien due to unpaid storage fees.
+11. Form VSF 12
+A form for requesting the commercial removal and/or inspection of a motor vehicle at a vehicle storage facility.
+12. Form VTR-71-2
+A form used to apply for authority to dispose of a vehicle to a demolisher if it is unclaimed and no longer wanted.
+13. Form VSF-13
+A form used by vehicle owners to remove or inspect their motor vehicle at a vehicle storage facility.
+14. VSF (Vehicle Storage Facility)
+A location where impounded or towed vehicles are stored until released to their owner or otherwise processed.
+15. Consent Storage
+The storage of a vehicle with the owner's or operator's permission, typically following an agreement between the vehicle owner and the storage facility.
+16. Auto Data Direct
+An online system used to verify ownership, lienholder information, and other data related to vehicles stored at a VSF.
+17. Towbook / TowCentric 
+A software system used by towing companies to manage dispatch, billing, and vehicle storage records.
+18. GOA
+A term used when a tow truck is dispatched but the vehicle is no longer present upon arrival. For consent tows, if the call was already paid, it is refunded minus the GOA fee, which typically ranges from $50 to $150 depending on distance. For private property impounds (PPI), GOA refers to when a reported violating vehicle has already left, leaving no vehicle to remove from the space.
+19. Release Photos
+Photographs taken of the vehicle when it is released from storage to document its condition at the time of release.
+20. The time to notify law enforcement of a PPI in APD and TCSO jurisdiction is 2 hours
+Law enforcement must be notified within 2 hours after a vehicle has been impounded from private property.
+21. First Notice in Texas
+The initial notice sent to the vehicle owner or lienholder within 5 days of impoundment, informing them of the vehicle’s location and charges.
+22. Second Notice in Texas
+A follow-up notice sent if the vehicle is not claimed, informing the owner or lienholder of impending auction or further actions.
+23. Auction
+The process of selling vehicles that remain unclaimed after the legal notice period has expired.
+24. MVR 
+Motor Vehicle Records. These can be found through Auto Data Direct. 
+25. Abandoned Nuisance Vehicle
+A motor vehicle that is at least 10 years old and in a condition that renders it suitable only for demolition, wrecking, or dismantling.
+
+
+Knowledge Check: Terms and Definitions
+   1. What does "PPI" stand for, and when is it used?
+
+
+
+   2. What is a "Consent Tow," and how does it differ from a PPI?
+
+
+
+   3. How long does a VSF need to wait before charging additional fees after notifying the vehicle owner?
+
+
+
+   4. What is the purpose of a Notification Fee?
+
+
+
+   5. How soon must law enforcement be notified of a PPI?
+
+
+
+   6. What is Auto Data Direct used for in a VSF?
+
+
+
+   7. What must be done if a vehicle remains unclaimed after the second notice?
+
+
+
+License Requirements for Vehicle Storage Facility (VSF) Employees
+      * Eligibility for a VSF Employee License:
+      * Applicants must submit a completed application approved by the department, pay the required fee (§85.800), and pass a criminal background check.
+      * If an applicant has tested positive for drugs under §85.725 in the past 12 months, they must provide a negative drug test for license renewal.
+      * Licensing Requirements:
+      * Employees must have one of the following to work at a VSF:
+      * A VSF employee license.
+      * An Incident Management Towing Operator license (Section 2308.153).
+      * A Private Property Towing Operator license (Section 2308.154).
+      * A Consent Towing Operator license (Section 2308.155).
+      * Restrictions on Employment:
+      * A VSF cannot employ anyone who lacks a valid TDLR license under this chapter or Chapter 86.
+      * Licensing for Sole Proprietors:
+      * If an individual manages or operates a VSF as a sole proprietor or an unincorporated business, they must hold a VSF employee license or another relevant license under this chapter or Chapter 86.
+________________
+Knowledge Check: Licensing Requirements
+      1. What must an applicant submit to be eligible for a VSF employee license?
+
+
+
+      2. What licenses are acceptable for working at a VSF?
+
+
+
+      3. Can an unlicensed individual work at a VSF?
+
+
+
+What additional requirement applies to sole proprietors who operate VSFs?
+
+
+
+
+VSF Technical Requirements
+Storage Lot Surface:
+VSFs must have an all-weather surface (e.g., asphalt, concrete, gravel) to ensure safe vehicle movement regardless of weather conditions.
+Storage Lot Lighting:
+Adequate lighting is required for nighttime vehicle releases, with a minimum of one 250-watt fixture per 1/4 acre of storage.
+Storage Lot Signs:
+Clear and visible signs must be posted at the entrance and payment areas, detailing the facility's information, fees, and accepted payment methods.
+VSF Company Records:
+Records must be maintained for at least two years, including all details of tows and storage.
+________________
+Knowledge Check: VSF Technical Requirements
+         1. What type of surface must a VSF storage lot have?
+
+
+
+         2. How many 250-watt lighting fixtures are required per 1/4 acre for nighttime releases?
+
+
+
+         3. How long must a VSF maintain records?
+
+
+
+         4. What information must be included on signs at the VSF entrance?
+
+
+Responsibilities of Licensee—Inspection of Stored Vehicles
+            * Vehicle Inspection:
+When a VSF accepts a vehicle towed without the owner's consent, they must inspect the vehicle and compare the condition to the tow ticket.
+            * Updating Records:
+Any differences in condition must be added to the tow ticket. Errors in the license plate or VIN must be corrected, and the VSF must notify previously advised individuals of corrections within 48 hours.
+________________
+Knowledge Check: Inspection of Stored Vehicles
+               1. What must be compared when inspecting a stored vehicle?
+
+
+
+               2. What happens if an error is found in the vehicle’s VIN or license plate number?
+Responsibilities of Licensee—Reasonable Storage Efforts
+                  * Proper Storage Actions:
+VSFs must take reasonable steps to secure the vehicle (e.g., locking doors, rolling up windows) as part of the standard storage fee.
+                  * Impoundment Fees:
+Additional fees may be charged if extra steps, such as covering broken windows, are required to protect the vehicle.
+________________
+
+
+Knowledge Check: Reasonable Storage Efforts
+                     1. What storage actions are included in the standard storage fee?
+
+
+
+                     2. When can a VSF charge additional impoundment fees?
+
+
+
+
+Reporting the First Notice to Vehicle Owner or Lienholder
+Timing:
+The VSF must notify the vehicle’s owner and lienholder within 5 days of receiving the vehicle for Texas-registered vehicles, or within 14 days for out-of-state vehicles.
+Postmark and Late Notification:
+The notice must be postmarked within the required time. If sent late, daily storage fees cannot be charged until 24 hours after the notice is sent.
+________________
+Knowledge Check: First Notice
+                        1. When must a VSF send the first notice to the vehicle’s owner or lienholder for a Texas-registered vehicle?
+
+
+
+                        2. What happens if the first notice is sent late?
+
+
+Reporting the Vehicle as Abandoned
+When to Report:
+A vehicle is considered abandoned if unclaimed after the 10th day following the first notice.
+Law Enforcement Involvement:
+The VSF may need to report the vehicle as abandoned to the local law enforcement agency.
+________________
+Knowledge Check: Reporting Abandoned Vehicles
+                           1. When can a VSF report a vehicle as abandoned?
+
+
+                           2. What agency must be notified when a vehicle is considered abandoned?
+
+
+Responsibilities of Licensee—Inspection of Stored Vehicles
+When a Vehicle Storage Facility (VSF) accepts a vehicle that was towed without the owner's consent, specific steps must be followed to ensure proper documentation and communication. Here's what is required:
+Inspection of the Vehicle:
+                           * Upon accepting the vehicle, the VSF must inspect it and compare the current condition and details with the information already recorded on the tow ticket.
+                           * Any differences (e.g., vehicle condition or identifying information) must be added to the tow ticket, but no prior information on the tow ticket may be written over or defaced.
+Correcting Errors in Vehicle Identification:
+                           * If the license plate number or vehicle identification number (VIN) on the tow ticket is found to be incorrect, the VSF must:
+                           * Update its records with the correct information.
+                           * Notify all previously advised persons of the correct number within 48 hours of noting the error.
+________________
+
+
+Knowledge Check: Inspection of Stored Vehicles
+                           1. What steps must be taken by a VSF when it accepts a vehicle towed without the owner’s consent?
+
+
+
+
+                           2. Can a VSF change information on a tow ticket by erasing or writing over it?
+
+
+
+
+                           3. What should be done if the VIN or license plate number on the tow ticket is incorrect?
+
+
+
+
+                           4. Within how many hours must the VSF notify relevant parties of corrected vehicle identification?
+
+________________
+
+
+Responsibilities of Licensee—Reasonable Storage Efforts; Impoundment of Stored Vehicles; Impoundment Fees
+Reasonable Storage Efforts:
+                              * A VSF operator must take reasonable steps to ensure the proper storage of a vehicle. This includes actions such as:
+                              * Locking the vehicle’s doors.
+                              * Rolling up windows and closing doors.
+                              * Closing hatchbacks, sunroofs, trunks, hoods, or convertible tops.
+                              * These basic storage actions are included in the standard storage fee and should not result in extra charges.
+Impoundment of Stored Vehicles:
+                              * If the vehicle has broken or inoperative parts, such as doors, windows, hoods, trunks, or sunroofs, the VSF operator must take additional measures to ensure the vehicle’s security. This includes using materials like plastic or canvas tarps to cover or protect the vehicle.
+Impoundment Fees:
+                              * A VSF operator can charge an impoundment fee if the following steps are taken:
+                              * Written Inventory: Conducting a detailed inventory of any unsecured personal property inside the vehicle.
+                              * Safekeeping of Property: Removing and safely storing personal property that requires protection and documenting it on the written inventory.
+                              * Registration Information: Obtaining the vehicle's registration information from the Texas Department of Transportation or a similar state agency.
+________________
+
+
+Knowledge Check: Reasonable Storage Efforts and Impoundment Fees
+                              1. What actions are considered "reasonable storage efforts" for a VSF?
+
+
+
+
+                              2. When can a VSF operator charge additional impoundment fees?
+
+
+
+
+                              3. What should a VSF do if a vehicle has broken or inoperative parts?
+
+
+
+
+                              4. What are the requirements for removing and storing personal property from a stored vehicle?
+
+
+
+
+
+
+
+
+
+
+
+
+________________
+
+
+Responsibilities of Licensee—Drug Testing Policy
+Drug Testing Policy:
+                              * All VSF employees must undergo drug testing, including pre-employment, random testing, and return-to-duty testing after a positive result.
+________________
+
+
+Knowledge Check: Drug Testing Policy
+                              1. What types of drug testing are required for VSF employees?
+
+
+
+
+                              2. When is return-to-duty testing required?
+
+
+
+
+________________
+
+
+Responsibilities of Licensee—Use of Stored Vehicles Prohibited
+Prohibition on Use:
+                              * No stored vehicle may be used for personal or business purposes by the Vehicle Storage Facility (VSF) without the written consent of the vehicle’s owner.
+________________
+
+
+Knowledge Check: Use of Stored Vehicles Prohibited
+                              1. Can a VSF use a stored vehicle for business purposes without the owner’s permission?
+
+
+
+
+                              2. What is required before a stored vehicle can be used by the VSF?
+
+
+________________
+
+
+Responsibilities of Licensee—Storage Fees and Other Charges
+This section provides a breakdown of the fees and charges that a Vehicle Storage Facility (VSF) may apply when storing a vehicle. These fees are regulated to ensure fair practices.
+Definition of VSF:
+                              * A VSF includes facilities like garages, parking lots, or other locations that store at least 10 vehicles annually, even if owned by a governmental entity.
+Fee Precedence:
+                              * The fees set in this section override any conflicting municipal ordinances or provisions in local charters.
+Notification Fee:
+                              * A VSF may charge a notification fee of up to $50 for notifying the vehicle’s owner or authorized representative.
+                              * If the cost of publication exceeds 50% of the notification fee, the VSF may recover the additional amount of publication costs, in addition to the notification fee.
+                              * If a vehicle is removed by the owner within 24 hours of the VSF receiving it, no notification is required, and no notification fee may be charged.
+                              * If a vehicle is removed before notification is sent or within 24 hours, the VSF cannot charge a notification fee.
+Daily Storage Fee:
+                              * The VSF may charge a daily storage fee based on vehicle length:
+                              * $22.85 for vehicles 25 feet or less in length.
+                              * $39.99 for vehicles over 25 feet in length.
+                              * Daily storage fees can be charged for any part of the day, but a vehicle stored for less than 12 hours cannot be charged for more than one day.
+                              * The VSF may not charge for more than five days of storage until the first notice is mailed or published.
+Impoundment Fee:
+                              * The VSF may charge an impoundment fee of $22.85 (after the 2023 biennial adjustment).
+                              * Any impoundment fee charged must be clearly itemized on the bill, specifying the exact services performed and the dates those services were provided.
+________________
+
+
+Knowledge Check: Storage Fees and Other Charges
+                              1. What is the maximum notification fee a VSF can charge?
+
+
+                              2. Under what conditions is a notification fee not required?
+
+
+                              3. How much can a VSF charge for daily storage of vehicles less than 25 feet in length?
+
+
+                              4. How many days of storage can a VSF charge for before sending the first notice?
+
+
+                              5. What must be included when an impoundment fee is charged?
+
+
+
+
+________________
+
+
+Responsibilities of Licensee—Unpermitted Tow Trucks Prohibited
+No Access for Unpermitted Tow Trucks:
+                              * A VSF cannot allow any tow truck that is not permitted under Texas Occupations Code, Chapter 2308 to enter the facility’s storage area unless specifically authorized by another law or regulation.
+________________
+
+
+Knowledge Check: Unpermitted Tow Trucks Prohibited
+                              1. Can a VSF allow an unpermitted tow truck into its storage area?
+
+
+
+
+                              2. Under what conditions can a VSF allow a tow truck without a Texas permit to enter?
+________________
+
+
+Reporting the First Notice to Vehicle Owner or Lienholder
+When a vehicle is stored at a Vehicle Storage Facility (VSF), the operator must notify the vehicle’s owner and lienholder.
+Timing of the Notice:
+                              * For Vehicles Registered in Texas: The VSF must notify the vehicle’s registered owner and primary lienholder by certified mail, return receipt requested, or electronic certified mail. This notice must be sent within 5 days but not earlier than 24 hours after receiving the vehicle.
+                              * For Vehicles Registered Out of State: The VSF must notify the vehicle’s owner and all lienholders within 14 days but no sooner than 24 hours after receiving the vehicle.
+Where to Send the Notice:
+                              * Notices must be sent to the address obtained from either:
+                              * The government entity responsible for maintaining vehicle registration records, or
+                              * An authorized private entity using a secure portal to access government vehicle records.
+________________
+
+
+Knowledge Check: First Notice
+                              1. When must the first notice be sent for a vehicle registered in Texas?
+
+
+                              2. How should the notice be sent to the vehicle owner and lienholder?
+
+
+                              3. What happens if the first notice is sent late?
+
+
+
+
+________________
+
+
+Reporting the Vehicle as Abandoned
+When to Report:
+                              * If a vehicle is unclaimed by the 10th day after the first notice is mailed or published, the VSF operator may consider the vehicle abandoned.
+Law Enforcement Involvement:
+                              * The VSF must notify the local law enforcement agency with jurisdiction over the vehicle's storage location. The agency may decide to handle the notice and disposal of the abandoned vehicle under Subchapter B, Chapter 683, of the Texas Transportation Code.
+________________
+
+
+Knowledge Check: Reporting the Vehicle as Abandoned
+                              1. When can a VSF report a vehicle as abandoned?
+
+
+                              2. Who must be notified when a vehicle is considered abandoned?
+
+
+Knowledge Check: Forms Used in Vehicle Storage Facility (VSF) Operations
+
+
+What is the purpose of the 3rd Party Credit Card Authorization Form?
+
+
+A) To authorize a third party to use their credit card to pay for storage fees.
+B) To authorize a vehicle to be towed without consent.
+C) To initiate the lien foreclosure process on a vehicle.
+D) To apply for authority to dispose of a vehicle to a demolisher.
+
+Which form is used by a licensed VSF to foreclose on a vehicle lien due to unpaid storage fees?
+
+
+A) Form VSF 12
+B) Form VTR-265
+C) Form VSF-13
+D) Form VTR-71-2
+
+
+
+
+What is the purpose of Form VSF 12?
+
+
+A) To request the removal and/or inspection of a motor vehicle at a VSF.
+B) To apply for disposal of a vehicle to a demolisher.
+C) To authorize a third party to use their credit card for payment.
+D) To foreclose on a vehicle lien due to unpaid fees.
+
+Which form is used to apply for authority to dispose of a vehicle to a demolisher?
+
+
+A) Form VTR-265
+B) Form VTR-71-2
+C) Form VSF-13
+D) 3rd Party Credit Card Authorization Form
+
+What is the purpose of Form VSF-13?
+
+
+A) To foreclose on a vehicle lien.
+B) To authorize credit card use by a third party.
+C) To allow vehicle owners to remove or inspect their motor vehicle at a VSF.
+D) To apply for authority to dispose of a vehicle to a demolisher.

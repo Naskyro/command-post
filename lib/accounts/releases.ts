@@ -58,6 +58,7 @@ export function prepareRelease(input: unknown, old: Row | undefined, v: Viewer, 
             throw new AppError('Only a draft can be submitted.');
         if (!next.vin && !next.plate)
             throw new AppError('Enter a VIN or license plate so this release can be found in vehicle history.');
+        if (!old || old.status === 'Draft') next.requestedAt = new Date().toISOString();
         next.status = 'Pending review';
     }
     if (['approveRelease', 'declineRelease', 'voidRelease'].includes(action)) {
@@ -103,10 +104,12 @@ export function prepareRelease(input: unknown, old: Row | undefined, v: Viewer, 
     }
     if (action === 'declineRelease') {
         next.status = 'Declined';
+        next.declinedAt = new Date().toISOString();
         next.approvedBy = v.name;
     }
     if (action === 'voidRelease') {
         next.status = 'Voided';
+        next.voidedAt = new Date().toISOString();
         next.voidedBy = v.name;
     }
     if (next.returnTransportation === 'Free return' && next.category !== 'Towing company error')

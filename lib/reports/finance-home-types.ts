@@ -1,0 +1,3 @@
+export type FinancialMonth={month:string;revenue:number|null;spending:number|null;netCash:number|null;transactionCount:number|null;complete:boolean};
+export type FinComparison={key:'revenue'|'spending'|'netCash';current:number|null;previous:number|null;change:number|null;percent:number|null;direction:'up'|'down'|'flat'|'unknown';assessment:'favorable'|'unfavorable'|'neutral';currentMonth:string|null;previousMonth:string|null};
+export type HomeFinancialAnalytics={through:string|null;asOf:string;source:string;definitions:{revenue:string;spending:string;netCash:string};reportable:boolean;months:FinancialMonth[];comparisons:FinComparison[];reportIds:{revenue:'monthly-revenue';spending:'monthly-expense';netCash:'monthly-cash-flow';scatter:'cash-vs-expense'}};

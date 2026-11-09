@@ -12,6 +12,7 @@ export const layoutFields:Field[]=[
  note('mixedUseLayout','Mixed-use building layout','Property layout'),
  {key:'commercialUnits',label:'Commercial units',type:'number',group:'Property layout'},
  note('carportRules','Carport locations & exceptions','Parking & enforcement'),
+ select('carportSpaceCallAuthority','Who may initiate a carport space call',['Property Manager only','Authorized Leasing Office Staff','Property Manager + Authorized Leasing Office Staff','Authorized callers listed below','Not confirmed'],'Parking & enforcement'),
  select('garageParking','Individual / private garages',yesNo,'Parking & enforcement'),
  select('garageEnforcement','Private garage enforcement',enforcement,'Parking & enforcement'),
  note('garageRules','Private garage access & towing rules','Parking & enforcement'),

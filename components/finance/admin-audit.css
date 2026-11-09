@@ -1,0 +1,19 @@
+/* Preserve the actor/time relationship even when columns wrap on a narrow screen. */
+.admin-audit-scroll {overflow-x:auto;max-width:100%;scrollbar-width:thin}
+.admin-audit-scroll:focus-visible {outline:2px solid var(--ws-accent,#17629d);outline-offset:2px}
+table.admin-audit-table {width:100%;table-layout:auto}
+.admin-audit-table :is(th,td).admin-actor-column {min-width:8.25rem}
+.admin-audit-table :is(th,td).admin-time-column {min-width:10.7rem}
+.admin-audit-table td.admin-action-column {width:auto;min-width:6rem;white-space:nowrap}
+.admin-actor {overflow-wrap:break-word}
+.admin-stamp {font-variant-numeric:tabular-nums}
+.admin-stamp span {white-space:nowrap}
+.admin-change-context {display:flex;gap:.8rem 2rem;flex-wrap:wrap;margin:0 0 1rem}
+.admin-change-context dt {font-size:.8rem;color:var(--ws-muted,#587084)}
+.admin-change-context dd {margin:0}
+@media(max-width:800px){
+ .admin-audit-table :is(th,td).admin-time-column {min-width:7.5rem}
+ .admin-audit-table :is(th,td).admin-actor-column {min-width:6.6rem}
+}
+
+.department-delegation{border:1px solid var(--border,#ddd);border-radius:12px;padding:16px}.department-delegation summary{cursor:pointer;font-weight:600}.department-delegation summary span{font-weight:400}.department-delegation p{line-height:1.55;margin:12px 0 16px}.department-delegation small{display:block;margin-top:6px}

@@ -1,0 +1,7 @@
+.command-sign-out{position:relative;flex:0 0 auto}
+.command-sign-out-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:9px 12px;border:1px solid var(--ws-line,#d5d5d5);border-radius:8px;background:var(--ws-surface,#fff);color:var(--ws-ink,#171717);font-size:13px;font-weight:650;white-space:nowrap;cursor:pointer}
+.command-sign-out-button:hover{background:var(--ws-soft,#eee);border-color:var(--ws-accent,#222)}
+.command-sign-out-button:focus-visible{outline:2px solid var(--ws-accent,#222);outline-offset:3px}
+.command-sign-out-button:disabled{opacity:.65;cursor:wait}
+.command-sign-out-error{position:absolute;top:calc(100% + 8px);right:0;width:290px;max-width:calc(100vw - 24px);padding:12px;border:1px solid #e6b1ad;border-radius:8px;background:var(--ws-surface,#fff);color:#8b2520;box-shadow:0 8px 24px #0002;font-size:13px;line-height:1.5;z-index:110}
+@media(max-width:600px){.shell .top>.top-account-controls{gap:8px}.command-sign-out-button{padding:8px;gap:5px;font-size:12px}.command-sign-out-button>svg{width:15px;height:15px}.top .delegated-subject-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}

@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+import {build} from 'esbuild';
+import {zipSync,strToU8} from 'fflate';
+const hash=s=>createHash('sha256').update(s).digest('hex');
+function claim(key,photos){return {threadId:'thread_'+key,title:'Synthetic '+key,summary:'Reviewed claim.',reportedOn:'2026-04-01',status:'Outcome Unverified',references:[{messageId:'msg_'+key,threadId:'thread_'+key,on:'2026-04-01',subject:'Claim review',note:'Verified source.'}],documents:photos.map(d=>({path:d.file+'.pdf',name:d.file+'.pdf',documentType:d.kind||'Evidence Packet',sha256:hash(d.declared||d.file),sourceMessageId:'msg_'+key}))};}
+function zip(name,claims){const body={'records.json':strToU8(JSON.stringify(claims))};for(const c of claims)for(const f of c.documents)body[f.path]=strToU8(f.name.slice(0,-4));return new File([zipSync(body)],name);}
+test('reviewed ZIPs release parsed bytes before the next pack; originals independently file and retry against exact source and hash, without creating claims',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'ccr-batch-originals-'));t.after(()=>rm(dir,{recursive:true,force:true}));
+ await build({entryPoints:['lib/ccr/damage-batches.ts','lib/ccr/damage-package.ts'],outdir:dir,outExtension:{'.js':'.mjs'},platform:'node',format:'esm',bundle:true});const {previewEvidence,runEvidence}=await import(pathToFileURL(join(dir,'damage-batches.mjs'))),{readDamagePackage}=await import(pathToFileURL(join(dir,'damage-package.mjs')));
+ const a=claim('alpha',[{file:'fails-once'},{file:'persists-despite-timeout'},{file:'bad-source'},{file:'bad-bytes',declared:'different'},{file:'survivor'}]),b=claim('bravo',[{file:'bravo-pass'}]),z1=zip('first.zip',[a,b]),z2=zip('next.zip',[claim('alpha',[{file:'survivor'},{file:'other'}]),claim('absent',[{file:'unfiled'}])]);
+ let open=0,peak=0,ongoing=0,putPeak=0,reads=0,failedOnce=false;const flights=new Set(),log=[],store=new Map([a,b].map(c=>[c.threadId,{id:c.threadId,references:c.references,files:[]}]));
+ store.get(a.threadId).files.push({id:'existing',...a.documents[2],sourceMessageId:'unrelated-message'});
+ const services={withZip:async(f,fn)=>{open++;peak=Math.max(peak,open);const p=readDamagePackage(new Uint8Array(await f.arrayBuffer()));try{return await fn(p);}finally{open--;for(const k of Object.keys(p.data))delete p.data[k];}},receipt:async c=>{reads++;assert.equal(c.documents.length,0);const r=store.get(c.threadId);return r?{caseSaved:true,id:r.id,record:structuredClone(r)}:{caseSaved:false};},put:async(f,fields,sha,onProgress)=>{assert.equal(flights.has(fields.claimId),false);flights.add(fields.claimId);ongoing++;putPeak=Math.max(putPeak,ongoing);log.push(f.name);assert.equal(sha,hash(new Uint8Array(await f.arrayBuffer())));try{await Promise.resolve();onProgress(f.size,f.size);if(f.name==='fails-once.pdf'&&!failedOnce){failedOnce=true;throw Error('rejected');}const r=store.get(fields.claimId);r.files.push({id:'f:'+sha,...fields,sha256:sha});if(f.name==='persists-despite-timeout.pdf')throw Error('Timeout after saving');return {id:r.id,sha256:sha};}finally{flights.delete(fields.claimId);ongoing--;}}};
+ const selection=await previewEvidence([z1,z2],undefined,services),state={},change=(key,r)=>state[key]=r;assert.equal(selection.duplicates,1);assert.equal(selection.entries.size,8);assert.equal([...selection.entries.values()].find(x=>x.doc.name==='bad-bytes.pdf').issue.includes('SHA-256'),true);
+ await runEvidence({mode:'file',selection,previous:{},change},services);const entry=n=>state['thread_alpha / '+hash(n)];
+ assert.equal(entry('fails-once').state,'missing');assert.equal(entry('persists-despite-timeout').state,'confirmed');assert.equal(entry('bad-source').state,'review');assert.equal(entry('survivor').state,'confirmed');assert.equal(entry('other').state,'confirmed');assert.equal(state['thread_absent / '+hash('unfiled')].state,'waiting');assert.equal(peak,1);assert.ok(putPeak<=2);assert.equal(log.filter(x=>x==='survivor.pdf').length,1);assert.ok(!log.includes('bad-bytes.pdf')&&!log.includes('bad-source.pdf'));
+ const prev=log.length;await runEvidence({mode:'retry',selection,previous:{...state},change},services);assert.deepEqual(log.slice(prev),['fails-once.pdf']);assert.equal(entry('fails-once').state,'confirmed');const total=log.length;let zipOpened=false;await runEvidence({mode:'check',selection,previous:{...state},change},{...services,withZip:()=>{zipOpened=true;throw Error('no bytes needed')}});assert.equal(zipOpened,false);assert.equal(log.length,total);assert.ok(reads>0);
+ const mismatch=await previewEvidence([zip('one.zip',[claim('same',[{file:'conflict'}])]),zip('two.zip',[claim('same',[{file:'conflict',kind:'Claimant Statement'}])])],undefined,services);assert.match([...mismatch.entries.values()][0].issue,/conflicting source or classification/);assert.equal(open,0);
+});

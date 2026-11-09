@@ -1,0 +1,514 @@
+﻿Vehicle Storage Facility Unit 1 Exam
+
+
+
+
+Section 1: Terms and Definitions
+
+
+1. What does "PPI" stand for, and when is it used?
+   - A) Private Property Impound, used when a vehicle is towed from public property
+   - B) Public Property Investigation, used when a vehicle is registered
+   - C) Private Property Impound, used when a vehicle is towed without consent from private property
+   - D) Private Parking Interruption, used for parking violations  
+
+
+2. Who is considered a "Lienholder" in relation to vehicle ownership?
+   - A) A person who has financed the purchase of a vehicle
+   - B) A person or organization with a legal claim due to a debt owed
+   - C) The primary driver of the vehicle
+   - D) The vehicle manufacturer  
+
+
+3. What is "Consent Tow"?
+   - A) Towing that requires consent from law enforcement
+   - B) Towing authorized by the vehicle owner
+   - C) Towing due to property violation without the owner’s knowledge
+   - D) An impound initiated by a lienholder  
+
+
+4. What does the term "Vehicle Registrant" refer to?
+   - A) A person with physical possession of a vehicle
+   - B) The person listed in state records as the registered vehicle owner
+   - C) A company holding a lien on the vehicle
+   - D) The person authorized to sell the vehicle  
+
+
+5. What is the purpose of "Incident Management"?
+   - A) Managing vehicle impoundment locations
+   - B) Coordinating services after an accident to clear the roadway
+   - C) Overseeing storage fees collection
+   - D) Registering vehicles with the state  
+
+
+6. What does "Vehicle Owner" refer to?
+   - A) The insurance holder on the vehicle
+   - B) A person who holds the title or ownership, as recorded by the state
+   - C) A lienholder with a legal claim
+   - D) The entity responsible for vehicle towing  
+
+
+
+
+
+
+7. What does "24 Hours Notice" refer to in VSF terms?
+   - A) Notice of auction of an impounded vehicle
+   - B) Notice that additional charges or lien actions can begin
+   - C) Time period to notify the state of an unclaimed vehicle
+   - D) The required waiting period before impounding a vehicle  
+
+
+8. What is a "Notification Fee"?
+   - A) A fee for notifying the internet about the vehicle
+   - B) A fee charged for notifying police about the vehicle
+   - C) A fee to cover the cost of notifying the owner or lienholder of storage
+   - D) A fee for making vehicle registration changes  
+
+
+9. What is "Towbook" used for?
+   - A) A vehicle database used by the State of Texas 
+   - B) Software used by towing companies for management
+   - C) A Texas State log for all towed vehicles in Texas
+   - D) An accounting tool for vehicle lienholders  
+
+
+10. How soon must law enforcement be notified after a PPI in Travis County and APD properties?
+    - A) Within 1 hour
+    - B) Within 2 hours
+    - C) Within 24 hours
+    - D) Within 5 days  
+
+
+11. What is "Auto Data Direct" used for?
+    - A) Filing lien foreclosures 
+    - B) Verifying ownership and lienholder data
+    - C) Documenting tow truck fuel usage
+    - D) Registering a vehicle with the state of Texas 
+
+
+12. What form is used by a VSF to foreclose on a vehicle lien due to unpaid storage fees?
+    - A) Form VTR-265
+    - B) Form VSF-12
+    - C) Form VSF-13
+    - D) Form VTR-71-2  
+
+
+13. For vehicles registered outside of Texas, when must the first notice be sent?
+    - A) Within 5 days of impoundment
+    - B) Within 10 days of impoundment
+    - C) Within 14 days of impoundment
+    - D) After 20 days of impoundment  
+
+
+
+
+
+
+14. Which form allows a vehicle owner to remove or inspect their vehicle at a VSF?
+    - A) Form VTR-71-2
+    - B) Form VSF-12
+    - C) Form VSF-13
+    - D) 3rd Party Credit Card Authorization Form  
+
+
+15. Which form authorizes the disposal of an unclaimed vehicle to a demolisher?
+    - A) Form VSF-12
+    - B) Form VSF-13
+    - C) Form VTR-71-2
+    - D) 3rd Party Credit Card Authorization Form  
+
+
+Section 2: Licensing Requirements
+
+
+16. What must an applicant submit to be eligible for a VSF employee license?
+    - A) Criminal background check and application fee
+    - B) Proof of a towing license
+    - C) Employment history
+    - D) Insurance details  
+
+
+17. Which license is NOT accepted for working at a VSF?
+    - A) VSF employee license
+    - B) Private Property Towing Operator license
+    - C) Fishing / Hunting License 
+    - D) Consent Towing Operator license  
+
+
+18. What additional requirement applies to sole proprietors (business owners) who operate a VSF?
+    - A) A VSF employee license or similar must be held
+    - B) A letter of recommendation
+    - C) A separate impoundment license
+    - D) Proof of towing experience  
+
+
+Section 3: Technical Standards
+
+
+19. What type of surface is required for a VSF storage lot?
+    - A) Gravel only
+    - B) Any non-dirt surface
+    - C) An all-weather surface like asphalt, concrete, or gravel
+    - D) Concrete only  
+
+
+
+
+
+
+
+
+20. How many 250-watt fixtures are required per 1/4 acre for lighting?
+    - A) 1
+    - B) 2
+    - C) 3
+
+
+21. How long must a VSF maintain records?
+    - A) 6 months
+    - B) 1 year
+    - C) 2 years
+    - D) 5 years  
+
+
+22. What information must be included on signs at the VSF entrance?
+    - A) Company Owner’s contact information only
+    - B) Detailed fees and accepted payment methods
+    - C) Only the hours of operation
+    - D) Only Rules for vehicle impoundment  
+
+
+23. Which payment method is not required to be accepted by the TDLR?
+    - A) Credit 
+    - B) Cash
+    - C) Debit
+    - D) Check
+
+
+Section 4: Storage and Fees
+
+
+24. What is the maximum Notification Fee a VSF can charge?
+    - A) $25
+    - B) $50
+    - C) $100
+    - D) $75  
+
+
+25. What document must a VSF provide to the vehicle owner at the time of release?
+    - A) A VSF release receipt with itemized charges
+    - B) A copy of the vehicle’s title
+    - C) A copy of the vehicle’s MVR
+    - D) A signed tow truck operator log
+
+
+26. How much can a VSF charge for daily storage of vehicles less than 25 feet?
+    - A) $20.00
+    - B) $22.85
+    - C) $40.00
+    - D) $25.99  
+
+
+
+
+27. How many maximum days of storage can a VSF charge if the VSF Employees have not sent the first notice?
+    - A) 2 days
+    - B) 3 days
+    - C) 5 days
+    - D) 7 days  
+
+
+28. Under what conditions is a vehicle considered abandoned and can be reported to law enforcement?
+    - A) After 5 days of impoundment
+    - B) If unclaimed after the 10th day following the first notice
+    - C) When the owner doesn’t respond within 48 hours
+    - D) Immediately upon impoundment  
+
+
+29. Which agency must be notified when a vehicle is considered abandoned?
+    - A) The vehicle owner
+    - B) The lienholder
+    - C) Local law enforcement
+    - D) The tow truck operator  
+
+
+Section 5: Additional Responsibilities
+
+
+30. What type of drug testing is required for VSF employees?
+    - A) Pre-employment testing only
+    - B) Random testing only
+    - C) Pre-employment, random, and return-to-duty after a positive result
+    - D) Return-to-duty testing only  
+
+
+31. When is return-to-duty drug testing required for VSF employees?
+    - A) After a positive drug test
+    - B) Before promotion
+    - C) Annually
+    - D) After 2 years of employment  
+
+
+32. Under what conditions can a VSF use a stored vehicle for business purposes?
+    - A) With written consent from the owner
+    - B) With verbal approval from the owner
+    - C) Only if the owner is unavailable
+    - D) If it is necessary for transport  
+
+
+
+
+
+
+
+
+33. How long does a VSF have to notify relevant parties if there is a correction in a vehicle’s VIN or license plate?
+    - A) 12 hours
+    - B) 24 hours
+    - C) 48 hours
+    - D) 72 hours  
+
+
+34. Which action is included in the standard storage fee for a vehicle?
+    - A) Locking doors
+    - B) Covering broken windows
+    - C) Inspecting the engine
+    - D) Moving vehicle to an indoor storage  
+
+
+35. What lighting requirement must a VSF meet for nighttime releases?
+    - A) Must have at least two floodlights
+    - B) One 250-watt fixture per 1/4 acre
+    - C) Street lighting only
+    - D) Halogen bulbs are required  
+
+
+36. How much can a VSF charge for daily storage of vehicles over 25 feet in length?
+    - A) $22.85
+    - B) $39.99
+    - C) $50.00
+    - D) $27.50  
+
+
+37. When does a VSF not charge a notification fee?
+    - A) If the vehicle is removed within 24 hours
+    - B) If the vehicle is damaged
+    - C) If the lienholder requests it
+    - D) If a PPI has occurred  
+
+
+38. If a VIN or license plate error is discovered on the tow ticket, what steps must the VSF take to correct it and how soon must notifications be sent?
+    - A) Erase and correct it within 24 hours
+    - B) Update records and notify relevant parties within 48 hours
+    - C) File a report immediately
+    - D) No action is needed  
+
+
+39. When can a VSF charge an impoundment fee?
+    - A) When additional steps are needed to secure the vehicle beyond standard storage actions
+    - B) Whenever a vehicle is stored
+    - C) Only when the vehicle is registered
+    - D) At the lienholder’s discretion  
+
+
+40. Which form is used to apply for disposal of a vehicle to a demolisher?
+    - A) Form VTR-265
+    - B) Form VTR-71-2
+    - C) Form VSF-12
+    - D) 3rd Party Credit Card Authorization Form  
+41. How should the first notice be sent to the vehicle owner and lienholder?
+    - A) By regular mail only
+    - B) By certified mail, return receipt requested, or electronic certified mail
+    - C) By email only
+    - D) Through a phone call  
+
+
+42. How long does a VSF need to maintain records of tows and storage?
+    - A) 6 months
+    - B) 1 year
+    - C) 2 years
+    - D) 5 years  
+
+
+43. What is required for a VSF employee license renewal if the employee tested positive for drugs in the past year?
+    - A) A criminal background check
+    - B) An additional application fee
+    - C) A new drug test showing a negative result
+    - D) Attendance at a training seminar  
+
+
+44. Which of the following describes the purpose of Form VSF-12?
+    - A) To foreclose on a vehicle lien
+    - B) To apply for demolition authorization of an abandoned vehicle
+    - C) To request the commercial removal or inspection of a vehicle
+    - D) To authorize a third party to pay release fees  
+
+
+45. In Texas, within how many days must a VSF notify the vehicle owner and lienholder of a stored vehicle from out of state?
+    - A) 5 days
+    - B) 7 days
+    - C) 10 days
+    - D) 14 days  
+
+
+46. If a vehicle’s windows or doors are broken, what action must the VSF take?
+    - A) No action is required
+    - B) Cover the broken areas to protect the vehicle 
+    - C) Charge the owner a higher storage fee
+    - D) Notify the lienholder immediately  
+
+
+
+47. What is Towbook best used for in VSF operations?
+    - A) To create a record of every stored vehicle
+    - B) To dispatch, bill, and manage storage records digitally
+    - C) To process lienholder claims
+    - D) To obtain ownership verification from Auto Data Direct  
+
+
+48. What must be done if a VSF finds a discrepancy in a vehicle’s license plate or VIN upon inspection?
+    - A) Notify all previously informed parties within 48 hours of the correction
+    - B) Hold off on storage fees until the correction is verified
+    - C) Return the vehicle to the apartment
+    - D) Notify the lienholder only  
+
+
+49. A family member is paying for the release of a vehicle. Which of the following forms should be used:
+    - A) VSF 13
+    - B) 3rd Party Card Authorization
+    - C) VSF 12
+    - D) Credit Debit Card Authorization
+
+
+50. Do we accept payment plans or release vehicles on a promise to pay?
+A) Yes, under certain conditions
+B) No
+C) Only for first-time customers
+D) Yes, for specific types of vehicles
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bonus Points Questions
+
+51. Is anyone without a VSF employee or towing license allowed to do any work relating to the processing, storing, or answering phone calls regarding business operations at the VSF?
+A) Yes, if they have experience
+B) Only for non-sensitive tasks 
+C) No, only licensed employees are allowed
+D) Yes, as long as they supervise licensed employees
+
+52. Do positions like accountant, bookkeeper, security guard, or HR need a license to work inside the VSF?
+A) No, as long as they don’t handle vehicle releases or customer inquiries
+B) Yes, all employees need a license 
+C) Yes, but only during certain hours
+D) No, but they must have training
+
+
+53. What should a VSF employee do if a vehicle owner at the release window appears to be under the influence of alcohol or drugs?
+A) Continue with the release as long as the paperwork is valid
+B) Ask if they are okay and continue with the release
+C) Have them sign a liability waiver before releasing the vehicle
+D) Request that they arrange for a sober driver to pick up the vehicle. If they refuse or attempt to drive impaired, notify law enforcement and do not release the vehicle to them directly. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ **Answer Key** (Outdated)
+
+
+1. C  
+2. B  
+3. B  
+4. B  
+5. B  
+6. B  
+7. B  
+8. C  
+9. B  
+10. B  
+11. B  
+12. A  
+13. C  
+14. C  
+15. C  
+16. A  
+17. C  
+18. A  
+19. C  
+20. A  
+21. C  
+22. B  
+23. D  
+24. B  
+
+
+
+
+
+
+
+
+25. A  
+26. B  
+27. C  
+28. B  
+29. C  
+30. C  
+31. A  
+32. A  
+33. C  
+34. A  
+35. B  
+36. B  
+37. A  
+38. B  
+39. A  
+40. B  
+41. B  
+42. C  
+43. C  
+44. C  
+45. A  
+46. D  
+47. B  
+48. B  
+49. A  
+50. B
+51. B
+52. C

@@ -1,6 +1,8 @@
 import type { Viewer, FinRecord } from '@/lib/finance/model';
 import { canAccess } from '@/lib/finance/access';
 import { AppError, ForbiddenError } from '@/lib/shared/errors';
+import {damageFacts} from '../ccr/damage-facts';
+import {claimOperationalFields,claimCaseUpdates,incidentAnswers,incidentFields,operationalChanges,pickClaimOperations,prepareClaimOperations} from '../ccr/claim-operations';
 import { assigned, head, clean, access } from './policy';
 import { today, type Row } from './model';
 export function settlementApprover(v: Viewer, staff: FinRecord[]) {
@@ -10,13 +12,24 @@ export function settlementApprover(v: Viewer, staff: FinRecord[]) {
   const title = String(person?.title || '').toLowerCase();
   return !!person && (['chief operating officer', 'coo'].includes(title) || person.department === 'Operations' && ['director of operations', 'operations director'].includes(title));
 }
-export function prepareClaim(input: Row, old: Row | undefined, v: Viewer, all: Row[], staff: FinRecord[], action: string) {
+export function prepareClaim(input: Row, old: Row | undefined, v: Viewer, all: Row[], staff: FinRecord[], action: string, updateNote?:unknown) {
   const a = all.find(a => a.kind === 'account' && a.id === (old?.accountId || input.accountId));
   if (!a || old && input.accountId !== old.accountId) throw new AppError('Choose the claim’s account.');
   const investigate = access(v, 'claims', true) && (head(v, staff) || assigned(v, a));
   const approve = settlementApprover(v, staff);
   if (!investigate && !approve) throw new ForbiddenError();
+  if(action==='appendClaimUpdate'){
+    if(!old||old.kind!=='claim'||old.deletedAt||input.id!==old.id||input.kind!==old.kind||input.version!==old.version)throw new AppError('Choose the current saved claim.');
+    const permitted=new Set(['id','kind','version','accountId',...claimOperationalFields]);
+    if(Object.keys(input).some(k=>!permitted.has(k)))throw new AppError('Case updates cannot change the investigation, settlement decision, payment, or existing history.');
+    if(typeof updateNote!=='string'||!updateNote.trim()||updateNote.trim().length>4000||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(updateNote))throw new AppError('Add a case update of 1–4,000 characters.');
+    const details=prepareClaimOperations(pickClaimOperations(input),old,staff,all,today()),update={at:new Date().toISOString(),by:v.name,byId:v.person,note:updateNote.trim(),changes:operationalChanges(old,details)};
+    return {...old,...details,claimUpdatesJson:JSON.stringify([...claimCaseUpdates(old.claimUpdatesJson),update])};
+  }
   const next = clean(input, old, v, all, staff, true);
+  if(!old&&incidentFields.some(k=>!(incidentAnswers as readonly unknown[]).includes(next[k])))throw new AppError('Answer each accident and injury question. Choose Unknown when the facts are not yet established.');
+  Object.assign(next,prepareClaimOperations(pickClaimOperations(input),old||{},staff,all,today()));
+  damageFacts(next,{},today());
   const approvalFields = ['reviewNotes','paidAmount','paidDate','paymentReference'];
   if (!investigate && Object.keys(next).some(k => !['version',...approvalFields].includes(k) && JSON.stringify(next[k]) !== JSON.stringify(old?.[k]))) throw new ForbiddenError('The assigned Account Manager maintains the investigation.');
   if (!approve && approvalFields.some(k => next[k] !== old?.[k])) throw new ForbiddenError('Settlement decisions and payment records require an authorized reviewer.');
@@ -25,14 +38,14 @@ export function prepareClaim(input: Row, old: Row | undefined, v: Viewer, all: R
   if (!next.assignee) next.assignee = a.assignee;
   if (!staff.some(p => p.id === next.assignee && p.status === 'Active' && p.department === 'Account Managers')) throw new AppError('Assign the investigation to active Account Management staff.');
   if (String(next.date) > today()) throw new AppError('A claim cannot be reported in the future.');
-  for (const id of next.attachmentIds as string[] || []) if (!all.some(f => f.kind === 'file' && f.id === id && f.accountId === a.id && ['Claim evidence','Email attachment','Other'].includes(String(f.category)))) throw new AppError('Choose evidence from this account.');
+  for (const id of next.attachmentIds as string[] || []) if (!all.some(f => f.kind === 'file' && f.id === id && f.accountId === a.id && ['Claim evidence','Email attachment','Other'].includes(String(f.category))&&(!f.claimId||f.claimId===next.id))) throw new AppError('Choose evidence from this account.');
   next.status = old?.status || 'Investigating';
   if (['Approved','Paid','Closed without settlement'].includes(String(old?.status))) {
     if (action !== 'payClaim') throw new AppError('This decision is locked. Record a new claim for a separate incident.');
   }
   if (action === 'submitClaim') {
     if (!investigate) throw new ForbiddenError();
-    if (!next.investigation || !next.finding || next.finding === 'Undetermined' || !(next.attachmentIds as string[] || []).length || !next.propertyCommunication) throw new AppError('Complete the investigation, finding, evidence and property communication before review.');
+    if (!next.investigation || !next.finding || next.finding === 'Undetermined' || (!(next.attachmentIds as string[] || []).length && !all.some(f=>f.kind==='file'&&f.category==='Claim evidence'&&f.claimId===next.id&&f.accountId===a.id)) || !next.propertyCommunication) throw new AppError('Complete the investigation, finding, evidence and property communication before review.');
     next.status = 'Pending review'; next.submittedBy = v.person; next.submittedAt = new Date().toISOString();
   } else if (['approveClaim','returnClaim','closeClaim'].includes(action)) {
     if (!approve || old?.status !== 'Pending review') throw new ForbiddenError('An authorized reviewer must review the submitted investigation.');

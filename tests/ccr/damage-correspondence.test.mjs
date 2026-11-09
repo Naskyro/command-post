@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readHistoricalGroup,matchHistoricalMessages,historicalManifest} from '../../lib/ccr/damage-correspondence.ts';
+const first={threadId:'thread-a',title:'Fixture',reportedOn:'2026-02-01',summary:'Fixture only',status:'Outcome Unverified',references:[{threadId:'thread-a',messageId:'email-a',on:'2026-02-01',subject:'Reported Damage',note:'Received original.'}]};
+const reply={messageId:'email-b',threadId:'thread-a',subject:'Re: Reported Damage',on:'2026-02-02',sentAt:'2026-02-02T02:18:00Z',direction:'PTE Reply',senderLabel:'Support Team',body:'Please send your photographs.',omissions:[]};
+const raw={threadId:'thread-a',record:first,messages:[reply]};
+const g=readHistoricalGroup(raw);matchHistoricalMessages(first,g);assert.equal(g.messages[0].sentAt,'2026-02-02T02:18:00.000Z');
+const expanded=historicalManifest(g);assert.equal(expanded.references.length,2);assert.equal(expanded.references.find(r=>r.messageId===reply.messageId).subject,reply.subject);assert.equal(expanded.references.find(r=>r.messageId===reply.messageId).on,reply.on);
+const reviewed={...expanded,references:expanded.references.map(r=>r.messageId===reply.messageId?{...r,note:'Previously reviewed reply with photographs.'}:r)};
+assert.equal(historicalManifest(g,reviewed).references.find(r=>r.messageId===reply.messageId).note,'Previously reviewed reply with photographs.');
+assert.deepEqual(historicalManifest(g,expanded),expanded);
+assert.throws(()=>readHistoricalGroup({...raw,messages:[{...reply,threadId:'unrelated'}]}));
+assert.throws(()=>readHistoricalGroup({...raw,messages:[reply,reply]}));
+assert.throws(()=>readHistoricalGroup({...raw,messages:[{...reply,messageId:'email-a',on:'2026-02-01'}]}));
+assert.throws(()=>readHistoricalGroup({...raw,messages:[{...reply,sentAt:'2026-02-30'}]}));
+assert.throws(()=>readHistoricalGroup({...raw,messages:[{...reply,body:''}]}));
+assert.throws(()=>matchHistoricalMessages(first,readHistoricalGroup({...raw,messages:[{...reply,messageId:'email-a'}]})));
+assert.throws(()=>matchHistoricalMessages({...first,threadId:'other-primary'},g));
+console.log('PASS: direct same-thread follow-up, source casing and normalized timestamps; reject unrelated, conflicting and duplicate messages');

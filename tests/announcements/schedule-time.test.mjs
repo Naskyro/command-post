@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {transform} from 'esbuild';
+const source=await readFile('components/admin/announcements-time.ts','utf8');
+const {code}=await transform(source,{loader:'ts',format:'esm'});
+const {localInput,instant}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+test('announcement summer schedule uses Austin daylight time independently of browser timezone',()=>{assert.equal(instant('2026-07-01T09:00'),'2026-07-01T14:00:00.000Z');assert.equal(localInput('2026-07-01T14:00:00.000Z'),'2026-07-01T09:00')});
+test('announcement winter schedule uses Austin standard time',()=>{assert.equal(instant('2026-11-02T09:00'),'2026-11-02T15:00:00.000Z');assert.equal(localInput('2026-11-02T15:00:00.000Z'),'2026-11-02T09:00')});
+test('nonexistent spring-forward time is rejected instead of scheduling a different hour',()=>{assert.equal(instant('2026-03-08T02:30'),'')});
+test('empty schedules preserve immediate publication/no expiration',()=>{assert.equal(instant(''),'');assert.equal(localInput(''),'')});

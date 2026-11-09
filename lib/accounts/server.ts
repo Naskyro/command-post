@@ -9,6 +9,7 @@ import { prepareRelease } from './releases';
 import { today, type Row } from './model';
 import { prepareClaim } from './claims';
 import history from './history-data.json';
+import {withSalesHandoffHistory} from '../sales/handoff-relationships';
 import { normalizeContact } from './contact-details';
 import { workTypeSettingsId } from './work-options';
 import agreements from './agreement-data.json';
@@ -18,18 +19,32 @@ import {dispatchCategories,isDispatchNote,isDispatchReply,noteRecipients} from '
 import {permitFields} from './permit-details';
 import {operatingDefaults, operatingFields} from './profile-summary';
 import { isPendingAccount, onboardingReadiness, onboardingTasks } from './onboarding';
-export async function records() { const result = await financeDb().prepare('SELECT payload FROM account_records ORDER BY id LIMIT 20000').all<{
+async function accountSourceRows(annual=false) { const result = await financeDb().prepare(annual?"SELECT payload FROM account_records WHERE kind IN ('account','trespass','courtesy','claim') ORDER BY id":'SELECT payload FROM account_records ORDER BY id LIMIT 20000').all<{
     payload: string;
-}>(); const map = new Map(([...seeds,...agreements,...researchedCompanies] as Row[]).map(r => [r.id, r.kind==='account' ? {...(propertyPhotos as Record<string,object>)[r.id],...r,...(history.profileDefaults as Record<string,object>)[r.id]} : r])); for (const r of result.results) {
+}>(); const map = new Map(([...seeds,...agreements,...researchedCompanies] as Row[]).filter(r=>!annual||['account','trespass','courtesy','claim'].includes(r.kind)).map(r => [r.id, r.kind==='account' ? {...(propertyPhotos as Record<string,object>)[r.id],...r,...(history.profileDefaults as Record<string,object>)[r.id]} : r])); for (const r of result.results) {
     const value = JSON.parse(r.payload) as Row;
     map.set(value.id, {...map.get(value.id),...value});
-} return [...map.values()].filter(r=>!r.deleted&&r.status!=='Deleted').map(r=>r.kind==='contact'?normalizeContact(r):r.kind==='account'?operatingDefaults({...r,...(!r.managementReviewedAt?researchedManagement(r):{})}):r); }
-export async function context(request: Request) { const staff = await allRecords(), viewer = identify(staff, request.headers); if (!staff.some(r => r.id === viewer.person && r.status === 'Active') || !['Accounts', 'Account Management', 'Sales CRM', 'Compliance, Claims & Recovery', 'Work Orders'].some(m => canAccess(viewer, m)))
-    throw new ForbiddenError(); return { staff, viewer, all: await records() }; }
+} return [...map.values()].map(r=>r.kind==='contact'?normalizeContact(r):r.kind==='account'?operatingDefaults({...r,...(!r.managementReviewedAt?researchedManagement(r):{})}):r); }
+export async function records(){return withSalesHandoffHistory(await accountSourceRows());}
+export function yearCaseRows(){return accountSourceRows(true);}
+export async function claimChoiceRows(){return (await records()).filter(r=>r.kind==='account'||r.kind==='contact');}
+// Chunk authorization only needs the destination account, claim and any existing upload ID.
+export async function fileTargetRows(ids:string[]):Promise<Row[]>{
+ const keys=[...new Set(ids.filter(x=>typeof x==='string'&&x.length>0&&x.length<=160))];if(!keys.length)return [];
+ const selected=new Set(keys),rows=new Map(([...seeds,...agreements,...researchedCompanies] as Row[]).filter(r=>selected.has(r.id)).map(r=>[r.id,r]));
+ const changes=await financeDb().prepare('SELECT payload FROM account_records WHERE id IN ('+keys.map(()=>'?').join(',')+')').bind(...keys).all<{payload:string}>();
+ for(const change of changes.results){const r=JSON.parse(change.payload) as Row;rows.set(r.id,{...rows.get(r.id),...r});}
+ return [...rows.values()];
+}
+
+export async function context(request: Request,withRows=true) { const staff = await allRecords(), viewer = identify(staff, request.headers); if (!staff.some(r => r.id === viewer.person && r.status === 'Active') || !['Accounts', 'Account Management', 'Sales CRM', 'Compliance, Claims & Recovery', 'Work Orders'].some(m => canAccess(viewer, m)))
+    throw new ForbiddenError(); return { staff, viewer, all: withRows?await records():[] }; }
 export async function writeMany(changes: {
     old?: Row;
     next: Row;
 }[], v: Viewer, action: string, effects: D1PreparedStatement[] = []) {
+    // Private Sales examples never enter the operational ledger, including through generic record endpoints.
+    if(changes.some(({next})=>['id','opportunityId','accountId','contactId','sourceOpportunityId','primaryContactId','companyId'].some(k=>typeof next[k]==='string'&&String(next[k]).startsWith('sales-example:'))))throw new ForbiddenError('Training records belong in your private Sales practice copy.');
     if (changes.length > 80 || new Set(changes.map(c => c.next.id)).size !== changes.length)
         throw new AppError('Save at most 80 distinct records.');
     const db = financeDb(), at = new Date().toISOString(), batch: D1PreparedStatement[] = [], saved: Row[] = [];
@@ -57,7 +72,7 @@ export function projection(all: Row[], v: Viewer, surface: string) {
         const pending = new Set(all.filter(isPendingAccount).map(r => r.id));
         all = all.filter(r => !pending.has(r.id) && !pending.has(String(r.accountId || '')));
     }
-    if(surface==='orders') { if(!canAccess(v,'Work Orders','orders')) throw new ForbiddenError(); const orders=all.filter(r=>r.kind==='workOrder'); const woKinds=['fleetVehicle','fleetInspection','fleetDefect','fleetPM','woAsset','woProvider','woRecurring','woProject']; return orders.concat(all.filter(r=>r.kind==='workTypes'),all.filter(r=>r.kind==='comment'&&orders.some(o=>o.id===r.parentId)),all.filter(r=>r.kind==='account'||r.kind==='contact').map(r=>({id:r.id,kind:r.kind,version:r.version,name:r.name,address:r.kind==='account'?r.address:undefined})),all.filter(r=>woKinds.includes(r.kind))); }
+    if(surface==='orders') { if(!canAccess(v,'Work Orders','orders')) throw new ForbiddenError(); const orders=all.filter(r=>r.kind==='workOrder'); return orders.concat(all.filter(r=>r.kind==='workTypes'),all.filter(r=>r.kind==='comment'&&orders.some(o=>o.id===r.parentId)),all.filter(r=>r.kind==='account'||r.kind==='contact').map(r=>({id:r.id,kind:r.kind,version:r.version,name:r.name,address:r.kind==='account'?r.address:undefined}))); }
     if(surface==='claims') { if(!access(v,'claims')) throw new ForbiddenError(); return all.filter(r=>r.kind==='claim'||r.kind==='file'&&r.category==='Claim evidence').concat(all.filter(r=>['account','contact'].includes(r.kind)).map(r=>({id:r.id,kind:r.kind,version:r.version,name:r.name,assignee:r.assignee}))); }
     if (surface !== 'dispatch')
         return all.filter(r => r.kind !== 'vehicle' && (r.kind==='comment' ? all.some(p=>p.id===r.parentId&&canRead(v,p)) : r.kind === 'file' ? canReadFile(v, r) : canRead(v, r)));
@@ -77,6 +92,7 @@ export function projection(all: Row[], v: Viewer, surface: string) {
 }
 export async function save(body: Record<string, unknown>, ctx: Awaited<ReturnType<typeof context>>) {
     const { viewer: v, staff, all } = ctx, action = String(body.action || 'save');
+    if(all.some(r=>r.id===body.id&&r.assetRequest===true)&&!['comment'].includes(String(body.kind))) throw new AppError('Manage this equipment request in the Asset Library so custody and work order status stay synchronized.');
     if (action === 'activateOnboarding' || action === 'onboardingContact' || action === 'propertyContact') {
         const account = all.find(r => r.kind === 'account' && r.id === body.accountId);
         if (!account || action !== 'propertyContact' && !isPendingAccount(account) || !canEdit(v, account, all, staff)) throw new ForbiddenError();
@@ -176,36 +192,6 @@ export async function save(body: Record<string, unknown>, ctx: Awaited<ReturnTyp
         if (!changes.length && a.onboardingStartedAt) return [a];
         return writeMany([{old: a, next: {...a, onboardingStartedAt: a.onboardingStartedAt || new Date().toISOString()}}, ...changes], v, 'Started onboarding checklist');
     }
-    if (action === 'terminateAccount') {
-        const a = all.find(r => r.id === body.accountId && r.kind === 'account');
-        if (!a || a.status !== 'Onboarding' || !canEdit(v, a, all, staff)) throw new ForbiddenError();
-        if (body.accountVersion !== a.version) throw new ConflictError();
-        const at = new Date().toISOString();
-        return writeMany([{ old: a, next: { ...a, status: 'Terminated', terminatedAt: at, terminatedBy: v.name } }], v, 'Property terminated from pending');
-    }
-    if (action === 'reOnboard') {
-        const a = all.find(r => r.id === body.accountId && r.kind === 'account');
-        if (!a || a.status !== 'Terminated' || !canEdit(v, a, all, staff)) throw new ForbiddenError();
-        if (body.accountVersion !== a.version) throw new ConflictError();
-        const at = new Date().toISOString();
-        return writeMany([{ old: a, next: { ...a, id: a.id, kind: 'account', version: a.version, status: 'Onboarding', onboardingStartedAt: undefined, onboardingCompletedAt: undefined, activatedAt: undefined, terminatedAt: undefined, terminatedBy: undefined, updatedAt: at } }], v, 'Property returned to onboarding');
-    }
-    if (action === 'deleteAccount') {
-        const a = all.find(r => r.id === body.id && r.kind === 'account');
-        if (!a || !canEdit(v, a, all, staff)) throw new ForbiddenError();
-        if (a.status !== 'Onboarding' && a.status !== 'Terminated') throw new AppError('Only pending or terminated properties can be permanently deleted.');
-        const db = financeDb(), at = new Date().toISOString();
-        const tombstone = { id: a.id, kind: 'account', version: (a.version || 0) + 1, name: a.name, status: 'Deleted', deleted: true, deletedAt: at, deletedBy: v.name, updatedAt: at, updatedBy: v.name };
-        await db.batch([
-            db.prepare('DELETE FROM account_records WHERE id = ?').bind(a.id),
-            db.prepare('DELETE FROM account_records WHERE account_id = ?').bind(a.id),
-            db.prepare('INSERT OR IGNORE INTO account_records (id, kind, account_id, payload, version, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
-                .bind(a.id, 'account', null, JSON.stringify(tombstone), tombstone.version, at),
-            db.prepare('INSERT INTO account_audit (id, record_id, account_id, actor, actor_id, at, action, before, after) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-                .bind(crypto.randomUUID(), a.id, a.id, v.name, v.id, at, 'Deleted property permanently', JSON.stringify(a), JSON.stringify(tombstone))
-        ]);
-        return [];
-    }
     if (action === 'acknowledge') {
         const r = all.find(r => r.kind === 'decision' && r.id === body.id);
         if (!r || !canAccess(v, 'Accounts', 'overview') && !access(v, 'decisions'))
@@ -231,10 +217,11 @@ export async function save(body: Record<string, unknown>, ctx: Awaited<ReturnTyp
     const input = body.record as Row;
     if (!input)
         throw new AppError('Submit a record.');
+    if(input.kind==='opportunity')return (await import('@/lib/sales/server')).saveSales(body,ctx);
     const old = all.find(r => r.id === input.id);
     if (old && old.version !== input.version)
         throw new ConflictError();
-    if(input.kind==='claim') return writeMany([{old,next:prepareClaim(input,old,v,all,staff,action)}],v,action==='save'?'Updated claim investigation':action);
+    if(input.kind==='claim') return writeMany([{old,next:prepareClaim(input,old,v,all,staff,action,body.note)}],v,action==='save'?'Updated claim investigation':action==='appendClaimUpdate'?'Added claim case update':action);
     if (input.kind === 'courtesy') {
         const r = prepareRelease(input, old, v, all, staff, action);
         return writeMany([{ old, next: r.next }, ...(r.serialize ? [{ old: r.account, next: { ...r.account, courtesyRevision: Number(r.account.courtesyRevision || 0) + 1 } }] : [])], v, action);
@@ -319,7 +306,8 @@ export async function fileBytes(file: Row) {
         const object = await financeFiles().get(String(file.storageKey));
         if (!object)
             throw new AppError('File unavailable.', 404);
-        return { body: new Uint8Array(await object.arrayBuffer()), mime: String(file.mimeType || 'application/octet-stream') };
+        const bytes=new Uint8Array(await object.arrayBuffer());
+        return {body:file.encryptedEvidence===true?(await (await import('../hr/server')).decryptBytes(bytes)).slice():bytes,mime:String(file.mimeType||'application/octet-stream')};
     }
     const sources = import.meta.glob<{
         default: {

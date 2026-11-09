@@ -1,0 +1,520 @@
+﻿Vehicle Storage Facility Study Guide Exam 3
+Terms and Definitions
+1. Dialpad
+A VOIP (Voice Over Internet Protocol) phone system that routes all incoming calls to a computer. The computer processes the call and duplicates the signal to ring multiple devices, such as laptops, phones, and tablets. Features include hold music and phone menu instructions, enabled by routing calls through a computer before reaching devices. 
+2. Customer Service
+The act of assisting and addressing the needs of customers to ensure a positive experience. It involves effective communication, problem-solving, and maintaining professionalism to meet or exceed customer expectations.
+3. De-escalation (in VSF Operations)
+A set of strategies and communication techniques used to calm tense situations with customers. This includes listening actively, speaking calmly, and redirecting conversations to reduce conflict, ensuring a smoother resolution during vehicle releases.
+4. Empathy
+The ability to understand and share the feelings of others. For VSF employees, it means recognizing the stress or frustration customers may feel and addressing their concerns with patience and compassion, even while enforcing rules.
+5. Sensitivity
+The capacity to be aware of and respectful toward the emotions and needs of others. In VSF operations, it involves recognizing the unique challenges customers may face and responding appropriately without compromising professionalism or policies.
+6. Power & Control (in VSF Operations)
+Refers to the inherent authority VSF employees hold over customers due to their ability to impound and release vehicles. Employees must exercise this power responsibly, ensuring fairness and adherence to regulations without exploiting the imbalance.
+7. Emotional Trauma (in VSF Context)
+The emotional distress or injury experienced by customers or employees during stressful interactions. Customers may feel trauma from having their vehicle impounded, while employees may experience trauma from hostile or aggressive behavior. Awareness and mitigation of these impacts are essential for effective operations.
+8. Self-Care (for VSF Employees)
+Practices that promote the well-being of VSF employees, ensuring they can handle the stress of their roles effectively. Examples include listening to soothing music between releases, taking lunch breaks, discussing challenging interactions with a trusted coworker, and maintaining a healthy work-life balance.
+9. Accountability (for Customers)
+The responsibility of customers to follow parking rules and regulations. In VSF operations, holding customers accountable ensures fair enforcement of rules and fosters compliance with community standards.
+10. Social Impact (in VSF Operations)
+The effects of ignoring parking rules on communities, businesses, and vulnerable populations. Lack of enforcement can result in blocked entryways, economic losses, and safety concerns. Vulnerable groups such as teens, women, children, LGBTQ individuals, and people of color may face increased risks when forced to park far from safe, well-lit areas.
+11. Professionalism (for VSF Employees)
+Consistent adherence to respectful and courteous behavior, regardless of customer attitudes. Employees should maintain a calm demeanor, even during hostile interactions. If a customer is belligerent or disrespectful, employees may end communication professionally, informing the customer they are welcome to call back when respectful communication can resume.
+12. Authority
+The right granted by the Texas Department of Licensing and Regulation (TDLR) to impound vehicles and release them according to established laws and regulations.
+13. Texas Administrative Code (85.726)
+A regulation that requires VSF employees to operate with honesty, trustworthiness, and integrity. It serves as the ethical standard for all business activities within the Vehicle Storage Facility.
+14. Informed Customer: The VSF employee’s responsibility to make sure the customer understands what’s happening and avoids confusion. For example, when handing a VSF 13 form, the employee explains that because the vehicle registration doesn’t match the ID, the customer will need to fill out a quick form and provide the vehicle’s VIN or license plate. This way, the customer knows why they need to do it and doesn’t guess the purpose of the form. This applies to any form given to the customer.
+Scenario A: Customer Service
+Customer:
+This is ridiculous! You stole my car, and now you expect me to pay to get it back? This is a scam!
+VSF Employee:
+I hear you, sir, and I understand this situation must be very frustrating. Let me do my best to explain the process and help you get your vehicle released as quickly as possible.
+Customer:
+I don’t want an explanation! You people are thieves! You just want my money!
+VSF Employee:
+I understand you’re upset. My role is to make sure you have accurate information about why the vehicle was towed and what steps are needed for release. If you’d like, I can go over the details so you have the full picture.
+Customer:
+Fine. Why was it towed?
+VSF Employee:
+It looks like your car was parked in a fire lane, which is considered a safety hazard. We’re required to tow vehicles from those areas so emergency services can always have access if needed.
+Customer:
+I wasn’t blocking anyone! There were no emergencies!
+VSF Employee:
+I hear you, it can definitely feel frustrating when there’s no active emergency. The rule is in place so that if an emergency happens, the area is already clear. My goal is to help get your vehicle back to you as quickly as possible.
+Customer:
+I don’t care about your process. I shouldn’t have to pay for your rules!
+VSF Employee:
+I understand this isn’t the situation you were hoping for. The release fees are set by state law, but I’ll make sure the process is fast and straightforward for you. Once we’re done, I can give you a receipt with everything clearly listed.
+Customer:
+Whatever. Just get it done.
+________________
+
+
+Questions
+   1. What are three things the VSF employee said that helped de-escalate the situation?
+
+
+
+
+   2. If the VSF employee had said something like, “Well, maybe you shouldn’t have parked in a fire lane,” how do you think that would have affected the situation? Why?
+Scenario B: All Attitude
+Customer:
+This is ridiculous! You stole my car, and now you expect me to pay to get it back? This is a scam!
+VSF Employee:
+Look, sir, you parked illegally. It’s not my fault you didn’t follow the rules.
+Customer:
+Are you kidding me? You’re blaming me? This is extortion!
+VSF Employee:
+Well, maybe if you had parked where you were supposed to, you wouldn’t be in this situation.
+Customer:
+Wow, you’re really something. This is all about money, isn’t it?
+VSF Employee:
+We don’t make the rules. If you have a problem, take it up with the property manager. But until then, you’ll need to pay the fees if you want your car back.
+Customer:
+Unbelievable! You people are the worst.
+VSF Employee:
+If you keep yelling at me, I’m not going to help you. So, do you want your car back or not?
+Customer:
+Forget it. I’m calling the police!
+VSF Employee:
+Go ahead. They’ll tell you the same thing I just did.
+Questions
+      1. What are three things the VSF employee said that didn’t help de-escalate the situation?
+
+
+
+
+      2. If the VSF employee had instead said something like, “I understand this is a frustrating situation, and I’m here to help you get your car back as quickly as possible,” how might that have changed the tone of the conversation?
+Scenario C: Empathy
+Customer:
+(Through tears) Please, I’m begging you. I don’t have the money to pay for this. It’s either I pay to get my car or I pay for rent and food this month. I have a baby at home. Is there anything you can do to help me? Please!
+VSF Employee:
+(Softly) I can see this is really hard for you, and I’m sorry you’re in this situation. I understand how stressful this must be, especially with a baby to care for.
+Customer:
+I’ve been struggling so much lately. I just… I can’t afford this. Can you cut me a break? Just this one time?
+VSF Employee:
+I truly wish I could. But unfortunately, the fees are set, and I don’t have the authority to waive them. It’s part of the state regulations we have to follow for every customer.
+Customer:
+(Still crying) I don’t know what I’m going to do. This just feels impossible.
+VSF Employee:
+I really want to help make this process as smooth as possible for you. Let’s take it one step at a time. Do you know how much you’re short by? Maybe I can help you figure out some options, like calling a friend or family member for support.
+Customer:
+I don’t even know who to call…
+VSF Employee:
+I understand. If it helps, I can give you some time to make those calls while we keep your car secure here. You won’t have to worry about it being unsafe or anything going missing as everyone here is background checked and licensed by the state. And if you’d like, I can walk you through the payment methods to see what works best for you.
+Customer:
+(Sniffling) I just feel so stuck…
+VSF Employee:
+I know this is overwhelming, and I truly wish there was more I could do. Let’s go over what you’ll need to have your vehicle released so that you know what the process is like when you’re ready. 
+
+
+Questions
+         1. What are three things the VSF employee said that helped demonstrate empathy and understanding while maintaining fairness and professionalism?
+
+
+
+
+         2. If the VSF employee had instead said something like, “This isn’t my problem—you should have thought about that before parking there,” how might that have impacted the customer and the situation?
+
+
+
+
+Scenario D: Legal
+Customer:
+(Recording with their phone) This is ridiculous. You people had no right to tow my car! I’m suing this place, and I want everything in writing! Where’s the release paperwork? I want the owner’s name and the number for the state board. You’re all getting reported!
+VSF Employee:
+(Speaking calmly and professionally) I understand you’re upset, and I’ll do my best to address your concerns. Let me reassure you that you’ll receive a copy of all the required paperwork, including the release form, once the release process is complete.
+Customer:
+That’s not good enough! I’m recording everything, and I want the name of the owner of this company. You’re not getting away with this.
+VSF Employee:
+We will need you to stop recording before we proceed. If you don’t stop, you will be asked to leave and will be trespassed. This is not public property. You are on private property. As for the owner’s name, it’s available online. 
+Customer:
+Yeah, I bet you say that to everyone. Give me the number for the state—I’m reporting this entire operation!
+VSF Employee:
+Absolutely. The number for the Texas Department of Licensing and Regulation (TDLR) is printed on the release paperwork you’ll receive and on the signage to your right. 
+Customer:
+(Still recording) And what about you? What’s your name? You’re going in the report too!
+VSF Employee:
+This is the last time I am asking. You cannot record here. I am calling the police if you do not comply. You will be trespassed. 
+Customer:
+**Continues Recording** This whole thing is a scam. You’re just stealing people’s money.
+VSF Employee:
+I hear your frustration, and I understand why you feel that way.  I’m only here to help release the vehicles. However, the police will be here shortly to provide you with assistance. 
+________________
+
+
+Questions
+            1. What are three things the VSF employee said that helped maintain professionalism?
+
+
+
+
+
+               2. If the VSF employee had said something like, “If you think we’re doing something wrong, go ahead and sue us—I don’t care,” how might that have escalated the situation? What could have been a better alternative?
+
+
+
+
+
+Scenario D: Safety
+Customer:
+(Still recording, visibly more irate) This is a complete scam! You thieves! I’m not paying anything—you better give me my car right now, or I swear I’ll jump over that fence and get it myself!
+VSF Employee:
+(Speaking firmly but calmly) Sir, For your safety and mine, I want to remind you that we have cameras actively recording everything on this property.
+Customer:
+You think I care about your cameras? This is my car! I’ll smash this fucking place up if I have to!
+VSF Employee:
+(Speaking professionally but seriously) Sir, I cannot continue this conversation as it’s no longer productive and has become threatening. For everyone's safety, I need to let you know that law enforcement is on standby, and if necessary, we will press charges for any damage, threats and trespass you. You may not be able to come back at all and get the vehicle. 
+Customer:
+(Still yelling) Go ahead! Call the fucking cops—I’m not scared!
+VSF Employee:
+(Backing away slightly, maintaining a safe distance) Wait until law enforcement arrives.
+(The VSF employee can step away and calls their manager to explain the situation. The employee monitors the customer from a safe distance.)
+Customer:
+(Continuing to rant) This place is gonna get shut down—I’ll make sure of it!
+VSF Employee:
+(Speaking from a safe distance if you feel safe to speak) Sir, I understand you’re upset. When law enforcement arrives, they’ll be able to help.
+(The police arrive shortly after, and the VSF employee provides a statement while continuing to document the incident with internal cameras and notes.)
+________________
+
+
+Questions
+               1. What are three things the VSF employee said that helped prioritize safety while maintaining professionalism?
+
+
+
+
+               2. If the VSF employee had responded with anger or challenged the customer further, like saying, “Go ahead and try jumping the fence—you’ll regret it,” how could that have escalated the situation? What would have been a better alternative?
+
+
+
+
+Scenario E: Law Enforcement 
+(Scene: A customer has called law enforcement, claiming the VSF is illegally holding their vehicle. Two officers arrive, one engaging the customer outside the fence, while the other approaches the VSF employee at the window.)
+________________
+
+
+Officer (with the customer):
+Sir/Ma’am, I understand you’re upset. I’m here to mediate and find out what’s going on. Let me speak with the VSF employee and see what they say.
+Customer:
+They’re holding my car hostage! They want me to pay hundreds of dollars when this is THEIR dumb ass mistake. You have to make them release it.
+________________
+
+
+Officer #2 (with the VSF employee):
+Good afternoon. The customer is upset about their car being towed. They’re saying the charges are excessive, and they’ve asked me to request that you release the car without payment. Is that something you can do?
+VSF Employee:
+Good afternoon, Officer. I completely understand this is a difficult situation, but unfortunately, state law and the Texas Department of Licensing and Regulation require us to follow specific procedures to release a vehicle. This includes payment of fees and proper documentation.
+Officer:
+What if we just let the customer take the car and sort it out later?
+VSF Employee:
+I’m sorry, but I cannot release the vehicle without following state guidelines. If the customer wishes to challenge the fees or the procedure, they have the right to file a complaint with a justice of the peace in Travis County.
+Officer:
+Understood. Can I take a copy of the charges owed to show the customer?
+VSF Employee:
+Sure. I can write it down for you. 
+(The dispatcher writes down the charges but DOES NOT PRINT an invoice, and hands it to the Officer.. The officer walks back to speak with the customer.)
+________________
+
+
+Officer (to the customer):
+I spoke with the employee. They explained that they’re bound by state law and can’t release the vehicle without following the procedure. Here’s a copy of the prices they provided.
+Customer:
+This is ridiculous! I’m not fucking paying! I’ll sue them and this whole operation!
+Officer:
+You do have the right to file a formal complaint or take legal action, but for now, they’re following the procedures set by state law. If you’d like to get your vehicle, you’ll need to settle the fees and provide the required documents.
+Customer:
+This isn’t over. I’m filing every complaint I can.
+________________
+
+
+(Back at the VSF window, the Officer returns to give an update.)
+Officer (to VSF employee):
+The customer is still upset but says they’ll think about their next steps. Is there anything else you can provide to help?
+VSF Employee:
+I’m sorry, I wish there was more but I’ve already provided the required charges and explained their options. They can always contact us if they need the information again. 
+Officer:
+Understood.
+VSF Employee:
+Thank you, Officer. Let us know if you need anything else.
+________________
+
+
+Questions for Reflection
+               1. What are three things the VSF employee did to maintain professionalism and compliance during the interaction?
+
+
+
+               2. If the VSF employee had responded to the officer’s request with frustration or hostility, like saying, “Why are you even asking me this? It’s the law!” how could that have impacted the situation?
+               3. What do you think the outcome would have been if the VSF employee had agreed to bypass state procedures?
+Scenario F: Stolen Vehicle Recovery
+Scene:
+ A driver tows in a vehicle and reports to law enforcement. The dispatcher is in the office when a call comes in from the Travis County Sheriff’s Office (TCSO).
+________________
+
+
+TCSO Dispatcher:
+This is the Travis County Sheriff’s Office. We’re calling to verify the VIN number of a vehicle that was just reported.
+VSF Dispatcher:
+ Sure, can you provide me with the year, make, model, and the last four digits of the VIN?
+TCSO Dispatcher:
+ It’s a 2019 Toyota Camry, last four digits [vehicle ID suffix removed].
+VSF Dispatcher:
+ Thank you. I’ll step outside and confirm the VIN on the vehicle — can I place you on a brief hold?
+(The VSF Dispatcher goes outside, compares the VIN on the vehicle to the one in Towbook, confirms they match, then returns to the phone.)
+VSF Dispatcher:
+ Thanks for holding. The full VIN is [vehicle ID removed].
+TCSO Dispatcher:
+ Okay, thank you for confirming. That vehicle is reported stolen. We’ll be sending an officer out to your location to verify in person. Where is the vehicle located at? 
+________________
+
+
+At the Yard — Officer Arrival
+(An officer arrives. The dispatcher is available and greets them promptly.)
+VSF Dispatcher:
+ Good afternoon, Officer. The vehicle is right this way.
+(The dispatcher escorts the officer to the vehicle. The officer walks around, takes photos, and confirms the VIN.)
+Officer:
+ Can you tell me the reason for the impound and where the vehicle was picked up?
+VSF Dispatcher:
+ Yes — it was impounded for [reason, e.g., parked illegally/abandoned in a fire lane/etc.], and the location of pickup was [address/location].
+Officer:
+ I’ll also need your name and the best phone number for follow-up.
+VSF Dispatcher:
+ You can list my name as [Dispatcher’s Name], and the phone number is [Tow Company Phone Number].
+(The officer thanks the dispatcher and states they’ll contact the vehicle owner. The dispatcher asks for their officer’s card for records, confirming badge number and contact info.)
+VSF Dispatcher:
+ Before you go, is the vehicle cleared to be released to the owner or their insurance company?
+Officer:
+ Yes, you can release it.
+________________
+
+
+A Few Hours Later — Owner Call
+Vehicle Owner:
+ The police told me you have my car. Where are you located so I can pick it up?
+VSF Dispatcher:
+ We’re at 7511 Dee Gabriel Collins Rd, Austin, TX 78744. I can also go over the fees with you before you come.
+Vehicle Owner:
+ Fees? I’m not paying for my car — it was stolen!
+VSF Dispatcher:
+ I understand it’s frustrating. Towing services were provided as part of recovering your stolen vehicle, and there is a bill due for those services. You’re welcome to contact your insurance company — they may be able to cover the towing and storage charges on your behalf.
+Questions for Reflection
+                  1. What key steps did the dispatcher take to ensure accurate verification of the vehicle’s stolen status before law enforcement arrived?
+
+
+
+
+
+
+                  2. Why is it important for the dispatcher to get the officer’s business card and confirm whether the vehicle can be released? What setting in the system can we add/modify to let other dispatchers know about the status of this vehicle?
+
+
+
+
+
+                     3. How did the dispatcher maintain professionalism when the vehicle owner became upset about the charges?
+
+
+
+
+
+
+                        4. If the dispatcher had refused to provide the full VIN or skipped confirming it in person, how might that have affected the case?
+
+
+
+
+
+
+
+                           5. Why should the dispatcher provide the company phone number instead of their personal number to law enforcement?
+
+
+
+
+Scenario G: Payment 
+________________
+
+
+VSF Employee:
+Alright, all I need now is your form of payment, you are paying with a card correct?
+Customer:
+Yeah, here’s my debit card. It’s all I’ve got. 
+VSF Employee:
+Thank you, but I see that the name on the card doesn’t match your ID. Unfortunately, we can’t accept payment with a card that’s not in the person’s name.
+Customer (looking confused):
+What do you mean? It’s my card; I just don’t have my own bank account, so I use my girlfriend’s card.
+VSF Employee:
+I understand, but for security reasons we’re only able to accept payment from the cardholder directly. The person whose name is on the card must be present with a valid ID to authorize the transaction.
+Customer (getting frustrated):
+This is ridiculous! I just need my car. Why can’t you just take the payment?
+VSF Employee:
+I know this is frustrating, but the policy is clear. We require the cardholder to sign an authorization form in person for their card to be used. It’s just a safeguard we have to help protect people's card from unauthorized use.
+Customer:
+So, what am I supposed to do?
+VSF Employee:
+The best option would be to have the cardholder come in with their ID and sign the authorization form. If that’s not possible, we can accept another form of payment, like cash.
+Customer (visibly annoyed):
+I don’t have time for that. She’s at work, and I’m stuck here now!
+VSF Employee (calmly):
+I understand this isn’t ideal, but it’s something we have to follow to comply with security and legal guidelines. We want to help you get your vehicle, and if there’s another payment method you can use, we can proceed right away.
+Customer (pauses, still frustrated but calmer):
+Fine, I’ll try to figure something out.
+VSF Employee:
+Thank you for understanding. We’ll be happy to assist you.
+Questions for Reflection
+                              1. What are three things the VSF employee did to handle the situation with professionalism and clear communication?
+
+
+
+
+                              2. What would have happened if the VSF employee had accepted the card despite the name mismatch to avoid confrontation?
+
+
+
+
+                              3. If the VSF employee had been less firm and said something like, “I guess I can make an exception this time,” what could have been the consequences for the business?
+
+
+
+Scenario H: Customer Call
+________________
+
+
+VSF Employee:
+Good afternoon, thank you for calling Parking & Towing Enforcement. How can I assist you today?
+Customer:
+Hi, I need to find out if my car was towed.
+VSF Employee:
+I can help with that. Can you please provide the year, make, and model of your vehicle?
+Customer:
+Yeah, it’s a 2017 Honda Civic.
+VSF Employee:
+Thank you for that information. Let me check our system for any similar vehicles.
+(The employee checks the records)
+VSF Employee:
+I see we have several vehicles in storage, including a 2017 Honda Civic. Can you tell me where your vehicle was picked up from and approximately when?
+Customer:
+It was at the [address of the location], and it was picked up this morning.
+VSF Employee:
+Thank you. It looks like we do have your vehicle here. It’s being securely and safely stored.
+Customer:
+Okay, but why was my car towed? I don’t understand. I had a permit.
+VSF Employee:
+I understand your concern. After reviewing the details, it appears your vehicle was towed because the permit had expired and was not valid at the time of the tow.
+Customer (becoming frustrated):
+I don’t agree with that, but whatever. What do I need to get my car back?
+VSF Employee:
+To release your vehicle, you’ll need to provide a valid ID. It cannot be expired and must have a clear photo. We can accept a state ID, driver’s license, passport, or military ID.
+If the vehicle registration doesn’t match the information on your ID, you’ll need to know either the VIN or license plate number of the vehicle. We’ll also ask you to complete a quick form to confirm ownership.
+As for the payment, the current balance for your vehicle is $_____ if you’re paying by cash. It must be exact cash, as we do not carry change. If you’re paying by card, there’s an additional bank processing fee, and the total would be $_____.
+Customer:
+I’ll pay with a card.
+VSF Employee:
+Okay, just so you know, the name on the card being used must match the name on your ID. If you’re using someone else’s card, they will need to be present with a valid ID to sign an authorization form.
+We also require an hour’s notice prior to your arrival to ensure we have someone available to assist you with the release.
+Also, if you’re unable to pick up the vehicle today, please be aware that additional storage charges will apply at midnight tonight and again after 24 hours.
+Would you like to schedule your one-hour notice now? If so, I can set the time for _____ am/pm today. If not, you can call back whenever you’re ready.
+Customer:
+Yes, I’ll go ahead and schedule it now.
+VSF Employee:
+Great, I’ve marked your appointment for [time]. We’ll be ready to assist you then. 
+If you have any other questions, feel free to call back. We’ll see you at [time].
+Customer:
+Thank you.
+VSF Employee:
+You’re welcome.
+
+
+
+
+Questions
+                                 1. What does a customer need to get their vehicle out?
+
+
+
+
+                                 2. If the VSF employee had not mentioned the need for a valid ID or the payment specifics, how could that have affected the vehicle release process?
+
+
+
+
+
+
+
+
+
+Scenario I: Customer 2nd Call
+________________
+
+
+VSF Employee:
+Good afternoon, thank you for calling Parking & Towing Enforcement. How can I assist you today?
+Customer:
+Hi, this is [Customer Name]. I called earlier about my 2017 Honda Civic, and I just wanted to let you know that I can’t afford to pick up my car today.
+VSF Employee:
+I understand, [Customer Name]. I can help explain what happens next and the charges that may apply if the vehicle stays at the yard.
+Customer:
+Okay, please do.
+VSF Employee:
+First, I want to make sure you’re aware that we have a daily storage fee of $22.85, which is applied everyday. The next storage fee will apply at midnight tonight.
+Also, by law, at the 24-hour mark, we’re required to send out a notification letter via certified mail to the address on record for the vehicle. This letter is to inform the registered owner that the vehicle is being stored at the VSF.
+Since your vehicle was towed at 5 AM this morning, the 24-hour period will be up at 5 AM tomorrow. At that time, we will send the certified notification letter, which adds a one-time $50 notification fee.
+Customer:
+Wait, so I have to pay for that $50 too?
+VSF Employee:
+Yes, unfortunately, the $50 notification fee is a state-mandated charge. It’s not something we can control. The notification fee will apply if the vehicle is still at the yard when the 24-hour period is complete.
+After the 24-hour period, the only other new charge will be the daily storage fee of $22.85, which will continue until the vehicle is picked up or until you’ve arranged for it to be released.
+Customer (sounding concerned):
+Oh, wow. So, if I can’t get the car tomorrow, I’ll have to pay that extra $50 and another $22.85 on top of everything too?
+VSF Employee:
+Yes, that’s correct.
+I know this is a lot of information, so if you’d have any question, please feel free to call us.
+Customer (sighs):
+Alright, well, I’m just trying to figure out how I’m going to come up with the money.
+VSF Employee:
+I understand. If you need any more details or have other questions, reach out to us. The important thing is that you know the fees, and we want to make the process as clear as possible.
+Customer:
+Thanks. I’ll call back when I have a better idea of when I can come by.
+VSF Employee:
+Of course. Thank you for calling us, goodbye. 
+________________
+
+
+
+VSF Employee Quick Call Checklist
+☐ Greet the Customer
+“Parking & Towing Enforcement. How may I help you?”
+☐ Ask for Vehicle Details
+“Can you please provide the year, make, and model of your vehicle?”
+If needed: “Where was the vehicle picked up from and when?”
+☐ Confirm Vehicle is in Storage
+“Yes, I do see that your vehicle is here”
+☐ Explain Reason for Tow (if asked)
+“It looks like your vehicle was towed for: __________.”
+☐ Request Valid ID
+“You’ll need a valid ID unexpired (state ID, driver’s license, passport, military ID, matricula consular).”
+
+
+☐ Explain Instruments of Release
+“Vehicle can be released to you if your ID name and address matches the name of the registered owner, or your name is on the vehicle insurance or if you have the title on hand even if the title is not in your name, (or guide them to tdlr.tx.gov for additional form options they can learn about)”
+☐ Provide Payment Information
+“The pricing is regulated by the state of texas as well as by the local law enforcement jurisdiction of the area. If you are paying with cash, the total is $_____ (must be exact change only) or $_____ with card (bank processing fee).”
+☐ Card Payment Info
+“If you are paying by card, the cardholder must be present. This means that if you are paying, the card must be under your name. If you are using someone else’s card, they must be present with their ID. We do not accept apple pay or virtual card payments (cash app, venmo, zelle, etc)”
+Location
+“I can go ahead and send a text message with the address of where your vehicle is being stored at. Is this a good phone number to receive that text? I recommend using google maps as apple maps may not provide an accurate location.”
+☐ One-Hour Notice
+“We require an hour’s notice to ensure a staff member is available for your release. If you don’t place an hour’s notice, you may end up waiting a full hour to receive assistance”
+☐ Ask for Appointment Time
+“Did you want to place your hour’s notice now, or call back at a later time whenever you’re ready? 
+☐ Explain Additional Fees (if applicable)
+“There’s a $22.85 daily storage fee at midnight and everyday after. A $50 notification fee will apply if the car is still here after 24 hours.”
+☐ Confirm Appointment
+“Okay, your dedicated appointment is scheduled for [time]. If you won’t be making it in time, call back to get a new appointment. Since pick up are by appointment only, you may be waiting up to an hour receive assistance if you arrive late. 
+☐ Closing
+“If you have any questions, feel free to call us back. Thank you”

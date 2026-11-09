@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {validateDamageSourceBytes} from '../../lib/ccr/damage-source-image.ts';
+import {validatedDocumentBytes} from '../../lib/ccr/document-input.ts';
+const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAFAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDz+iiivsD50//Z','base64'),png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAFCAIAAAD38zoCAAAAFElEQVR4nGPk9ljAgA0wYRWlrgQAdxoA/fhmLncAAAAASUVORK5CYII=','base64'),digest=x=>createHash('sha256').update(x).digest('hex');
+for(const [bytes,name,mime] of [[jpeg,'actual-original.png','image/jpeg'],[png,'actual-original.jpeg','image/png']]){
+ const expected=digest(bytes),r=validateDamageSourceBytes(bytes,name,1e6);assert.equal(r.name,name);assert.equal(r.type,mime);assert.equal(digest(r.bytes),expected);assert.throws(()=>validateDamageSourceBytes(bytes,name,1e6,false));assert.throws(()=>validatedDocumentBytes(bytes,name,1e6));
+ assert.throws(()=>validateDamageSourceBytes(bytes,'original.pdf',1e6));assert.throws(()=>validateDamageSourceBytes(bytes,'../outside.png',1e6));assert.throws(()=>validateDamageSourceBytes(bytes,name,12));
+}
+for(const buf of [Buffer.from('<svg onload=alert(1)>'),Buffer.from('<script>unsafe</script>'),Buffer.from([255,216,255,...Buffer.from('<html>unsafe</html>'),255,217]),jpeg.subarray(0,jpeg.length-8),Buffer.from('%PDF-1.5')])assert.throws(()=>validateDamageSourceBytes(buf,'image.png',1e6));
+assert.throws(()=>validateDamageSourceBytes(Buffer.concat([png,Buffer.from('<html>')]),'image.jpeg',1e6));
+console.log('PASS: preserve strict PDF and ordinary uploads; exact original name/hash for structurally verified JPEG/PNG source mismatch; reject markup, traversal, invalid/truncated or oversized data.');

@@ -1,3 +1,6 @@
+import {componentsFor,calculateComponents,type Component} from '../hr/compensation.ts';
+import {effectivePay} from '../hr/pay-agreements.ts';
+import { legalPersonName } from '../people/display-name.ts';
 import { configuredWeek } from './payroll-calendar.ts';
 import { weekHours, isExempt } from './timeclock.ts';
 export type Value = string | number | boolean | null | undefined | string[] | Record<string, unknown>[];
@@ -8,7 +11,12 @@ export type FinRecord = {
     [key: string]: Value;
 };
 export type Viewer = {
+    delegatedReadOnly?: boolean;
+    companyPolicyReader?: boolean;
+    onboardingOnly?: boolean;
+    hrResponsibilities?: import('../hr/permissions').HrResponsibility[];
     customAccess?: boolean;
+    directDelegationApproved?: boolean;
     access?: import('./access').AccessGrant[];
     id: string;
     name: string;
@@ -40,21 +48,26 @@ export function workweek(day = today(), company?: FinRecord) { return configured
 export function spendingWeek(day = today()) { const d = new Date(day + 'T12:00:00Z'); const start = addDays(day, -((d.getUTCDay() + 1) % 7)); return { start, end: addDays(start, 6) }; }
 export function inPeriod(r: FinRecord, start: string, end: string) { return String(r.date || '') >= start && String(r.date || '') <= end; }
 export function payrollLine(person: FinRecord, records: FinRecord[], start: string, end: string, projected = false) {
+    person=effectivePay(person,start);
     const items = records.filter(r => r.person === person.id && inPeriod(r, start, end) && r.status !== 'Voided');
     const time = items.filter(r => r.kind === 'time' && (projected || r.status !== 'Scheduled'));
     const hours = projected ? weekHours(records, person.id, start, end).projected : time.reduce((s, r) => s + num(r.hours), 0);
-    const paidLeave = items.filter(r => r.kind === 'leaveRequest' && r.status === 'Approved' && r.type !== 'Unpaid');
+    const paidLeave = items.filter(r => r.kind === 'leaveRequest' && r.status === 'Approved' && !['Unpaid', 'Protected Leave Review'].includes(String(r.type)));
     const leaveHours = paidLeave.reduce((s, r) => s + num(r.hours), 0);
     const earnings = items.filter(r => r.kind === 'earning' && r.status === 'Approved');
     const commission = round(earnings.reduce((s, r) => s + num(r.amount), 0));
     const noncash = round(earnings.filter(r => r.destination === 'Truck credit').reduce((s, r) => s + num(r.amount), 0));
     const hourly = String(person.payType).includes('Hourly');
-    const overtime = person.workerType === 'Employee' && hourly ? Math.max(0, hours - 40) : 0;
-    const base = hourly ? hours * num(person.rate) : ['Per tow', 'Pending method'].includes(String(person.payType)) ? 0 : num(person.rate);
-    const premium = overtime ? .5 * ((base + commission) / hours) * overtime : 0;
+    const overtime = person.workerType === 'Employee' && hourly && !isExempt(person) ? Math.max(0, hours - 40) : 0;
+    const base = hourly ? (projected?hours*num(person.rate):time.reduce((sum,t)=>sum+num(t.hours)*num(effectivePay(person,String(t.date||start)).rate),0)) : ['Commission only','Per tow', 'Pending method'].includes(String(person.payType)) ? 0 : num(person.rate);
+    const componentPlan=Array.isArray(person.payComponents)?componentsFor(person):null;
+    const componentEarned:Record<string,number>={};
+    if(componentPlan){for(const c of componentPlan){if(c.kind==='Hourly Pay')componentEarned[c.id]=projected?hours*c.amount:time.reduce((s,t)=>s+num(t.hours)*(componentsFor(effectivePay(person,String(t.date||start))).find(x=>x.id===c.id)?.amount||0),0);else if(!['Salary','Guaranteed Minimum'].includes(c.kind))componentEarned[c.id]=earnings.filter(e=>e.compensationComponentId===c.id).reduce((s,e)=>s+num(e.amount),0);}}
+    const componentResult=componentPlan?calculateComponents(componentPlan,componentEarned):null;
+    const premium = overtime ? .5 * ((componentResult?.total??(base + commission)) / hours) * overtime : 0;
     const taxes = items.find(r => r.kind === 'taxInput');
     const transition = (Date.parse(end) - Date.parse(start)) / 86400000 !== 6;
-    const gross = transition && taxes?.transitionReviewed === true && Number.isFinite(Number(taxes?.transitionGross)) ? round(num(taxes?.transitionGross)) : round(base + commission + premium + (hourly ? leaveHours * num(person.rate) : 0));
+    const gross = transition && taxes?.transitionReviewed === true && Number.isFinite(Number(taxes?.transitionGross)) ? round(num(taxes?.transitionGross)) : round((componentResult?.total??(base + commission)) + premium + (hourly ? paidLeave.reduce((sum,l)=>sum+num(l.hours)*num(effectivePay(person,String(l.date||start)).rate),0) : 0));
     const withheld = person.workerType === 'Employee' ? num(taxes?.federal) + num(taxes?.socialSecurity) + num(taxes?.medicare) + num(taxes?.stateTax) : 0;
     const deductions = records.filter(r => r.kind === 'deduction' && r.person === person.id && r.status === 'Approved' && String(r.date || '') <= end && (!r.endDate || String(r.endDate) >= start) && (r.recurring === true || inPeriod(r, start, end)));
     const priorDeductions = records.filter(r => r.kind === 'payrun' && r.status === 'Released' && String(r.period) < start).flatMap(r => (r.lines || []) as Record<string, unknown>[]).flatMap(l => (l.details || []) as Record<string, unknown>[]).filter(r => r.kind === 'deduction');
@@ -65,6 +78,16 @@ export function payrollLine(person: FinRecord, records: FinRecord[], start: stri
     const net = round(gross - withheld - deducted - noncash);
     const employerTaxes = num(taxes?.employerTaxes);
     const issues: string[] = [];
+    if(componentPlan){
+      if(earnings.some(e=>!componentPlan.some(c=>c.id===e.compensationComponentId&&!['Salary','Hourly Pay','Guaranteed Minimum'].includes(c.kind))))issues.push('Map every approved incentive to its effective compensation component before payroll release');
+      if(transition)issues.push('Review component pay for a partial or nonweekly pay period before release');
+      if(!isExempt(person)&&componentPlan.some(c=>c.kind==='Salary'||c.kind==='Guaranteed Minimum'))issues.push('Review nonexempt salary/guarantee overtime treatment before release');
+    }
+
+    const periodChanges=((person.payTimeline||[]) as Record<string,unknown>[]).filter(e=>e.status!=='Cancelled'&&String(e.effectiveDate)>start&&String(e.effectiveDate)<=end);
+    if(componentPlan&&periodChanges.length)issues.push('Review compensation package change within this pay period before release');
+    if(periodChanges.some(e=>!hourly||!String(e.payType).includes('Hourly')))issues.push('Review pay-basis or salary change within this pay period before release');
+    if (items.some(r => r.kind === 'leaveRequest' && r.type === 'Protected Leave Review' && r.status === 'Approved')) issues.push('Confirm pay treatment of reviewed protected leave before payroll release');
     if (transition && person.workerType === 'Employee' && (taxes?.transitionReviewed !== true || taxes?.transitionGross === '' || taxes?.transitionGross === undefined))
         issues.push('Review transition-period wages and overtime');
     if (person.workerType === 'Employee' && !hourly && !isExempt(person))
@@ -87,6 +110,6 @@ export function payrollLine(person: FinRecord, records: FinRecord[], start: stri
         issues.push('Deductions exceed available wages');
     const taxDetail = { federal: num(taxes?.federal), socialSecurity: num(taxes?.socialSecurity), medicare: num(taxes?.medicare), stateTax: num(taxes?.stateTax), priorYtdWages: num(taxes?.ytdWages), priorYtdFederal: num(taxes?.ytdFederal) };
     const details: FinRecord[] = [...paidLeave, ...earnings, ...appliedDeductions, ...reimbursements].map(r => ({ ...r }));
-    return { person: person.id, name: String(person.name), workerType: String(person.workerType), department: String(person.department), hours, leaveHours, overtime, gross, commission, noncash, withheld, deducted, reimbursed, net, payment: round(net + reimbursed), employerTaxes, cost: round(gross + employerTaxes + reimbursed), issues, earnings: earnings.map(r => r.id), deductions: deductions.map(r => r.id), reimbursements: reimbursements.map(r => r.id), taxDetail, details, period: start, periodEnd: end };
+    return { compensationLines:componentResult?.lines||[], person: person.id, name: legalPersonName(person), workerType: String(person.workerType), department: String(person.department), hours, leaveHours, overtime, gross, commission, noncash, withheld, deducted, reimbursed, net, payment: round(net + reimbursed), employerTaxes, cost: round(gross + employerTaxes + reimbursed), issues, earnings: earnings.map(r => r.id), deductions: deductions.map(r => r.id), reimbursements: reimbursements.map(r => r.id), taxDetail, details, period: start, periodEnd: end };
 }
 export type PayLine = ReturnType<typeof payrollLine>;

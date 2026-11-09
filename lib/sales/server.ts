@@ -1,79 +1,100 @@
+import {exteriorDirectory,promotePropertyPhoto} from './property-photo';
+import {editableSalesContacts,planSalesContactEdit} from './contact-edit';
+import {readPractice,practiceRows,hidePractice,writePractice,isPracticeId,newPracticeId,type PracticeSnapshot} from './practice';
+import {planHandoffContacts,handoffId,isSalesSample} from './handoff-relationships';
+import {personalSalesExamples} from './examples';
+import {publicPersonIdentity} from '../people/display-name.ts';
 import {context,writeMany} from '@/lib/accounts/server';
 import {clean,canEdit,access,head} from '@/lib/accounts/policy';
-import {canAccess} from '@/lib/finance/access';
+import {canAccess,grantsFor} from '@/lib/finance/access';
 import {onboardingTasks} from '@/lib/accounts/onboarding';
 import {today,type Row} from '@/lib/accounts/model';
 import {AppError,ConflictError,ForbiddenError} from '@/lib/shared/errors';
-import type {Viewer} from '@/lib/finance/model';
+import {annualValue,stageId,stagesFor,defaultStages,callOutcomes,visitOutcomes,type Stage} from './config';
+import type {FinRecord,Viewer} from '@/lib/finance/model';
 export const salesAccess=(v:Viewer,edit=false)=>['pipeline','opportunities','record'].some(tab=>canAccess(v,'Sales CRM',tab,edit))||access(v,'opportunities',edit)&&canAccess(v,'Account Management','opportunities',edit);
+export const eligibleSalesRep=(r:FinRecord)=>r.kind==='person'&&r.status==='Active'&&r.accountStatus!=='Disabled'&&!(r.onboardingRequired===true&&!r.onboardingClearedAt)&&(r.role==='Owner'&&['jerson','jeidy','jendel'].includes(r.id)||grantsFor(r).some(g=>g.module==='Sales CRM'));
 type Context=Awaited<ReturnType<typeof context>>;
-export function salesProjection(ctx:Context) {
+export const canSettings=(c:Context)=>c.viewer.owner||canAccess(c.viewer,'Sales CRM','settings',true);
+const leadRights=(v:Viewer,edit=false)=>salesAccess(v,edit);
+const relRights=(v:Viewer)=>canAccess(v,'Sales CRM','relationships',true);
+const followRights=(v:Viewer)=>leadRights(v,true)||canAccess(v,'Sales CRM','activity',true);
+const managed=(c:Context,row:Row)=>isSalesSample(row)?isPracticeId(row.id):!row.readOnly&&(head(c.viewer,c.staff)||row.assignee===c.viewer.person);
+export function salesProjection(ctx:Context,dismissed:ReadonlySet<string>=new Set(),personalRows?:Row[]){
  if(!canAccess(ctx.viewer,'Sales CRM')&&!access(ctx.viewer,'opportunities'))throw new ForbiddenError();
- const leads=ctx.all.filter(r=>r.kind==='opportunity');
- return {records:leads.concat(ctx.all.filter(r=>r.kind==='salesActivity'&&leads.some(l=>l.id===r.opportunityId))),
-   contacts:ctx.all.filter(r=>r.kind==='contact').map(r=>({id:r.id,name:r.name,email:r.email,phone:r.personalPhone})),
-   companies:ctx.all.filter(r=>r.kind==='company').map(r=>({id:r.id,name:r.name})),
-   staff:ctx.staff.filter(r=>r.kind==='person'&&r.status==='Active').map(r=>({id:r.id,name:r.name,department:r.department})),viewer:ctx.viewer,
-   editable:leads.filter(r=>salesAccess(ctx.viewer,true)&&canEdit(ctx.viewer,r,ctx.all,ctx.staff)).map(r=>r.id),canCreate:salesAccess(ctx.viewer,true),
-   canAssign:head(ctx.viewer,ctx.staff),canHandoff:canAccess(ctx.viewer,'Sales CRM','compliance',true)||access(ctx.viewer,'accounts',true)};
+ const {viewer:v}=ctx,operational=ctx.all.filter(r=>!isSalesSample(r));
+ const own=personalRows??practiceRows({hidden:[],overrides:[]},personalSalesExamples(operational,v.person,dismissed));
+ const all=[...operational,...own],leads=all.filter(r=>r.kind==='opportunity'),photo=exteriorDirectory(operational);
+ const contacts=editableSalesContacts(operational,relRights(v),v.person,head(v,ctx.staff));
+ const editableRelationships=leads.filter(l=>managed(ctx,l)&&relRights(v)).map(r=>r.id);
+ const editableFollowUps=leads.filter(l=>managed(ctx,l)&&followRights(v)).map(r=>r.id);
+ return {
+  records:leads.map((r):Row=>({...r,...(salesAccess(v)&&!r.example?photo(r):{}),stage:stageId(r.stage),estimatedAnnualRevenue:annualValue(r.units,r.service,r.propertyType),valuationSource:'Unit / Service Schedule'})).concat(all.filter(r=>['salesActivity','salesRelationship'].includes(r.kind)&&leads.some(l=>l.id===r.opportunityId))),
+  contacts:all.filter(r=>r.kind==='contact').map(r=>({id:r.id,name:r.name,email:r.email,phone:r.personalPhone,version:r.version,example:!!r.example,editableProfile:r.example?relRights(v):contacts.has(r.id)})),
+  companies:operational.filter(r=>r.kind==='company').map(r=>({id:r.id,name:r.name})),staff:ctx.staff.filter(r=>r.kind==='person'&&r.status==='Active').map(r=>({id:r.id,...publicPersonIdentity(r),department:r.department})),
+  salesAssigneeIds:ctx.staff.filter(eligibleSalesRep).map(p=>p.id),viewer:v,stages:stagesFor(operational),settingsVersion:operational.find(r=>r.id==='sales-settings')?.version||0,
+  canSettings:canSettings(ctx),editable:leads.filter(r=>leadRights(v,true)&&(r.example||canEdit(v,r,operational,ctx.staff))).map(r=>r.id),editableRelationships,editableFollowUps,
+  canCreate:salesAccess(v,true),canAssign:head(v,ctx.staff),canHandoff:salesAccess(v,true)
+ };
 }
-export async function saveSales(body:Record<string,unknown>,ctx:Context) {
- const {all,viewer:v,staff}=ctx;
- if(!salesAccess(v,true))throw new ForbiddenError();
- const action=String(body.action||'save');
- if(action==='save') {
-   const input=body.record as Row;
-   if(!input||input.kind!=='opportunity')throw new AppError('Save a sales opportunity.');
-   const old=all.find(r=>r.id===input.id);
-   if(old&&old.version!==input.version)throw new ConflictError();
-   const next=clean(input,old,v,all,staff);
-   if(old?.onboardingAccountId&&next.stage!=='Won')throw new AppError('This property has been handed off. Manage its service status in Account Management.');
-   if(!head(v,staff)&&next.assignee!==v.person)throw new ForbiddenError('Assign this opportunity to yourself.');
-   if(!old)next.createdAt=new Date().toISOString();
-   if(next.stage!==old?.stage){next.stageChangedAt=new Date().toISOString();if(['Won','Lost'].includes(String(next.stage)))next.closedDate=today();}
-   const changes:{old?:Row;next:Row}[]=[{old,next}];
-   if(old&&old.stage!==next.stage)changes.push({next:{id:crypto.randomUUID(),kind:'salesActivity',version:0,name:'Stage changed',opportunityId:next.id,date:today(),channel:'Note',details:`${old.stage} → ${next.stage}`}});
-   return writeMany(changes,v,old?'Updated sales opportunity':'Created sales opportunity');
- }
- const lead=all.find(r=>r.kind==='opportunity'&&r.id===body.id);
- if(!lead||!canEdit(v,lead,all,staff))throw new ForbiddenError();
- if(action==='handoff'&&lead.onboardingAccountId)return [lead,...all.filter(r=>r.id===lead.onboardingAccountId)];
- if(body.version!==lead.version)throw new ConflictError();
- if(action==='activity') {
-   const input={id:crypto.randomUUID(),kind:'salesActivity',version:0,name:body.channel||'Sales activity',opportunityId:lead.id,date:body.date||today(),channel:body.channel,details:body.details,outcome:body.outcome||''};
-   const activity=clean(input,undefined,v,all,staff);
-   if(!activity.details)throw new AppError('Record what happened.');
-   if(String(activity.date)>today())throw new AppError('Log completed contact; use next follow-up for a future date.');
-   const next=clean({id:lead.id,kind:'opportunity',version:lead.version,dueDate:body.dueDate||'',nextAction:body.nextAction||''},lead,v,all,staff);
-   if(!!next.dueDate!==!!next.nextAction)throw new AppError('Add both a next action and follow-up date, or leave both empty.');
-   if(activity.channel!=='Note')next.lastContact=activity.date;
-   return writeMany([{next:activity},{old:lead,next}],v,'Logged sales contact and next follow-up');
- }
- if(action==='handoff') {
-   if(!canAccess(v,'Sales CRM','compliance',true)&&!access(v,'accounts',true))throw new ForbiddenError();
-   if(lead.stage!=='Won')throw new AppError('Mark the opportunity Won before sending it to onboarding.');
-   if(!lead.address)throw new AppError('Add the property address before handoff.');
-   const assignee=staff.find(r=>r.kind==='person'&&r.id===body.assignee&&r.status==='Active'&&r.department==='Account Managers');
-   if(!assignee)throw new AppError('Choose an active account manager.');
-   if(all.some(r=>r.kind==='account'&&r.name.trim().toLowerCase()===lead.name.trim().toLowerCase()))throw new AppError('An account with this property name already exists. Open that account to avoid a duplicate.');
-   const account:Row={id:crypto.randomUUID(),kind:'account',version:0,name:lead.name,address:lead.address,propertyType:lead.propertyType,units:lead.units,parkingSpaces:lead.parkingSpaces,service:lead.service||'Unconfirmed',companyId:lead.companyId,assignee:assignee.id,status:'Onboarding',sourceOpportunityId:lead.id,onboardingStartedAt:new Date().toISOString()};
-   const changes:{old?:Row;next:Row}[]=[];
-   if(!account.companyId&&lead.companyName) {
-     const company=all.find(r=>r.kind==='company'&&r.type==='Management company'&&r.name.toLowerCase()===String(lead.companyName).trim().toLowerCase());
-     if(company)account.companyId=company.id;
-     else {const next=clean({id:crypto.randomUUID(),kind:'company',version:0,name:lead.companyName,type:'Management company'},undefined,v,all,staff,true);changes.push({next});account.companyId=next.id;}
-   }
-   const existing=all.find(r=>r.kind==='contact'&&r.id===lead.contactId);
-   if(existing||lead.contactName) {
-     const contact=existing||{id:crypto.randomUUID(),kind:'contact' as const,version:0,name:String(lead.contactName)};
-     if(!existing)changes.push({next:contact});
-     account.primaryContactId=contact.id;
-     changes.push({next:{id:crypto.randomUUID(),kind:'affiliation',version:0,name:String(lead.contactRole||'Property Manager'),accountId:account.id,contactId:contact.id,role:lead.contactRole||'Property Manager',workEmail:lead.email,workPhone:lead.phone}});
-   }
-   changes.push({next:account},...onboardingTasks(account,all).map(next=>({next})),{old:lead,next:{...lead,onboardingAccountId:account.id,handoffDate:today(),dueDate:'',nextAction:''}},
-     {next:{id:crypto.randomUUID(),kind:'salesActivity',version:0,name:'Sent to onboarding',opportunityId:lead.id,date:today(),channel:'Note',details:'Pending account assigned to '+assignee.name}});
-   if(lead.details)changes.push({next:{id:crypto.randomUUID(),kind:'activity',version:0,name:'Sales handoff',accountId:account.id,date:today(),channel:'Note',details:lead.details,assignee:assignee.id}});
-   return writeMany(changes,v,'Handed won property to account onboarding');
- }
- throw new AppError('Choose a sales action.');
+function text(x:unknown,max=1000){const s=String(x||'').trim();if(s.length>max||s.includes('\0'))throw new AppError('The entered text is too long.');return s;}
+function activity(lead:Row,channel:string,details:string,outcome=''):Row{return{id:crypto.randomUUID(),kind:'salesActivity',version:0,name:channel,opportunityId:lead.id,date:today(),channel,details,outcome};}
+function handoff(lead:Row,ctx:Context,owner:unknown){const {all,staff}=ctx;if(!lead.address)throw new AppError('Add the property address before marking Won.');const manager=staff.find(s=>s.kind==='person'&&s.id===owner&&s.status==='Active'&&s.accountStatus!=='Disabled');if(owner&&!manager)throw new AppError('Choose an active onboarding owner.');if(all.some(r=>r.kind==='account'&&(r.sourceOpportunityId===lead.id||r.name.trim().toLowerCase()===lead.name.trim().toLowerCase())))throw new AppError('This property already has an account. Review the existing account before creating another.');const account:Row={id:'sales-account:'+lead.id,kind:'account',version:0,name:lead.name,address:lead.address,propertyType:lead.propertyType,units:lead.units,parkingSpaces:lead.parkingSpaces,service:lead.service||'Unconfirmed',companyId:lead.companyId,assignee:manager?.id||'',status:'Onboarding',sourceOpportunityId:lead.id,onboardingStartedAt:new Date().toISOString(),currentProvider:lead.currentProvider,officeContact:lead.propertyManager||lead.contactName,phone:lead.phone,email:lead.email};const changes:{old?:Row;next:Row}[]=[];
+ if(!account.companyId&&lead.companyName){let company=all.find(r=>r.kind==='company'&&r.name.toLowerCase()===String(lead.companyName).toLowerCase());if(!company){company={id:handoffId('sales-company',lead.id),kind:'company',version:0,name:String(lead.companyName),type:'Management company'};changes.push({next:company});}account.companyId=company.id;}
+ const transferred=planHandoffContacts(lead,account,all,today());changes.push(...transferred.created.map(next=>({next})));
+ const photo=promotePropertyPhoto(lead,account,all);if(photo)changes.push(photo);
+ changes.push({next:account},...onboardingTasks(account,photo?[...all.filter(f=>f.id!==photo.old.id),photo.next]:all).map(next=>({next})),{next:{...activity(lead,'Note','Won — pending account and onboarding checklist created.'),id:handoffId('sales-won-event',lead.id),sourceOpportunityId:lead.id}});if(lead.details)changes.push({next:{id:handoffId('sales-handoff-note',lead.id),kind:'activity',version:0,name:'Sales Handoff',accountId:account.id,sourceOpportunityId:lead.id,date:today(),channel:'Note',details:lead.details,assignee:account.assignee}});return {changes,account};}
+type Change={old?:Row;next:Row};
+function followUpFields(nextAction:unknown,dueDate:unknown){
+ const next=text(nextAction),due=text(dueDate),instant=Date.parse(due+'T00:00:00Z');
+ if(!!next!==!!due)throw new AppError('Add both a next action and follow-up date, or clear both.');
+ if(due&&(!/^\d{4}-\d{2}-\d{2}$/.test(due)||!Number.isFinite(instant)||new Date(instant).toISOString().slice(0,10)!==due))throw new AppError('Choose a valid follow-up date.');
+ return {nextAction:next,dueDate:due};
 }
+export async function saveSales(body:Record<string,unknown>,ctx:Context){
+ const action=String(body.action||'save'),key=action==='save'?(body.record as Row)?.id:action==='editContact'?body.contactId:body.id;
+ if(isPracticeId(key)||action==='deleteExample'){
+  const v=ctx.viewer;
+  if(!canAccess(v,'Sales CRM')&&!access(v,'opportunities'))throw new ForbiddenError();
+  const allowed=action==='deleteExample'||action==='save'&&leadRights(v,true)||['activity','followUp'].includes(action)&&followRights(v)||['relationship','endRelationship','editContact'].includes(action)&&relRights(v);
+  if(!allowed)throw new ForbiddenError('This action is not available for training records.');
+  const s=await readPractice(v.person,ctx.all);
+  if(action==='deleteExample')return hidePractice(String(key),body.version,v,s);
+  if(!s.rows.some(r=>r.id===key&&r.kind===(action==='editContact'?'contact':'opportunity')))throw new ForbiddenError('Choose a visible record in your practice workbook.');
+  const settings=ctx.all.filter(r=>r.id==='sales-settings'&&r.kind==='salesSettings');
+  return executeSales(body,{...ctx,all:[...s.rows,...settings]},s);
+ }
+ if(isPracticeId(body.contactId)||isPracticeId(body.relationshipId)||isPracticeId((body.record as Row)?.contactId)||isPracticeId((body.record as Row)?.companyId))throw new ForbiddenError('Practice records cannot be linked to live leads.');
+ return executeSales(body,ctx);
+}
+async function executeSales(body:Record<string,unknown>,ctx:Context,practice?:PracticeSnapshot){const {all,viewer:v,staff}=ctx;const action=String(body.action||'save');
+ const write=(changes:Change[],viewer:Viewer,reason:string)=>practice?writePractice(changes,viewer,practice):writeMany(changes,viewer,reason);
+ const newId=practice?newPracticeId:()=>crypto.randomUUID();
+ const event=(...args:Parameters<typeof activity>):Row=>({...activity(...args),id:newId()});
+ if(action==='settings'){if(!canSettings(ctx))throw new ForbiddenError();const old=all.find(r=>r.id==='sales-settings');if((old?.version||0)!==body.version)throw new ConflictError();if(!Array.isArray(body.stages)||body.stages.length<3||body.stages.length>18)throw new AppError('Use 3–18 stages.');const stages=body.stages as Stage[];if(stages.some(s=>!s.id||!/^[\w -]{1,100}$/.test(s.id)||!text(s.label,60)||!['open','won','lost'].includes(s.type)||s.probability!==undefined&&(!Number.isFinite(s.probability)||s.probability<0||s.probability>100))||new Set(stages.map(s=>s.id)).size!==stages.length||new Set(stages.map(s=>s.label.trim().toLowerCase())).size!==stages.length)throw new AppError('Each stage needs a unique name and valid probability.');if(stages.filter(s=>s.type==='won'&&s.id==='Won').length!==1||stages.filter(s=>s.type==='lost'&&s.id==='Lost').length!==1||stages.some(s=>!['Won','Lost'].includes(s.id)&&s.type!=='open'))throw new AppError('Keep one Won and one Lost outcome. Their displayed names may be edited.');for(const r of all.filter(r=>r.kind==='opportunity'))if(!stages.some(s=>s.id===stageId(r.stage)))throw new AppError('A stage still contains leads. Move them before removing it.');return write([{old,next:{id:'sales-settings',kind:'salesSettings',version:old?.version||0,name:'Sales Settings',dataJSON:JSON.stringify({stages:stages.map(s=>({...s,label:s.label.trim()}))})}}],v,'Updated Sales Stages');}
+ if(action==='editContact'){
+  const allowed=practice?new Set(all.filter(r=>r.kind==='contact').map(r=>r.id)):editableSalesContacts(all,relRights(v),v.person,head(v,staff)),plan=planSalesContactEdit(body,all,allowed);
+  if(practice){
+   const changes:Change[]=[plan];
+   for(const r of all)if(r.kind==='salesRelationship'&&r.contactId===plan.old.id)changes.push({old:r,next:{...r,name:plan.next.name,...(!r.email||r.email===plan.old.email?{email:plan.next.email}:{}),...(!r.phone||r.phone===plan.old.personalPhone?{phone:plan.next.personalPhone}:{})}});
+   for(const l of all.filter(r=>r.kind==='opportunity')){
+    const next={...l};let changed=false;
+    if(l.contactId===plan.old.id){next.contactName=plan.next.name;if(!next.email||next.email===plan.old.email)next.email=plan.next.email;if(!next.phone||next.phone===plan.old.personalPhone)next.phone=plan.next.personalPhone;changed=true;}
+    for(const r of all.filter(r=>r.kind==='salesRelationship'&&r.contactId===plan.old.id&&r.opportunityId===l.id&&!r.endDate)){const k=({'Property Manager':'propertyManager','Assistant Manager':'assistantManager','Leasing Agent':'leasingAgent'} as Record<string,string>)[String(r.role)];if(k&&l[k]===plan.old.name){next[k]=plan.next.name;changed=true;}}
+    if(changed)changes.push({old:l,next});
+   }
+   return write(changes,v,'Edited Practice Contact');
+  }
+  return write([plan],v,'Edited Sales Contact Details');
+ }
+ if(!practice&&!salesAccess(v,true)&&!(['activity','followUp'].includes(action)&&followRights(v))&&!(['relationship','endRelationship'].includes(action)&&relRights(v)))throw new ForbiddenError();
+ if(action==='save'){const input=body.record as Row;if(!practice&&input&&isSalesSample(input))throw new AppError('Training leads cannot be converted into production records.');if(!input||input.kind!=='opportunity')throw new AppError('Save a sales lead.');const old=all.find(r=>r.id===input.id);if(old&&old.version!==input.version)throw new ConflictError();if(practice&&(input.accountId||input.companyId||input.assignee||body.onboardingOwner))throw new AppError('Practice leads cannot be assigned or linked to live people, companies, or accounts.');
+ const next=clean({...input,stage:stageId(input.stage??old?.stage)},old,v,all,staff,!!practice);if(next.assignee&&(!old||next.assignee!==old.assignee)&&!staff.some(p=>p.id===next.assignee&&eligibleSalesRep(p)))throw new AppError('Choose an active employee with Sales CRM access.');if(!practice&&!head(v,staff)&&next.assignee!==v.person)throw new ForbiddenError('Assign the lead to yourself.');next.estimatedAnnualRevenue=annualValue(next.units,next.service,next.propertyType);next.valuationSource='Unit / Service Schedule';if(next.companyId&&!next.companyName)next.companyName=all.find(r=>r.kind==='company'&&r.id===next.companyId)?.name||'';if(next.companyName){const companies=all.filter(r=>r.kind==='company'&&!r.deletedAt&&r.name.trim().toLowerCase()===String(next.companyName).trim().toLowerCase());const matching=companies.find(r=>r.id===next.companyId)||(companies.length===1?companies[0]:undefined);if(companies.length>1&&!matching)throw new AppError('Select the correct management company; more than one has this name.');next.companyId=matching?.id||'';}else next.companyId='';if(!old)next.createdAt=new Date().toISOString();if(next.stage==='Lost'){if(!next.lossReason||!next.lossCategory||!['Yes','No'].includes(String(next.resolicitEligible)))throw new AppError('Choose a loss category, enter why it was lost, and decide whether this manager may be re-solicited.');if(old?.stage!=='Lost'){const pm=all.find(r=>r.kind==='salesRelationship'&&r.opportunityId===next.id&&r.role==='Property Manager'&&!r.endDate);next.lostContactId=pm?.contactId||next.contactId||'';next.lostManagerName=pm?.name||next.propertyManager||next.contactName||'';}}if(next.stage!==stageId(old?.stage)||!old){next.stageChangedAt=new Date().toISOString();if(['Won','Lost'].includes(String(next.stage)))next.closedDate=today();else delete next.closedDate;}
+ const changes:{old?:Row;next:Row}[]=[];if(practice&&next.stage==='Won'&&old?.stage!=='Won'){next.dueDate='';next.nextAction='';}if(!practice&&next.stage==='Won'&&!old?.onboardingAccountId){const h=handoff(next,ctx,body.onboardingOwner||'');changes.push(...h.changes);next.onboardingAccountId=h.account.id;next.handoffDate=today();next.dueDate='';next.nextAction='';}changes.push({old,next});if(old&&old.stage!==next.stage)changes.push({next:event(next,'Note',`${stageId(old.stage)} → ${next.stage}`)});if(next.stage==='Lost'&&(old?.stage!=='Lost'||old.lossReason!==next.lossReason||old.resolicitEligible!==next.resolicitEligible))changes.push({next:event(next,'Note',`Lost: ${next.lossCategory}. ${next.lossReason}. Re-solicit ${next.lostManagerName||'manager'}: ${next.resolicitEligible}. ${next.resolicitReason||''}`)});return write(changes,v,old?'Updated Sales Lead':'Created Sales Lead');}
+ const lead=all.find(r=>r.kind==='opportunity'&&r.id===body.id);if(!lead||!practice&&isSalesSample(lead)||!managed(ctx,lead))throw new ForbiddenError();if(action==='handoff'&&lead.onboardingAccountId)return [lead];if(body.version!==lead.version)throw new ConflictError();
+ if(action==='followUp'){if(!followRights(v))throw new ForbiddenError();const fields=followUpFields(body.nextAction,body.dueDate);return write([{old:lead,next:{...lead,...fields}}],v,'Updated Sales Follow-Up');}
+ if(action==='activity'){const channel=text(body.channel),outcome=text(body.outcome),details=text(body.details,20000);if(!['Phone call','Email','Onsite visit','Meeting','Note'].includes(channel)||!details&&!outcome)throw new AppError('Choose an outcome or add a note.');if(channel==='Phone call'&&outcome&&!callOutcomes.includes(outcome)||channel==='Onsite visit'&&outcome&&!visitOutcomes.includes(outcome))throw new AppError('Choose an available outcome.');const act=clean({...event(lead,channel,details||outcome,outcome),date:body.date||today()},undefined,v,all,staff,!!practice||canAccess(v,'Sales CRM','activity',true));if(String(act.date)>today())throw new AppError('Completed activity cannot be in the future.');const next:Row={...lead,...(channel!=='Note'?{lastContact:act.date}:{})};if(body.nextAction!==undefined||body.dueDate!==undefined){Object.assign(next,followUpFields(body.nextAction,body.dueDate));}return write([{next:act},{old:lead,next}],v,'Logged Sales Activity');}
+ if(action==='relationship'){if(!relRights(v))throw new ForbiddenError();const old=body.relationshipId?all.find(r=>r.kind==='salesRelationship'&&r.id===body.relationshipId&&r.opportunityId===lead.id):undefined;if(body.relationshipId&&(!old||old.version!==body.relationshipVersion))throw new ConflictError();const role=text(body.role),date=text(body.startDate)||today();if(!['Property Manager','Assistant Manager','Leasing Agent','Decision Maker','Other'].includes(role)||!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>today())throw new AppError('Choose a role and current or past start date.');if(old?.endDate&&date>String(old.endDate))throw new AppError('Start date must be on or before the end date.');let contact=all.find(r=>r.kind==='contact'&&r.id===body.contactId);const changes:{old?:Row;next:Row}[]=[];if(body.contactId&&!contact)throw new AppError('Choose an existing contact.');if(!contact){const name=text(body.name);if(!name)throw new AppError('Enter the contact name.');contact={id:newId(),kind:'contact',version:0,name};changes.push({next:contact});}const email=text(body.email),phone=text(body.phone);if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new AppError('Enter a valid email.');if(!old?.endDate&&all.some(r=>r.id!==old?.id&&r.kind==='salesRelationship'&&r.contactId===contact!.id&&r.opportunityId===lead.id&&!r.endDate&&r.role===role))throw new AppError('This contact already holds that role at this property.');if(!old?.endDate&&['Property Manager','Assistant Manager'].includes(role)&&all.some(r=>r.id!==old?.id&&r.kind==='salesRelationship'&&r.opportunityId===lead.id&&r.role===role&&!r.endDate))throw new AppError('End the current '+role+' relationship before assigning a replacement.');const relationship:Row={...old,id:old?.id||newId(),kind:'salesRelationship',version:old?.version||0,name:contact.name,contactId:contact.id,opportunityId:lead.id,role,startDate:date,email,phone,decisionMaker:body.decisionMaker===true};const next:Row={...lead};if(!old?.endDate){if(old){const key=({'Property Manager':'propertyManager','Assistant Manager':'assistantManager','Leasing Agent':'leasingAgent'} as Record<string,string>)[String(old.role)];if(key&&next[key]===old.name)next[key]='';if((old.decisionMaker||old.role==='Decision Maker')&&next.contactId===old.contactId){for(const k of ['contactId','contactName','contactRole','email','phone'])next[k]='';}}if(role==='Property Manager')next.propertyManager=contact.name;if(role==='Assistant Manager')next.assistantManager=contact.name;if(role==='Leasing Agent')next.leasingAgent=contact.name;if(relationship.decisionMaker||role==='Decision Maker'){next.contactId=contact.id;next.contactName=contact.name;next.contactRole=role;next.email=email;next.phone=phone;}}changes.push({old,next:relationship},{old:lead,next},{next:event(lead,'Note',contact.name+(old?' relationship updated: ':' linked as ')+role)});return write(changes,v,old?'Updated Lead Relationship':'Added Lead Relationship');}
+ if(action==='endRelationship'){if(!relRights(v))throw new ForbiddenError();const r=all.find(r=>r.id===body.relationshipId&&r.kind==='salesRelationship'&&r.opportunityId===lead.id);if(!r||r.endDate)throw new AppError('Choose a current relationship.');const date=text(body.endDate)||today(),reason=text(body.reason);if(!reason||!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>today()||date<String(r.startDate))throw new AppError('Enter a reason and valid end date.');const next:Row={...lead};if(r.role==='Property Manager'&&next.propertyManager===r.name)next.propertyManager='';if(r.role==='Assistant Manager'&&next.assistantManager===r.name)next.assistantManager='';if(r.role==='Leasing Agent'&&next.leasingAgent===r.name)next.leasingAgent='';if(next.contactId===r.contactId){next.contactId='';next.contactName='';next.contactRole='';next.email='';next.phone='';}return write([{old:r,next:{...r,endDate:date,endReason:reason}},{old:lead,next},{next:event(lead,'Note',r.name+' left '+lead.name+': '+reason)}],v,'Ended Lead Relationship');}
+ if(action==='handoff'){if(lead.onboardingAccountId)return [lead];if(lead.stage!=='Won')throw new AppError('Mark the lead Won first.');const h=handoff(lead,ctx,body.assignee);return write([...h.changes,{old:lead,next:{...lead,onboardingAccountId:h.account.id,handoffDate:today()}}],v,'Created Pending Account');}
+ throw new AppError('Choose a sales action.');}

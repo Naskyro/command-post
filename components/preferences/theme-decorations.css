@@ -1,0 +1,38 @@
+/* The menu and artwork bands have independent space; no artwork sits over text.
+   SVGs meet their viewBox, photographs crop uniformly, and the garland repeats. */
+.theme-decorations,.theme-decorations *{pointer-events:none!important;user-select:none}
+.theme-decorations{position:relative;flex-shrink:0;overflow:hidden;isolation:isolate}
+.theme-decorations svg{display:block;max-width:100%;max-height:100%}
+.theme-decorations--menu{width:100%;height:122px;display:flex;align-items:center;justify-content:center;margin:0 0 9px}
+.theme-decorations--menu>.theme-menu-scene{display:block;width:100%;height:100%;object-fit:contain}
+.theme-decorations--header{height:58px;width:100%;background:transparent}
+.theme-header-garland{height:100%;width:100%}
+.theme-decorations--footer{height:90px;width:100%;padding:0 18px}
+.theme-decorations--preview{width:100%;height:100%;display:grid;place-items:center}
+.theme-decorations--preview>.theme-preview-scene{width:100%;height:100%;object-fit:contain}
+.theme-frieze{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:clamp(3px,1.25%,16px);overflow:hidden}
+.theme-frieze>i{flex:1 1 0;min-width:0;height:4px;border-block:1px solid color-mix(in srgb,var(--st-accent,var(--ws-accent)) 36%,transparent)}
+.theme-frieze>.theme-frieze-art{display:block;height:100%;width:auto;min-width:0;max-width:100%;flex:0 1 auto}
+.theme-decorations--footer .theme-frieze>i{border-block-end:0;height:1px}
+.theme-decorations--photo>.theme-photograph{display:block;width:100%;height:100%;object-fit:cover}
+.theme-decorations--menu.theme-decorations--photo{padding:2px 6px}
+.theme-decorations--menu.theme-decorations--photo>img{border-radius:6px}
+.theme-decorations--footer.theme-decorations--photo{padding:0;max-width:none}
+.shell>.side:has(>.theme-decorations--menu){padding-top:10px}
+.shell>.side:has(>.theme-decorations--menu) .command-brand{padding-bottom:1px}
+.shell>.side:has(>.theme-decorations--menu) nav{flex:1;min-height:0;overflow-y:auto}
+.shell>.side:has(>.theme-decorations--menu) .issue{flex-shrink:0;margin-top:10px}
+.shell .top:has(>.theme-decorations--header){height:126px;min-height:126px!important;padding-top:68px!important}
+.shell .top>.theme-decorations--header{position:absolute;top:0;left:0;right:0}
+.shell>.stage>.theme-decorations--footer{max-width:1680px;margin:0 auto}
+@media(max-width:700px){
+ .shell .top:has(>.theme-decorations--header){height:110px;min-height:110px!important;padding-top:52px!important}
+ .shell .top>.theme-decorations--header{height:43px}
+ .theme-decorations--footer{height:70px;padding:0 9px}
+}
+@media(prefers-reduced-motion:reduce){.theme-decorations,.theme-decorations *{animation:none!important;transition:none!important}}
+@media print{.theme-decorations{display:none!important}.shell .top:has(>.theme-decorations--header){height:auto;min-height:0!important;padding-top:12px!important}}
+.p-theme-preview .theme-decorations--preview{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:flex-end;padding:0 3px 0 22%}
+.p-theme-preview .theme-preview-scene{width:100%;height:100%;max-width:140px}
+.p-theme-preview .theme-decorations--photo{padding:0}
+.p-theme-preview .theme-decorations--photo>img{max-width:none}

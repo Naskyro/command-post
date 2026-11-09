@@ -1,0 +1,35 @@
+'use client';
+import ResponsiveSearchInput from '@/components/shared/ResponsiveSearchInput';
+import {useEffect,useState} from 'react';
+import {canStartDelegation} from '@/lib/admin/delegated-policy';
+import {Search} from 'lucide-react';
+import {canEnterPersonalSopTab} from '@/lib/sop/acknowledgment-access';
+import {ccrModule,ccrSearchTerms} from '@/lib/ccr/navigation';
+import {canOpenYearHistory} from '@/lib/year-history/access';
+import {accessCatalog,canAccess} from '@/lib/finance/access';
+import type {Viewer} from '@/lib/finance/model';
+import type {HrData} from '@/lib/hr/model';
+import {showJobLibrary} from '@/lib/hr/job-library-access';
+import {requestJson} from '@/lib/shared/client';
+import type {Policy} from '@/lib/sop/model';
+import {searchText} from '@/components/sop/view-model';
+import {moduleLabel} from '@/lib/shared/module-labels';
+import type {SchoolCourse,SchoolData} from '@/lib/school/model';
+type Hit={label:string;detail:string;tab:string;person?:string;section?:string;account?:string};
+const keywords:Record<string,string>={pay:'salary commission bonus training raise pay agreement',benefits:'PTO vacation sick personal leave benefits',people:'employee personnel contact address emergency',performance:'warning writeup corrective action promotion job history',hiring:'offer vacancy candidate onboarding resume',records:'documents files assets equipment software access',org:'organization chart supervisor reporting manager',offboarding:'termination firing separation returned assets',Payroll:'paystub pay taxes deductions',Outflows:'expense receipt bill payment',damage:'damaged missing asset claims',Schedule:'shift coverage calendar'};
+export default function ModuleSearch({module,viewer,onOpen,accounts=[],navigationOnly=false}:{module:string;viewer?:Viewer;navigationOnly?:boolean;onOpen:(module:string,tab?:string,section?:string,selection?:{person?:string;account?:string})=>void;accounts?:{id:string;name:string;kind:string}[]}){
+ const [policies,setPolicies]=useState<Policy[]>([]),[courses,setCourses]=useState<SchoolCourse[]>([]);
+ useEffect(()=>{let active=true;setPolicies([]);if(navigationOnly||module!=='SOP Library'||!viewer)return;const listener=(e:Event)=>{if(active)setPolicies((e as CustomEvent<Policy[]>).detail)};window.addEventListener('sop-catalog-loaded',listener);return()=>{active=false;window.removeEventListener('sop-catalog-loaded',listener)}},[module,viewer?.person,navigationOnly]);
+ useEffect(()=>{let active=true;setCourses([]);if(navigationOnly||module!=='SOP Library'||!viewer)return;const listener=(e:Event)=>{if(active)setCourses((e as CustomEvent<SchoolCourse[]>).detail)};window.addEventListener('school-catalog-loaded',listener);void requestJson<SchoolData>('/api/school').then(d=>{if(active)setCourses(d.courses)}).catch(()=>{});return()=>{active=false;window.removeEventListener('school-catalog-loaded',listener)}},[module,viewer?.person,navigationOnly]);
+ const[q,setQ]=useState(''),[hr,setHr]=useState<HrData|null>(null),[focus,setFocus]=useState(false),[drive,setDrive]=useState<{id:string;name:string;kind:string;deletedAt?:string}[]>([]);
+ useEffect(()=>{setQ('');setHr(null);setDrive([]);if(navigationOnly)return;if(module==='Company Drive'&&viewer)void requestJson<{nodes:typeof drive}>('/api/drive').then(d=>setDrive(d.nodes.filter(n=>!n.deletedAt))).catch(()=>{});if(module==='People & HR'&&viewer)void requestJson<HrData>('/api/hr').then(setHr).catch(()=>{});},[module,viewer?.person,navigationOnly]);
+ const term=q.trim().toLowerCase();const hits:Hit[]=Object.entries(accessCatalog[module]||{}).filter(([tab,label])=>!(module==='Admin'&&(tab==='password-resets'||(tab==='delegated-access'&&!canStartDelegation(viewer))))&&(canAccess(viewer,module,tab)||canEnterPersonalSopTab(viewer,module,tab))&&`${label} ${module===ccrModule?ccrSearchTerms[tab]||'':keywords[tab]||''}`.toLowerCase().includes(term)).map(([tab,label])=>({label,detail:'Open Section',tab}));
+ if(!navigationOnly&&term&&canOpenYearHistory(viewer,module)&&'archive year in review annual historical completed records previous years undated'.includes(term))hits.unshift({label:'Archive & Year in Review',detail:'Open Year History',tab:'year-history'});
+ if(module==='People & HR'&&hr){if(showJobLibrary(hr.viewer,hr.people)&&'job description library position duties role expectations templates'.includes(term))hits.unshift({label:'Job Description Library',detail:'Open Section',tab:'job-descriptions'});for(const p of hr.people)if(`${p.name} ${p.title} ${p.department}`.toLowerCase().includes(term))hits.unshift({label:String(p.name),detail:String(p.title||'Employee Profile'),tab:'people',person:p.id});for(const r of hr.records){const label=String(r.data.title||r.data.fileName||r.data.name||'');if(label&&label.toLowerCase().includes(term)&&r.personId)hits.push({label,detail:'Employee Record',tab:'people',person:r.personId,section:r.kind==='assignment'?'Assets & Access':r.kind==='document'?'Documents':'Performance'});}}
+ if(module==='Company Drive')for(const n of drive)if(n.name.toLowerCase().includes(term))hits.unshift({label:n.name,detail:n.kind==='folder'?'Folder':'File',tab:'browse',section:n.id});
+ if(['Accounts','Account Management'].includes(module))for(const a of accounts.filter(a=>a.kind==='account'&&a.name.toLowerCase().includes(term)))hits.unshift({label:a.name,detail:'Property Profile',tab:module==='Accounts'?'overview':'accounts',account:a.id});
+ if(module==='SOP Library'&&term)for(const p of policies){if(searchText(p).includes(term))hits.push({label:p.code+' · '+p.content.title,detail:p.status+' · Version '+p.version,tab:p.status==='Published'?'library':'workflow',section:p.id+'@'+p.version})}
+ if(module==='SOP Library'&&term)for(const c of courses){if([c.title,c.description,c.topic,...c.lessons.map(l=>l.title)].join(' ').toLowerCase().includes(term))hits.push({label:c.title,detail:c.status==='Published'?'Training Course':'Course Draft',tab:c.status==='Published'?'courses':'studio',section:c.id})}
+ function open(h:Hit){if(module==='SOP Library')window.dispatchEvent(new CustomEvent(['library','assigned','workflow','archive','topics','inbox'].includes(h.tab)?'sop-search-open':'school-search-open',{detail:h}));if(module==='Company Drive')window.dispatchEvent(new CustomEvent('drive-search-open',{detail:{id:h.section}}));onOpen(module,h.tab,h.section,{person:h.person,account:h.account});if(module==='People & HR')window.dispatchEvent(new CustomEvent('hr-search-open',{detail:h}));setQ('');setFocus(false);}
+ return <div className="search module-search"><Search size={19}/><ResponsiveSearchInput compactPlaceholder="Search…" aria-label={'Search '+moduleLabel(module)} placeholder={'Search '+moduleLabel(module)+'…'} value={q} onChange={e=>setQ(e.target.value)} onFocus={()=>setFocus(true)} onKeyDown={e=>{if(e.key==='Escape')setFocus(false);if(e.key==='Enter'&&term&&hits[0])open(hits[0]);}}/>{focus&&term&&<div className="results">{hits.slice(0,12).map((h,i)=><button key={i} onClick={()=>open(h)}><div><b>{h.label}</b><small>{h.detail}</small></div></button>)}{!hits.length&&<p>No accessible matches in this module.</p>}</div>}</div>;
+}

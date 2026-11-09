@@ -1,0 +1,346 @@
+{
+  "HR-CA-001": {
+    "reviewedStandard": "Missing a scheduled shift without required notice. A pattern is Category 2; abandoning a critical shift or causing serious operational exposure may be Category 3.",
+    "reviewedResponse": "Category 2 or 3. Documented or written warning; final warning or termination review when serious or repeated.",
+    "conduct": "Missing a scheduled shift without the required notice. Repeated absences or abandoning a critical shift can be more serious.",
+    "consequences": "A documented or written warning is usual. Serious or repeated incidents may lead to a final warning or termination review.",
+    "reviewedBoundary": "This preserves the existing misconduct reference and review framework; it does not finalize the conflicting attendance/no-show/probation ladder proposals held in ALL-004, ALL-008 and ALL-022.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. This reference does not establish an automatic attendance, no-show, or probation penalty ladder."
+  },
+  "HR-CA-002": {
+    "reviewedStandard": "Telling a customer, resident, property, government official, or other person that the Company acted illegally, caused damage, owes money, or is at fault without authorization.",
+    "reviewedResponse": "Category 3. Management review; written/final warning, suspension, or termination depending on exposure.",
+    "conduct": "Telling a customer, resident, property, government official, or other person that the Company acted illegally, caused damage, owes money, or is at fault without authorization.",
+    "consequences": "Possible outcomes include a written or final warning, suspension, or termination, depending on the exposure.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-003": {
+    "reviewedStandard": "Accepting or requesting money, favors, gifts, or side payments in exchange for Company action.",
+    "reviewedResponse": "Category 4. Generally immediate termination if substantiated.",
+    "conduct": "Accepting or requesting money, favors, gifts, or side payments in exchange for Company action.",
+    "consequences": "Generally, immediate termination if substantiated.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-004": {
+    "reviewedStandard": "Repeated hostile, humiliating, intimidating, or abusive conduct toward a coworker, customer, resident, vendor, or other person. Serious intimidation, account harm, or fear of harm advances the matter.",
+    "reviewedResponse": "Category 2, 3, or 4. Written/final warning or management review; Category 4 when combined with threats, violence, unlawful harassment, discrimination, or retaliation.",
+    "conduct": "Repeated hostile, humiliating, intimidating, or abusive conduct toward a coworker, customer, resident, vendor, or other person. Intimidation that causes fear of harm or harms an account is more serious.",
+    "consequences": "A written or final warning or management review is usual. Conduct involving threats, violence, unlawful harassment, discrimination, or retaliation is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-005": {
+    "reviewedStandard": "Unauthorized use, unsupported charges, failure to follow receipt or approval rules, or spending that creates financial exposure. Intentional personal use or a fraudulent claim is Category 4.",
+    "reviewedResponse": "Category 3 or 4. Preserve records and escalate; written/final warning through immediate termination depending on intent.",
+    "conduct": "Unauthorized use, unsupported charges, failure to follow receipt or approval rules, or spending that creates financial exposure. Intentional personal use or a fraudulent claim is more serious.",
+    "consequences": "Depending on intent, outcomes range from a written or final warning through immediate termination.",
+    "reviewedBoundary": "A disciplinary finding does not itself authorize a wage deduction, escrow debit or withholding of earned pay. Recovery terms remain a separate decision in CCR-002.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. A disciplinary finding does not itself authorize a wage deduction, escrow debit, or withholding of earned pay."
+  },
+  "HR-CA-006": {
+    "reviewedStandard": "Unauthorized use, unsafe operation, prohibited passengers, personal use, or careless handling that creates significant risk.",
+    "reviewedResponse": "Category 3. Written/final warning, loss of driving/access privileges, suspension, or termination review.",
+    "conduct": "Unauthorized use, unsafe operation, prohibited passengers, personal use, or careless handling that creates significant risk.",
+    "consequences": "Possible outcomes include a written or final warning, loss of driving or access privileges, suspension, or termination review.",
+    "reviewedBoundary": "A disciplinary finding does not itself authorize a wage deduction, escrow debit or withholding of earned pay. Recovery terms remain a separate decision in CCR-002.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. A disciplinary finding does not itself authorize a wage deduction, escrow debit, or withholding of earned pay."
+  },
+  "HR-CA-007": {
+    "reviewedStandard": "Unauthorized disclosure of customer, employee, property-account, pricing, financial, operational, or management information.",
+    "reviewedResponse": "Category 3 or 4. Category 3 when unauthorized; Category 4 when intentional, harmful, retaliatory, fraudulent, or for personal gain.",
+    "conduct": "Unauthorized disclosure of customer, employee, property-account, pricing, financial, operational, or management information.",
+    "consequences": "The policy lists Category 3 for unauthorized disclosure and Category 4 for conduct that is intentional, harmful, retaliatory, fraudulent, or for personal gain. It does not specify a fixed disciplinary action.",
+    "reviewedBoundary": "The protected-rights clause in the master guide applies to this reference. This rule does not prohibit legally protected wage discussions, working-condition discussions, good-faith reports or other protected employee activity.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. This rule does not prohibit legally protected wage discussions, working-condition discussions, good-faith reports or other protected employee activity."
+  },
+  "HR-CA-008": {
+    "reviewedStandard": "Using Company time, access, relationships, information, customers, residents, vendors, or opportunities for an undisclosed personal or outside-business interest.",
+    "reviewedResponse": "Category 3 or 4. Management review and written/final warning; Category 4 for kickbacks, theft, fraud, diverted business, or intentional misuse of confidential information.",
+    "conduct": "Using Company time, access, relationships, information, customers, residents, vendors, or opportunities for an undisclosed personal or outside-business interest.",
+    "consequences": "Management review and a written or final warning are usual. Kickbacks, theft, fraud, diverted business, or intentional misuse of confidential information are classified as more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-009": {
+    "reviewedStandard": "An isolated unprofessional response is Category 1; repeated complaints are Category 2; serious escalation, account harm, or liability is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach first when minor; advance to warning or management review based on pattern or impact.",
+    "conduct": "An unprofessional response to a customer, repeated complaints about rude conduct, or serious escalation that harms an account or creates liability.",
+    "consequences": "Minor incidents usually receive coaching. A pattern or greater impact may lead to a warning or management review.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-010": {
+    "reviewedStandard": "Significant preventable damage is Category 3. Intentional damage, sabotage, or concealment is Category 4.",
+    "reviewedResponse": "Category 3 or 4. Preserve evidence and notify management; warning through termination depending on facts.",
+    "conduct": "Significant preventable damage to a vehicle, property, or equipment. Intentional damage, sabotage, or concealment is more serious.",
+    "consequences": "A warning through termination, depending on the facts.",
+    "reviewedBoundary": "A disciplinary finding does not itself authorize a wage deduction, escrow debit or withholding of earned pay. Recovery terms remain a separate decision in CCR-002.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. A disciplinary finding does not itself authorize a wage deduction, escrow debit, or withholding of earned pay."
+  },
+  "HR-CA-011": {
+    "reviewedStandard": "Lying during an investigation, concealing material facts, dishonest blame-shifting, or misleading the Company for a benefit.",
+    "reviewedResponse": "Category 3 or 4. Final warning or termination; Category 4 when intentional and trust-destroying.",
+    "conduct": "Lying during an investigation, concealing material facts, dishonest blame-shifting, or misleading the Company for a benefit.",
+    "consequences": "Possible outcomes include a final warning or termination. Intentional dishonesty that destroys trust is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-012": {
+    "reviewedStandard": "Failure to follow ordinary appearance or uniform requirements without a safety, accommodation, or protected-rights issue.",
+    "reviewedResponse": "Category 1 to 2. Coaching for an isolated issue; documented warning if repeated.",
+    "conduct": "Failure to follow ordinary appearance or uniform requirements without a safety, accommodation, or protected-rights issue.",
+    "consequences": "Coaching for an isolated issue; a documented warning if it is repeated.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-013": {
+    "reviewedStandard": "Possessing or using illegal drugs while working, using alcohol on duty, or reporting impaired by alcohol or illegal drugs. Medical or prescribed-medication safety concerns require a separate confidential review and are not automatically misconduct.",
+    "reviewedResponse": "Category 4. Remove from safety-sensitive work; generally immediate termination if substantiated.",
+    "conduct": "Possessing or using illegal drugs while working, using alcohol on duty, or reporting impaired by alcohol or illegal drugs. Medical or prescribed-medication safety concerns require a separate confidential review and are not automatically misconduct.",
+    "consequences": "Removal from safety-sensitive work; generally immediate termination if substantiated. A medical or prescribed-medication safety concern is not automatically misconduct.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-014": {
+    "reviewedStandard": "Personal calls, messaging, social media, streaming, gaming, or browsing that interferes with work. It becomes Category 3 when driving, safety, security, customer service, or critical coverage is affected.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach an isolated low-impact issue; warn repeated misuse; escalate immediately when serious exposure is created.",
+    "conduct": "Personal calls, messaging, social media, streaming, gaming, or browsing that interferes with work. Misuse that affects driving, safety, security, customer service, or critical coverage is more serious.",
+    "consequences": "Coaching for an isolated, low-impact issue; warnings for repeated misuse. Serious exposure calls for immediate review.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-015": {
+    "reviewedStandard": "Refusing to provide job-related information, records, or truthful answers that the Company may lawfully request. This does not require an employee to waive a protected legal right.",
+    "reviewedResponse": "Category 3 or 4. Management review; Category 4 for lying, evidence destruction, witness intimidation, or retaliation.",
+    "conduct": "Refusing to provide job-related information, records, or truthful answers that the Company may lawfully request. This does not require an employee to waive a protected legal right.",
+    "consequences": "Management review. Lying, evidence destruction, witness intimidation, or retaliation is Category 4. The policy does not specify a fixed disciplinary action.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-016": {
+    "reviewedStandard": "An isolated low-impact miss is Category 1; repeated misses are Category 2; any miss creating material safety, legal, financial, confidentiality, or account exposure is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach or warn when minor; management review when serious exposure is created.",
+    "conduct": "An isolated low-impact failure to follow a procedure or checklist, repeated misses, or a failure that creates material safety, legal, financial, confidentiality, or account exposure.",
+    "consequences": "Coaching or a warning when minor; management review when serious exposure is created.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-017": {
+    "reviewedStandard": "Allowing a required license, certification, endorsement, or qualification to expire, lapse, or become invalid, or failing to report a restriction that prevents lawful or safe job performance.",
+    "reviewedResponse": "Category 3 or 4. Remove from affected duties and conduct management review; Category 4 for intentional falsification or misrepresentation.",
+    "conduct": "Allowing a required license, certification, endorsement, or qualification to expire, lapse, or become invalid, or failing to report a restriction that prevents lawful or safe job performance.",
+    "consequences": "Removal from affected duties and management review. Intentional falsification or misrepresentation is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-018": {
+    "reviewedStandard": "Not promptly reporting a work-related accident, vehicle or property damage, injury, safety event, or serious customer complaint as required.",
+    "reviewedResponse": "Category 3 or 4. Preserve evidence and conduct management review; Category 4 for intentional concealment, evidence destruction, or falsification.",
+    "conduct": "Not promptly reporting a work-related accident, vehicle or property damage, injury, safety event, or serious customer complaint as required.",
+    "consequences": "The concern is subject to management review. Intentional concealment, destruction of evidence, or falsification is Category 4; the policy does not specify a fixed disciplinary action.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-019": {
+    "reviewedStandard": "Failing to timely return keys, cards, uniforms, devices, documents, equipment, vehicles, money, or other Company property after a request, reassignment, suspension, or separation.",
+    "reviewedResponse": "Category 2 to 3 or 4. Written/final warning or recovery action; Category 4 for intentional retention, sale, destruction, or conversion for personal use.",
+    "conduct": "Failing to timely return keys, cards, uniforms, devices, documents, equipment, vehicles, money, or other Company property after a request, reassignment, suspension, or separation.",
+    "consequences": "A written or final warning or recovery action. Intentional retention, sale, destruction, or conversion for personal use is more serious.",
+    "reviewedBoundary": "A disciplinary finding does not itself authorize a wage deduction, escrow debit or withholding of earned pay. Recovery terms remain a separate decision in CCR-002.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. A disciplinary finding does not itself authorize a wage deduction, escrow debit, or withholding of earned pay."
+  },
+  "HR-CA-020": {
+    "reviewedStandard": "A reckless material record error is Category 3. Knowingly creating, changing, hiding, backdating, or destroying records or evidence is Category 4.",
+    "reviewedResponse": "Category 3 or 4. Preserve originals and escalate; final warning through immediate termination.",
+    "conduct": "A reckless material record error or knowingly creating, changing, hiding, backdating, or destroying records or evidence.",
+    "consequences": "Possible outcomes range from a final warning through immediate termination.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-021": {
+    "reviewedStandard": "Physical fighting, threats of violence, assault, or intentional use of a vehicle or equipment as a weapon.",
+    "reviewedResponse": "Category 4. Address safety and contact authorities when necessary; generally immediate termination.",
+    "conduct": "Physical fighting, threats of violence, assault, or intentional use of a vehicle or equipment as a weapon.",
+    "consequences": "Generally immediate termination.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-022": {
+    "reviewedStandard": "Substantiated harassment, sexual harassment, discrimination, or retaliation against a person for a protected report or activity.",
+    "reviewedResponse": "Category 4. Immediate management investigation; generally termination if substantiated.",
+    "conduct": "Substantiated harassment, sexual harassment, discrimination, or retaliation against a person for a protected report or activity.",
+    "consequences": "Management investigates; termination is generally the outcome if substantiated.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-023": {
+    "reviewedStandard": "Disruptive joking, pranks, scuffling, or horseplay. An isolated harmless issue may be minor; conduct involving vehicles, equipment, customers, property, or foreseeable injury is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach or warn when minor; stop the activity and escalate when safety, property, or customers are exposed.",
+    "conduct": "Disruptive joking, pranks, scuffling, or horseplay. Conduct involving vehicles, equipment, customers, property, or foreseeable injury is more serious than an isolated harmless issue.",
+    "consequences": "Coaching or a warning for minor incidents. Conduct that puts safety, property, or customers at risk calls for escalation.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-024": {
+    "reviewedStandard": "Refusing a clear, lawful, job-related instruction or openly defying authorized supervision. Respectful disagreement, reporting safety concerns, or protected activity is not insubordination.",
+    "reviewedResponse": "Category 3. Written/final warning or termination review; Category 4 if combined with threats, violence, sabotage, or fraud.",
+    "conduct": "Refusing a clear, lawful, job-related instruction or openly defying authorized supervision. Respectful disagreement, reporting safety concerns, or protected activity is not insubordination.",
+    "consequences": "A written or final warning or termination review. Conduct combined with threats, violence, sabotage, or fraud is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-025": {
+    "reviewedStandard": "Leaving early, abandoning an assigned post, becoming unavailable, or failing to remain at the required work location without permission or an emergency.",
+    "reviewedResponse": "Category 2 or 3. Documented/written warning; final warning or termination review when critical coverage, customers, safety, security, or operations are left exposed.",
+    "conduct": "Leaving early, abandoning an assigned post, becoming unavailable, or failing to remain at the required work location without permission or an emergency.",
+    "consequences": "A documented or written warning is usual. A final warning or termination review may apply when critical coverage, customers, safety, security, or operations are left exposed.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-026": {
+    "reviewedStandard": "Losing or failing to safeguard keys, access credentials, phones, tablets, documents, or records. Security, privacy, financial, or customer-property exposure makes the matter Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Secure access immediately; coach or warn when minor; management review when exposure is created.",
+    "conduct": "Losing or failing to safeguard keys, access credentials, phones, tablets, documents, or records. Security, privacy, financial, or customer-property exposure makes the matter more serious.",
+    "consequences": "Coaching or a warning for minor incidents; management review when exposure is created.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-027": {
+    "reviewedStandard": "An isolated non-critical task is Category 1; repeated failures form Category 2; a critical failure creating serious exposure is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach, document the pattern, or escalate based on impact.",
+    "conduct": "A missed or unfinished task. Repeated failures, or a critical failure that creates serious exposure, are more serious than an isolated noncritical task.",
+    "consequences": "Coaching for a minor issue; a pattern may be documented, and greater impact can lead to escalation.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-028": {
+    "reviewedStandard": "An isolated correctable error is Category 1; repeated errors are Category 2; materially inaccurate legal, financial, safety, or regulatory records are Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Correct and coach; warning for patterns; management review for material records.",
+    "conduct": "A paperwork or data-entry error. Repeated errors or materially inaccurate legal, financial, safety, or regulatory records are more serious than an isolated correctable error.",
+    "consequences": "Correction and coaching for an isolated error, a warning for a pattern, and management review for material records.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-029": {
+    "reviewedStandard": "Sharing passwords, alarm codes, logins, access cards, or other credentials without authorization, or allowing another person to use an assigned account.",
+    "reviewedResponse": "Category 3 or 4. Secure access and notify management; Category 4 when done for fraud, theft, retaliation, personal gain, or intentional harm.",
+    "conduct": "Sharing passwords, alarm codes, logins, access cards, or other credentials without authorization, or allowing another person to use an assigned account.",
+    "consequences": "Unauthorized sharing is Category 3. Sharing for fraud, theft, retaliation, personal gain, or intentional harm is Category 4. The policy does not specify a fixed disciplinary action.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-030": {
+    "reviewedStandard": "Minor inconvenience from unclear or missed communication is Category 1; repeated communication failures are Category 2; unauthorized disclosure or admission is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach or warn; escalate when the statement creates exposure.",
+    "conduct": "Unclear or missed communication, repeated communication failures, or an unauthorized disclosure or admission.",
+    "consequences": "Coaching or a warning; a statement that creates exposure calls for escalation.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-031": {
+    "reviewedStandard": "Failing to keep an assigned work area reasonably clean, organized, or free of known hazards. A serious safety, fire, equipment, or property hazard is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Correct and coach; warn repeated issues; stop work and escalate when a serious hazard exists.",
+    "conduct": "Failing to keep an assigned work area reasonably clean, organized, or free of known hazards. A serious safety, fire, equipment, or property hazard makes the matter more serious.",
+    "consequences": "Correction and coaching, with warnings for repeated issues. A serious hazard requires stopping work and escalating the issue.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-032": {
+    "reviewedStandard": "Unsafe work, bypassing a critical safety rule, or continuing an activity after a serious hazard becomes known.",
+    "reviewedResponse": "Category 3 or 4. Stop the activity and preserve evidence; final warning, suspension, or termination. Category 4 when intentional and trust-destroying.",
+    "conduct": "Unsafe work, bypassing a critical safety rule, or continuing an activity after a serious hazard becomes known.",
+    "consequences": "Possible outcomes include a final warning, suspension, or termination. Intentional conduct that destroys trust is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-033": {
+    "reviewedStandard": "Changing a schedule, trading a shift, arranging coverage, or failing to report for the assigned schedule without required approval.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach or warn; Category 3 when the change leaves a critical shift uncovered or creates serious operational exposure.",
+    "conduct": "Changing a schedule, trading a shift, arranging coverage, or failing to report for the assigned schedule without required approval.",
+    "consequences": "Coaching or a warning. A change that leaves a critical shift uncovered or creates serious operational exposure is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-034": {
+    "reviewedStandard": "Dispatcher asleep while responsible for calls, the window, gate, or yard; driver asleep and unavailable without authorization while dispatched/on duty; or continuing to drive after recognizing dangerous fatigue without reporting it.",
+    "reviewedResponse": "Category 3. Remove from safety-sensitive duty and conduct management review; final warning, suspension, or termination. Category 4 if paired with time theft, falsified logs, drugs, or deliberate operation after being told to stop.",
+    "conduct": "Dispatcher asleep while responsible for calls, the window, gate, or yard; driver asleep and unavailable without authorization while dispatched/on duty; or continuing to drive after recognizing dangerous fatigue without reporting it.",
+    "consequences": "Removal from safety-sensitive duty and management review. Possible outcomes include a final warning, suspension, or termination. Time theft, falsified logs, drugs, or deliberately operating after being told to stop makes the matter more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-035": {
+    "reviewedStandard": "Smoking or vaping where prohibited by Company or property rules. Conduct near fuel, hazardous materials, vehicles, or another serious fire risk is Category 3.",
+    "reviewedResponse": "Category 1 to 2 or 3. Coach or warn when minor; stop the activity and escalate immediately when a serious hazard is created.",
+    "conduct": "Smoking or vaping where prohibited by Company or property rules. Conduct near fuel, hazardous materials, vehicles, or another serious fire risk is more serious.",
+    "consequences": "Coaching or a warning when minor. A serious hazard calls for an immediate stop and escalation.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-036": {
+    "reviewedStandard": "Posting, commenting, or sharing negative, insulting, mocking, disparaging, or confidential content about customers, residents, property accounts, vendors, coworkers, or Company business when the employment connection is identifiable. This includes speaking negatively about customers from a personal account.",
+    "reviewedResponse": "Category 3 or 4. Management review; written/final warning or termination. Category 4 for threats, unlawful harassment, retaliation, fabricated harmful claims, confidential disclosures, or deliberate severe harm.",
+    "conduct": "Posting, commenting, or sharing negative, insulting, mocking, disparaging, or confidential content about customers, residents, property accounts, vendors, coworkers, or Company business when the employment connection is identifiable. This includes speaking negatively about customers from a personal account.",
+    "consequences": "Possible outcomes include a written or final warning or termination. Threats, unlawful harassment, retaliation, fabricated harmful claims, confidential disclosures, or deliberate severe harm are more serious.",
+    "reviewedBoundary": "The protected-rights clause in the master guide applies to this reference. This rule does not prohibit legally protected wage discussions, working-condition discussions, good-faith reports or other protected employee activity.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. This rule does not prohibit legally protected wage discussions, working-condition discussions, good-faith reports or other protected employee activity."
+  },
+  "HR-CA-037": {
+    "reviewedStandard": "Occasional lateness is Category 1. Repeated lateness or different attendance problems showing unreliable attendance are Category 2.",
+    "reviewedResponse": "Category 1 to 2. Coaching first; documented verbal, written, or final warning as the pattern continues.",
+    "conduct": "Occasional lateness, repeated lateness, or different attendance problems that show unreliable attendance.",
+    "consequences": "Coaching first; a documented verbal, written, or final warning as the pattern continues.",
+    "reviewedBoundary": "This preserves the existing misconduct reference and review framework; it does not finalize the conflicting attendance/no-show/probation ladder proposals held in ALL-004, ALL-008 and ALL-022.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. This reference does not establish an automatic attendance, no-show, or probation penalty ladder."
+  },
+  "HR-CA-038": {
+    "reviewedStandard": "Stealing money or property, payroll fraud, knowingly claiming time not worked, or fraudulent transactions.",
+    "reviewedResponse": "Category 4. Generally immediate termination if substantiated; preserve records and notify authorities when appropriate.",
+    "conduct": "Stealing money or property, payroll fraud, knowingly claiming time not worked, or fraudulent transactions.",
+    "consequences": "Generally immediate termination if substantiated.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-039": {
+    "reviewedStandard": "An isolated missed punch is Category 1; repeated missed punches are Category 2; intentionally false time is Category 4 time theft.",
+    "reviewedResponse": "Category 1 to 2 or 4. Correct and coach; warn for a pattern; termination review for intentional falsification.",
+    "conduct": "An isolated missed punch or repeated missed punches. Intentionally false time is time theft.",
+    "consequences": "Correction and coaching; a warning for a pattern, or termination review for intentional falsification.",
+    "reviewedBoundary": "This preserves the existing misconduct reference and review framework; it does not finalize the conflicting attendance/no-show/probation ladder proposals held in ALL-004, ALL-008 and ALL-022.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. This reference does not establish an automatic attendance, no-show, or probation penalty ladder."
+  },
+  "HR-CA-040": {
+    "reviewedStandard": "Working overtime without required approval may be coached or disciplined, but every hour worked must still be accurately reported and paid. Knowingly working off the clock, concealing work time, or directing another employee not to report time creates serious liability.",
+    "reviewedResponse": "Category 1 to 2, 3, or 4. Correct and pay the time record; coach or warn unauthorized overtime; management review for concealed time; Category 4 for intentional payroll falsification or fraud.",
+    "conduct": "Working overtime without required approval may be coached or disciplined, but every hour worked must still be accurately reported and paid. Knowingly working off the clock, concealing work time, or directing another employee not to report time creates serious liability.",
+    "consequences": "Time records must be corrected and actual work paid. Unauthorized overtime may result in coaching or a warning. Concealed time calls for management review; intentional payroll falsification or fraud is more serious.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-041": {
+    "reviewedStandard": "Making a commitment, waiver, discount, release, permit/account change, refund, or other Company decision without required authority.",
+    "reviewedResponse": "Category 3. Management review; written/final warning, suspension, or termination depending on exposure.",
+    "conduct": "Making a commitment, waiver, discount, release, permit/account change, refund, or other Company decision without required authority.",
+    "consequences": "Possible outcomes include a written or final warning, suspension, or termination, depending on the exposure.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  },
+  "HR-CA-042": {
+    "reviewedStandard": "Recording, photographing, copying, posting, or sharing confidential customer/property records, private personal information, secure areas, active incidents, or restricted Company information without authorization. Lawfully protected employee activity is not prohibited.",
+    "reviewedResponse": "Category 3 or 4. Preserve evidence and conduct management review; Category 4 for fraud, retaliation, harassment, intentional disclosure, or deliberate harm.",
+    "conduct": "Recording, photographing, copying, posting, or sharing confidential customer/property records, private personal information, secure areas, active incidents, or restricted Company information without authorization. Lawfully protected employee activity is not prohibited.",
+    "consequences": "Management review. Fraud, retaliation, harassment, intentional disclosure, or deliberate harm is Category 4. The policy does not specify a fixed disciplinary action.",
+    "reviewedBoundary": "The protected-rights clause in the master guide applies to this reference. This rule does not prohibit legally protected wage discussions, working-condition discussions, good-faith reports or other protected employee activity.",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply. This rule does not prohibit legally protected wage discussions, working-condition discussions, good-faith reports or other protected employee activity."
+  },
+  "HR-CA-043": {
+    "reviewedStandard": "Allowing an unauthorized visitor or passenger into a Company vehicle, work area, yard, office, restricted area, or other controlled location.",
+    "reviewedResponse": "Category 2 or 3. Remove the unauthorized person and document the event; Category 3 when safety, security, customer property, or Company liability is exposed.",
+    "conduct": "Allowing an unauthorized visitor or passenger into a Company vehicle, work area, yard, office, restricted area, or other controlled location.",
+    "consequences": "The unauthorized person is removed. Conduct exposing safety, security, customer property, or company liability is Category 3. The policy does not specify a fixed disciplinary action.",
+    "reviewedBoundary": "",
+    "rights": "An allegation does not establish misconduct. The responses listed are typical, not guaranteed steps. Applicable leave, accommodation, good-faith reporting, and other protected rights still apply."
+  }
+}

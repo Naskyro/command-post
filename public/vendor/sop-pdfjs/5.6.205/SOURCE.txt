@@ -1,0 +1,2 @@
+Mozilla PDF.js, pdfjs-dist 5.6.205. https://github.com/mozilla/pdf.js
+The unmodified browser compatibility distributions in legacy/build/ are served with a .js extension for static-host MIME compatibility. Apache License 2.0. Supporting font, CMap, and decoder license notices are retained in their original directories.

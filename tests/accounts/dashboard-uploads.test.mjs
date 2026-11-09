@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 const dir=await mkdtemp(join(tmpdir(),'account-dashboard-')),file=join(dir,'api.mjs');
-await build({stdin:{contents:"export * from './lib/accounts/work'; export * from './lib/accounts/model'; export * from './lib/accounts/policy'; export * from './lib/accounts/dashboard'; export * from './lib/accounts/contact-details'; export * from './lib/accounts/uploads'; export * from './lib/accounts/work-options';",resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'browser',format:'esm',outfile:file,logLevel:'silent'});
+await build({stdin:{contents:"export * from './lib/accounts/work'; export * from './lib/accounts/model'; export * from './lib/accounts/insights'; export * from './lib/accounts/policy'; export * from './lib/accounts/dashboard'; export * from './lib/accounts/contact-details'; export * from './lib/accounts/uploads'; export * from './lib/accounts/work-options';",resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'browser',format:'esm',outfile:file,logLevel:'silent'});
 const api=await import(pathToFileURL(file));after(()=>rm(dir,{recursive:true,force:true}));
 const row=(kind,id,extra={})=>({kind,id,name:id,version:0,...extra}),am={id:'am',person:'am',name:'AM',department:'Account Managers',role:'Employee',owner:false},dispatch={...am,department:'Dispatch'},account=row('account','a',{assignee:'am',status:'Active',service:'Full Patrol'}),staff=[row('person','am',{department:'Account Managers',status:'Active'})];
 const payload=r=>Object.fromEntries(['id','kind','version','name','accountId',...api.forms[r.kind].map(f=>f.key)].filter(k=>r[k]!==undefined).map(k=>[k,r[k]]));
@@ -20,7 +20,7 @@ test('browser initialization resolves work types without circular-import emptine
 });
 test('health unknown is separate from zero and boundary bands do not overlap',()=>{
  assert.equal(api.healthBand(account),5);
- const scored=score=>({...account,...Object.fromEntries(['relationship','checkin','onboarding','signage','permits','pause','safety','revenue','documentation'].map(k=>['health_'+k,0])),health_relationship:Math.min(score,15),health_signage:Math.min(Math.max(0,score-15),15),health_pause:Math.max(0,score-30)});
+ const scored=score=>{const result={...account,...Object.fromEntries(api.healthFactors.map(([key,,max])=>['health_'+key,key==='pause'?max:0]))};let remaining=score;for(const [key,,max] of api.healthFactors){if(key==='pause')continue;const earned=Math.min(max,remaining);result['health_'+key]=earned;remaining-=earned;if(remaining<=0)break;}return result;};
  assert.equal(api.healthBand(scored(0)),0);assert.equal(api.healthBand(scored(20)),0);assert.equal(api.healthBand(scored(21)),1);assert.equal(api.healthBand(scored(40)),1);assert.equal(api.healthBand(scored(41)),2);
 });
 test('monthly progress deduplicates outreach, counts unanswered, excludes notes and future contacts',()=>{

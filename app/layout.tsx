@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ActionHints from "@/components/shared/ActionHints";
 import WorkspaceTheme from "@/components/preferences/WorkspaceTheme";
 
 export const metadata: Metadata = {
-  title: "Command Post | Parking & Towing Enforcement",
+  title: "Command | Parking & Towing Enforcement",
   description: "Operational account, property, compliance, and recovery workspace.",
-  other: {
-    "codex-preview": "development",
-  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
@@ -21,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased"><WorkspaceTheme>{children}</WorkspaceTheme></body>
+      <body className="antialiased"><WorkspaceTheme>{children}<ActionHints/></WorkspaceTheme></body>
     </html>
   );
 }

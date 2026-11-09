@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    // Exact upstream distributions with their own licenses and build configuration.
+    "public/vendor/**",
     "next-env.d.ts",
   ]),
   {

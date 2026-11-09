@@ -1,4 +1,4 @@
 /// <reference types="@cloudflare/workers-types" />
 declare namespace Cloudflare {
- interface Env { DB: D1Database; BUCKET: R2Bucket; STRIPE_SECRET_KEY: string }
+ interface Env { DB: D1Database; BUCKET: R2Bucket }
 }

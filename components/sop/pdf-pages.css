@@ -1,0 +1,8 @@
+.sop-pdf-pages{background:#e8eaed;border:1px solid #cbd1d9;border-radius:12px;min-width:0;overflow:hidden;color:#1e293b}
+.sop-pdf-toolbar{min-height:44px;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;background:#f7f8fa;border-bottom:1px solid #cbd1d9;padding:4px 8px;font-size:13px}
+.sop-pdf-toolbar button{display:inline-flex;align-items:center;justify-content:center;min-height:34px;min-width:34px;border:1px solid transparent;border-radius:6px;background:transparent;color:#18293c;cursor:pointer}
+.sop-pdf-toolbar button:hover:not(:disabled),.sop-pdf-toolbar button:focus-visible{background:#e0e7ee;border-color:#93a5b6}
+.sop-pdf-toolbar button:disabled{opacity:.35;cursor:default}.sop-pdf-toolbar i{height:18px;margin:0 6px;border-left:1px solid #bdc6d0}
+.sop-pdf-viewport{width:100%;max-height:78dvh;min-height:180px;overflow:auto;overscroll-behavior:contain;padding-block:12px}
+.sop-pdf-viewport canvas{display:block;max-width:none!important;margin:0 auto;background:white;box-shadow:0 1px 5px #0003}
+.sop-pdf-error{padding:16px;text-align:center}.sop-pdf-error button{margin:8px auto}

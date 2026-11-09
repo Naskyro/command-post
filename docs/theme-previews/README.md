@@ -1,0 +1,13 @@
+# Seasonal Theme Visual Proofs
+
+[The Independence Day contact sheet](independence-day-four-styles.jpg) shows all 14 designs rendered by the actual production art and color-preview components. It is a developer comparison sheet with example data, not an employee account or a screenshot of the full Admin interface. The older Christmas screenshot documents the previous release and predates the revised garland.
+
+In an isolated browser check, the same components were rendered at 360px and 1240px viewport widths. At each width all 50 inspected SVGs had equal horizontal and vertical scale; all 12 photographic placements loaded and used proportional cover; and all 12 classic-color placements rendered no ornaments. The two Christmas garlands retained a 53px tile height and `repeat-x` across widths of 345px and 1225px. This used the actual reference artwork in preview, menu, header, and footer placements.
+
+Whimsical, elegant and Independence Day drawings are original inline SVG; Nature & Realistic editions use locally bundled photographic artwork. Classic Color editions have no decorative images. The active theme renders reserved menu, header, and footer regions through `WorkspaceThemeArt` and `ThemeDecorations`. Menu labels, search, inputs, and dialogs remain outside those decorative regions. Theme previews reuse the same components.
+
+The library contains 18 collections, 14 designs each: five Whimsical (Illustrated for commemorative collections), five Elegant, two Nature & Realistic, and two Classic Color. Nine permanent everyday color themes bring the total to 261. Admin cards and the personal picker both show the selected edition’s artwork. Columbus Day, Inauguration Day, and Washington’s Birthday were withdrawn at company direction. Existing saved selections for those removed designs restore the saved everyday theme. Birthday handling and individual preference restoration remain unchanged.
+
+Readability and header update: all 261 theme definitions are covered by contrast checks. Seasonal body text is #17212b and secondary text #3f4b57 on opaque white panels. Christmas uses ten explicit palettes instead of complementary-color blending. Normal navigation labels/icons are white; normal Admin metadata and placeholders no longer reduce text opacity. Account controls are a nonshrinking right-aligned header group. Browser verification at a 1363px viewport gave the same user-menu rectangle with the module rail open and closed (x1124.21875, y65.5, right1323).
+
+Interaction checks: the Account Manager template expands all seven modules and collapses back; action menu opens; icon hints appear on pointer hover and keyboard focus, and dismiss when the menu opens. The local interaction review route was removed before packaging.

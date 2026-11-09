@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {access,validName,duplicate} from '../lib/drive/model.ts';
+import {seedFolders} from '../lib/drive/seed.ts';
+const folder=(id,parent='',grants={},inherit=true)=>({id,parent,kind:'folder',name:id,inherit,grants});
+const nodes=[folder('root','',{alice:'View',bob:'Edit'}),folder('restricted','root',{},false),folder('shared','restricted',{alice:'Edit'}),folder('sibling','restricted'),{id:'file',parent:'shared',kind:'file',name:'test.txt'},folder('deny','root',{bob:'None'})];
+test('inherited view never grants editing',()=>{assert.equal(access(nodes,'root','alice'),'View');assert.equal(access(nodes,'root','bob'),'Edit');assert.equal(access(nodes,'root','stranger'),'None');});
+test('direct subfolder share does not expose parents or siblings',()=>{assert.equal(access(nodes,'shared','alice'),'Edit');assert.equal(access(nodes,'restricted','alice'),'None');assert.equal(access(nodes,'sibling','alice'),'None');assert.equal(access(nodes,'file','alice'),'Edit');});
+test('restricted and explicit denied folders override broader access',()=>{assert.equal(access(nodes,'restricted','bob'),'None');assert.equal(access(nodes,'deny','bob'),'None');});
+test('removing direct child grant falls back only to permitted inheritance',()=>{const copy=structuredClone(nodes);copy.find(n=>n.id==='shared').grants={};assert.equal(access(copy,'file','alice'),'None');});
+test('deleted ancestor hides directly shared descendants even from manager downloads',()=>{const copy=structuredClone(nodes);copy[1].deletedAt='today';assert.equal(access(copy,'file','alice'),'None');assert.equal(access(copy,'file','admin',true),'None');});
+test('admins retain management access; cycles fail closed',()=>{assert.equal(access(nodes,'restricted','admin',true),'Edit');assert.equal(access([folder('a','b'),folder('b','a')],'a','admin',true),'None');});
+test('file does not accept independent permission bypass',()=>{const copy=structuredClone(nodes);copy.find(n=>n.id==='file').grants={mallory:'Edit'};assert.equal(access(copy,'file','mallory'),'None');});
+test('all screenshot folders are unique and closed by default',()=>{const seed=seedFolders();assert.equal(seed.filter(n=>!n.parent).length,8);assert.equal(new Set(seed.map(n=>n.id)).size,seed.length);for(const n of seed){assert.equal(access(seed,n.id,'staff'),'None');if(n.parent)assert.ok(seed.some(p=>p.id===n.parent));}assert.ok(seed.some(n=>n.name==='Templates'));});
+test('names reject traversal and enforce sibling uniqueness',()=>{for(const name of ['../test','x/y','a\\b','', '.', '..'])assert.throws(()=>validName(name));assert.equal(validName(' New Folder '),'New Folder');assert.ok(duplicate(nodes,'restricted','SHARED'));assert.equal(duplicate(nodes,'root','shared'),false);});

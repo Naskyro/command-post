@@ -8,13 +8,18 @@
 .am-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .am-actions svg{width:16px;height:16px}
 .am-actions>label{font-size:0.875rem}
-.am-tabs{display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--ws-border,#d6e0e8);margin-bottom:20px;padding:0 0 10px}
-.am-tabs button{font-weight:500;padding:9px 13px;border-radius:7px;font-size:0.9rem}
+.am-tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--ws-border,#d6e0e8);margin-bottom:20px;padding:0 0 8px}
+.am-tabs button{font-weight:600;padding:10px 17px;border-radius:7px}
 .am-tabs button:hover{background:var(--ws-soft,#e8f1f7)}
 .am-tabs button[aria-current=page]{background:var(--ws-accent,#155e7a);color:white}
 .am-filters{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin:16px 0}
 .am-filters>label{flex:1;min-width:140px;max-width:300px}
-.am-workspace label,.am-dialog label{display:flex;flex-direction:column;gap:6px;font-size:0.875rem;font-weight:600}
+/* Most labels sit over their fields. A compound icon field owns its row instead:
+   participating labels are opt-in, so real captions in filters and dialogs still stack. */
+.am-workspace label:not(:where([data-inline-control])),.am-dialog label:not(:where([data-inline-control])){display:flex;flex-direction:column;gap:6px;font-size:0.875rem;font-weight:600}
+:is(.am-workspace,.am-dialog) label[data-inline-control]{box-sizing:border-box;display:flex;flex-flow:row nowrap;align-items:center;min-inline-size:0;max-inline-size:100%}
+:is(.am-workspace,.am-dialog) label[data-inline-control]>svg{flex:none}
+:is(.am-workspace,.am-dialog) label[data-inline-control]>:is(input,select){box-sizing:border-box;flex:1 1 0;min-inline-size:0;max-inline-size:100%;min-block-size:0}
 .am-workspace label span,.am-dialog label span{color:var(--ws-muted,#4e6678)}
 .am-workspace input,.am-workspace select,.am-workspace textarea,.am-dialog input:not([type=checkbox]),.am-dialog select,.am-dialog textarea{border:1px solid var(--ws-border,#c8d7e2);background:var(--ws-surface,#fff);color:var(--ws-text,#17374e);padding:9px 10px;border-radius:7px;font-size:1.0rem;min-height:38px;max-width:100%;font-weight:400}
 .am-workspace input:focus,.am-dialog input:focus,.am-dialog select:focus,.am-dialog textarea:focus{outline:2px solid var(--ws-accent,#19708c);outline-offset:1px}

@@ -1,11 +1,14 @@
 import { AppError } from '../shared/errors.ts';
+import {seasonalThemes} from '../site-themes/catalog.ts';
+import type {SiteThemeDefinition} from '../site-themes/model.ts';
 
 export type ThemeTokens = {
   nav: string; navEnd: string; accent: string; ink: string; muted: string;
   canvas: string; surface: string; soft: string; softAlt: string; line: string; highlight: string;
 };
 export const themes = [
-  { id: 'command-post', name: 'Command Post', mood: 'Clear & confident', colors: ['#052F56','#0968E8','#BBD7FC','#FFFFFF','#EAF1FA'],
+  { id: 'command', name: 'Command', mood: 'Black & white', colors: ['#000000','#FFFFFF','#FFC107','#E6E6E6','#F6F6F6'], tokens:{nav:'#000000',navEnd:'#000000',accent:'#222222',ink:'#171717',muted:'#585858',canvas:'#f6f6f6',surface:'#ffffff',soft:'#eeeeee',softAlt:'#f5f5f5',line:'#d5d5d5',highlight:'#ffc107'} },
+  { id: 'command-post', name: 'Classic Blue', mood: 'Clear & confident', colors: ['#052F56','#0968E8','#BBD7FC','#FFFFFF','#EAF1FA'],
     tokens: {nav:'#052f56',navEnd:'#032641',accent:'#075cc3',ink:'#10213a',muted:'#53657a',canvas:'#f4f7fc',surface:'#ffffff',soft:'#e3efff',softAlt:'#edf5fc',line:'#c7d7e9',highlight:'#bbd7fc'} },
   { id: 'sunset', name: 'Sunset', mood: 'Warm & upbeat', colors: ['#FF6F61','#FFD54F','#A1C6EA','#F5F5F5','#B0BEC5'],
     tokens: {nav:'#542e36',navEnd:'#352731',accent:'#a83c32',ink:'#3a2730',muted:'#6e555c',canvas:'#fff8f2',surface:'#ffffff',soft:'#ffe4dd',softAlt:'#fff3ca',line:'#e6c9c1',highlight:'#a1c6ea'} },
@@ -23,16 +26,21 @@ export const themes = [
     tokens: {nav:'#243e24',navEnd:'#26351c',accent:'#4b5c15',ink:'#303b24',muted:'#606a4c',canvas:'#f7f8ee',surface:'#ffffff',soft:'#ebf0d8',softAlt:'#fcf5c0',line:'#d3d9b9',highlight:'#fce640'} },
 ] as const satisfies readonly {id:string;name:string;mood:string;colors:readonly string[];tokens:ThemeTokens}[];
 
-export type ThemeId = typeof themes[number]['id'];
-export const defaultTheme: ThemeId = 'command-post';
-export type UserSettings = {theme:ThemeId;version:number;updatedAt:string|null};
-export function themeById(id: ThemeId) { return themes.find(theme => theme.id === id)!; }
+export type ThemeId = string;
+export const defaultTheme: ThemeId = 'command';
+export const permanentThemes:readonly SiteThemeDefinition[]=themes.map(theme=>({...theme,category:'Everyday',seasonal:false}));
+export const allThemes:readonly SiteThemeDefinition[]=[...permanentThemes,...seasonalThemes];
+export type BirthdayAppearance={active:boolean;themeId:string;endsAt:string;baseTheme:string};
+export type UserSettings = {birthday?:BirthdayAppearance;birthdayDismissedDay?:string;birthdayThemeId?:string;theme:ThemeId;version:number;updatedAt:string|null;availableThemes?:SiteThemeDefinition[];nextChangeAt?:string;selectedTheme?:string;notice?:string;fallbackTheme?:string;seasonalSelectedAt?:string;seasonalExpiresAt?:string};
+export function themeById(id: ThemeId) { return allThemes.find(theme => theme.id === id) || allThemes.find(theme=>theme.id===defaultTheme)!; }
+export function isPermanentTheme(id:string) {return themes.some(theme=>theme.id===id);}
 export function validateTheme(value: unknown): ThemeId {
-  if (typeof value !== 'string' || !themes.some(theme => theme.id === value)) throw new AppError('Choose one of the available themes.');
-  return value as ThemeId;
+  if (typeof value !== 'string' || !allThemes.some(theme => theme.id === value)) throw new AppError('Choose one of the available themes.');
+  return value;
 }
 export function validateSettings(value: Record<string,unknown>) {
-  if (Object.keys(value).some(key => !['theme','version'].includes(key))) throw new AppError('Only your appearance settings can be changed here.');
+  if (Object.keys(value).some(key => !['theme','version','dismissBirthday'].includes(key))) throw new AppError('Only your appearance settings can be changed here.');
   if (!Number.isSafeInteger(value.version) || Number(value.version) < 0) throw new AppError('Refresh your settings before saving.');
-  return {theme:validateTheme(value.theme),version:Number(value.version)};
+  if(value.dismissBirthday!==undefined&&typeof value.dismissBirthday!=='boolean')throw new AppError('Choose a valid birthday appearance preference.');
+  return {theme:validateTheme(value.theme),version:Number(value.version),...(value.dismissBirthday!==undefined?{dismissBirthday:value.dismissBirthday===true}:{})};
 }

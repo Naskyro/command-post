@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {claimDirectory,lookupClaim} from '../../lib/ccr/claim-directory.ts';
+
+test('property and employee asset cases keep their own identities, priority, known dates, and archive history',()=>{
+ const rows=[{kind:'account',id:'a',name:'Lake Flats'}, {kind:'claim',id:'insurance',accountId:'a',name:'Tail light',date:'2025-11-03',status:'Investigating',claimPriority:'Major',vin:'ARS123'}, {kind:'claim',id:'closed',accountId:'a',name:'Closed decision',date:'2024-04-01',reviewedAt:'2024-09-02T09:00:00Z',status:'Closed without settlement'}, {kind:'claim',id:'without-final-date',accountId:'a',name:'No final date recorded',date:'2024-01-01',status:'Paid'}, {kind:'claim',id:'example',sample:true,name:'Training only'}];
+ const staff=[{kind:'assetClaim',id:'hrassetclaim:laptop',createdAt:'2025-09-20T16:30:00Z',data:{title:'Missing laptop',reportedDate:'2025-09-20',employeeName:'Taylor Example',status:'Resolved',statements:[{status:'Resolved',at:'2025-12-05T18:00:00Z'}],assetSnapshot:{assetTag:'LT12'}}},{kind:'assetClaim',id:'hidden',data:{title:'Deleted record',deletedAt:'2024-07-01'}}];
+ const list=claimDirectory(rows,staff,'2026-11-01');assert.equal(list.length,4);assert.equal(list[0].title,'Tail light');assert.equal(list[0].subtitle,'Lake Flats');assert.match(list[0].search,/lake flats.*ars123/);assert.equal(lookupClaim(list,'claim:insurance'),lookupClaim(list,'insurance'));assert.equal(lookupClaim(list,'asset-claim:hrassetclaim:laptop'),lookupClaim(list,'hrassetclaim:laptop'));assert.equal(lookupClaim(list,'absent'),undefined);
+ assert.equal(lookupClaim(list,'closed').historical,true);assert.equal(lookupClaim(list,'hrassetclaim:laptop').historical,true);assert.match(lookupClaim(list,'hrassetclaim:laptop').search,/lt12/);assert.equal(lookupClaim(list,'without-final-date').historical,false);assert.equal(lookupClaim(list,'without-final-date').closed,true);assert.equal(lookupClaim(list,'insurance').closed,false);
+});

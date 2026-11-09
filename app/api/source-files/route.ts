@@ -1,0 +1,15 @@
+import {NextRequest,NextResponse} from 'next/server';
+import {requestViewer} from '@/lib/finance/server';
+import {AppError,ForbiddenError,readPayload,safeFailure} from '@/lib/shared/errors';
+import {readDocumentForm} from '@/lib/ccr/document-input';
+import {beginSource,commitSource,directSourceFile,listSourceFiles,sealSourceGroup,sourceDownload,writeSourcePart} from '@/lib/source-files/server';
+import {validScope} from '@/lib/source-files/model';
+export const dynamic='force-dynamic';
+const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
+const json=(v:unknown,status=200)=>NextResponse.json(v,{status,headers});
+export async function GET(req:NextRequest){try{const v=await requestViewer(req.headers),q=req.nextUrl.searchParams;if(q.has('file')){const r=await sourceDownload(v,q.get('file')||'',q.get('version'),req.headers.get('range'));if(r.native)return new Response(null,{status:303,headers:{...headers,Location:r.native}});return new Response(r.stream,{status:r.partial?206:200,headers:{...headers,'Accept-Ranges':'bytes',...(r.partial?{'Content-Range':'bytes '+r.start+'-'+r.end+'/'+r.record.bytes}:{}),'Content-Type':'application/octet-stream','Content-Length':String(r.partial?r.end!-r.start!+1:r.record.bytes),'Content-Disposition':"attachment; filename=\"download\"; filename*=UTF-8''"+encodeURIComponent(r.record.name).replace(/[!'()*]/g,c=>'%'+c.charCodeAt(0).toString(16)),'Content-Security-Policy':"sandbox; default-src 'none'"}});}return json({files:await listSourceFiles(v,validScope(q.get('scope')),q.get('targetId')||undefined)});}catch(e){const f=safeFailure(e,'drive.archive.read');return json(f.body,f.status);}}
+export async function POST(req:NextRequest){try{if(req.headers.get('origin')!==req.nextUrl.origin||req.headers.get('sec-fetch-site')==='cross-site')throw new ForbiddenError();const v=await requestViewer(req.headers),q=req.nextUrl.searchParams;
+ if(q.has('part')){const i=q.get('part')||'';if(!/^\d{1,5}$/.test(i))throw new AppError('Invalid upload block.');return json(await writeSourcePart(v,q.get('stage')||'',Number(i),req));}
+ if(req.headers.get('content-type')?.startsWith('multipart/form-data')){const f=await readDocumentForm(req,480*1024),raw=f.get('meta'),file=f.get('file');if(typeof raw!=='string'||raw.length>14000||!(file instanceof File)||file.size>480*1024)throw new AppError('Choose one original up to 480 KiB for direct filing.');let m:unknown;try{m=JSON.parse(raw);}catch{throw new AppError('Invalid source metadata.');}return json(await directSourceFile(v,m,file));}
+ const b=await readPayload(req);if(b.action==='start'||b.action==='receipt'||b.action==='reference')return json(await beginSource(v,b.file,b.action,b.reason));if(b.action==='seal')return json(await sealSourceGroup(v,String(b.id||''),Number(b.group)));if(b.action==='commit')return json(await commitSource(v,String(b.id||'')));throw new AppError('Choose a source filing action.');
+ }catch(e){const f=safeFailure(e,'drive.archive.write');return json(f.body,f.status);}}

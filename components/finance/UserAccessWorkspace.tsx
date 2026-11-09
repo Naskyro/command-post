@@ -1,111 +1,53 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
-import { Search, Users } from 'lucide-react';
-import type { FinanceData, FinRecord } from '@/lib/finance/model';
+import ResponsiveSearchInput from '@/components/shared/ResponsiveSearchInput';
+import ModuleRail from '@/components/shared/ModuleRail';
+import {useCallback,useEffect,useMemo,useState} from 'react';
+import {ArrowRight,CheckCircle2,ChevronDown,ChevronRight,Eye,Filter,HelpCircle,KeyRound,Layers3,Plus,RefreshCw,Search,Settings2,ShieldCheck,Users,UserPlus,X} from 'lucide-react';
+import type {FinanceData,FinRecord} from '@/lib/finance/model';
+import {AdminActor,AdminStamp} from './AdminAuditFields';
+import './admin-audit.css';
+import AdminActivity from './AdminActivity';
+import ResetPasswordDialog from '@/components/admin/ResetPasswordDialog';
+import DelegatedAccessWorkspace from '@/components/admin/DelegatedAccessWorkspace';
+import {canStartDelegation} from '@/lib/admin/delegated-policy';
+import AnnouncementsWorkspace from '@/components/admin/AnnouncementsWorkspace';
+import SiteThemeWorkspace from '@/components/admin/SiteThemeWorkspace';
+import AssignmentCatalog from '@/components/people/hr/AssignmentCatalog';
 import DepartmentSettings from '@/components/people/DepartmentSettings';
-import { grantsFor, canAccess } from '@/lib/finance/access';
-import { canEditAccess } from '@/lib/people/policy';
-import { requestJson } from '@/lib/shared/client';
+import {grantsFor,canAccess} from '@/lib/finance/access';
+import {canEditAccess} from '@/lib/people/policy';
+import {requestJson} from '@/lib/shared/client';
 import PersonEditor from '@/components/people/PersonEditor';
-import AdminRolesPanel from '@/components/admin/AdminRolesPanel';
-import AdminAuditPanel from '@/components/admin/AdminAuditPanel';
+import PersonAvatar from '@/components/people/PersonAvatar';
+import {ApplyTemplate,TemplateAction,TemplateCard,TemplateEditor,type PermissionTemplate,type TemplateData} from '@/components/admin/AccessTemplateStudio';
+import {AdminUserSetup,SignInHelp,UserLifecycleAction,userLifecycleState,type UserLifecycleData} from '@/components/admin/AdminUserLifecycle';
+import '@/components/admin/admin-modern.css';
 import './finance.css';
 import './timeclock.css';
-
-const TABS: [string, string][] = [
-  ['users', 'Users & access'],
-  ['departments', 'Departments'],
-  ['roles', 'Roles & permissions'],
-  ['audit', 'Audit log'],
-];
-
-function tabVisible(viewer: FinanceData['viewer'], key: string) {
-  if (key === 'roles' || key === 'audit') return viewer.owner;
-  return canAccess(viewer, 'Admin', key);
-}
-
-export default function UserAccessWorkspace() {
-  const [tab, setTab] = useState('users');
-  const [data, setData] = useState<FinanceData | null>(null);
-  const [editing, setEditing] = useState<FinRecord | null>(null);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('Active');
-
-  const load = useCallback(async () => {
-    try {
-      setData(await requestJson<FinanceData>('/api/people?surface=admin'));
-      setError('');
-    } catch (e) {
-      setError((e as Error).message);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => void load(), 0);
-    return () => clearTimeout(timer);
-  }, [load]);
-
-  if (!data) return <div className="f-workspace f-loading"><Users /><h2>{error || 'Loading users...'}</h2>{error && <button className="f-button" onClick={() => void load()}>Try again</button>}</div>;
-
-  const people = data.records.filter(r =>
-    r.kind === 'person' &&
-    (status === 'All' || r.status === status) &&
-    [r.name, r.email, r.department, r.title].join(' ').toLowerCase().includes(search.toLowerCase())
-  );
-
-  const visibleTabs = TABS.filter(([key]) => tabVisible(data.viewer, key));
-
-  return (
-    <div className="f-workspace">
-      <header className="f-heading"><h1>Admin</h1></header>
-      <nav className="f-tabs">
-        {visibleTabs.map(([key, label]) => (
-          <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>
-        ))}
-      </nav>
-
-      {tab === 'departments' && <DepartmentSettings records={data.records} viewer={data.viewer} onSaved={load} />}
-
-      {tab === 'roles' && <AdminRolesPanel viewer={data.viewer} />}
-
-      {tab === 'audit' && <AdminAuditPanel viewer={data.viewer} />}
-
-      {tab === 'users' && (
-        <>
-          <div className="f-toolbar">
-            <label className="f-search">
-              <Search size={17} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search people, email, department..." aria-label="Search users" />
-            </label>
-            <select value={status} onChange={e => setStatus(e.target.value)} aria-label="User status">
-              {['Active', 'Onboarding', 'Former', 'Leave', 'All'].map(s => <option key={s}>{s}</option>)}
-            </select>
-          </div>
-          <section className="f-card">
-            <div className="tc-table-wrap">
-              <table className="tc-table">
-                <thead><tr><th>Person</th><th>Email</th><th>Department / title</th><th>Access role</th><th>Last changed</th><th /></tr></thead>
-                <tbody>
-                  {people.map(p => (
-                    <tr key={p.id}>
-                      <td><b>{String(p.name)}</b><small>{String(p.status)}</small></td>
-                      <td>{String(p.email)}<small>{((p.emailAliases || []) as string[]).join(', ')}</small></td>
-                      <td>{String(p.department)}<small>{String(p.title || '')}</small></td>
-                      <td>{String(p.role)}<small>{p.role === 'Owner' ? 'Unrestricted' : grantsFor(p).length + ' tabs'} - {String(p.accountStatus || 'Enabled')}</small></td>
-                      <td>{String(p.updatedBy || 'Initial setup')}<small>{p.updatedAt ? new Date(String(p.updatedAt)).toLocaleString() : ''}</small></td>
-                      <td>{canEditAccess(data.viewer, p, data.records) && <button className="f-button" onClick={() => setEditing(p)}>Edit access</button>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </>
-      )}
-
-      {error && <p className="f-error">{error}</p>}
-      {editing && <PersonEditor key={editing.id} person={editing} viewer={data.viewer} people={data.records.filter(r => r.kind === 'person')} mode="admin" onClose={() => setEditing(null)} onSaved={load} />}
-    </div>
-  );
+type Area='delegated-access'|'overview'|'users'|'templates'|'departments'|'catalog'|'announcements'|'site-themes'|'activity';
+const adminNav:[Area,string][]=[['overview','Access Overview'],['users','People & Access'],['delegated-access','Delegated Access'],['templates','Permission Templates'],['departments','Departments'],['announcements','Announcements'],['site-themes','Site Themes'],['catalog','Asset, Software & Document Choices'],['activity','Activity & Change History']];
+const tabAllowed=(data:FinanceData,tab:Area)=>tab==='delegated-access'?canStartDelegation(data.viewer):canAccess(data.viewer,'Admin',['overview','users','templates','catalog'].includes(tab)?'users':tab);
+const personName=(p:FinRecord)=>String(p.preferredName||p.name||'');
+export default function UserAccessWorkspace({initialTab}:{initialTab?:string}){
+ const [tab,setTab]=useState<Area>(adminNav.some(([key])=>key===initialTab)?initialTab as Area:'overview'),[data,setData]=useState<FinanceData|null>(null),[templates,setTemplates]=useState<TemplateData|null>(null),[editing,setEditing]=useState<FinRecord|null>(null),[error,setError]=useState(''),[templateError,setTemplateError]=useState(''),[search,setSearch]=useState(''),[status,setStatus]=useState('All'),[userView,setUserView]=useState('Active'),[department,setDepartment]=useState('All'),[accessSetup,setAccessSetup]=useState('All'),[filters,setFilters]=useState(false),[notice,setNotice]=useState(''),[templateQuery,setTemplateQuery]=useState(''),[templateStatus,setTemplateStatus]=useState('Active'),[templateEditor,setTemplateEditor]=useState<PermissionTemplate|null|undefined>(undefined),[applying,setApplying]=useState<PermissionTemplate|null>(null),[templateAction,setTemplateAction]=useState<{template:PermissionTemplate;action:'clone'|'archive'|'restore'}|null>(null),[refreshing,setRefreshing]=useState(false);
+ const [resetPerson,setResetPerson]=useState<FinRecord|null>(null);
+ const [lifecycle,setLifecycle]=useState<UserLifecycleData|null>(null),[lifecycleError,setLifecycleError]=useState(''),[creatingUser,setCreatingUser]=useState(false),[helpPerson,setHelpPerson]=useState<FinRecord|null|undefined>(undefined),[lifecycleAction,setLifecycleAction]=useState<{person:FinRecord;action:'deactivate'|'reactivate'}|null>(null);
+ useEffect(()=>{if(initialTab&&adminNav.some(([key])=>key===initialTab))setTab(initialTab as Area);},[initialTab]);
+ const load=useCallback(async()=>{setRefreshing(true);try{const result=await requestJson<FinanceData>('/api/people?surface=admin');setData(result);setTab(current=>tabAllowed(result,current)?current:adminNav.find(([key])=>tabAllowed(result,key))?.[0]||'users');setError('');if(canAccess(result.viewer,'Admin','users')){try{setLifecycle(await requestJson<UserLifecycleData>('/api/admin/users'));setLifecycleError('');}catch(e){setLifecycle(null);setLifecycleError((e as Error).message);}try{setTemplates(await requestJson<TemplateData>('/api/admin/access-templates'));setTemplateError('');}catch(e){setTemplateError((e as Error).message);}}}catch(e){setError((e as Error).message);}finally{setRefreshing(false);}},[]);
+ useEffect(()=>{void load();},[load]);
+ const allPeople=useMemo(()=>lifecycle?.people||data?.records.filter(r=>r.kind==='person')||[],[data,lifecycle]);
+ const people=useMemo(()=>allPeople.filter(r=>(userView==='All'||userLifecycleState(r)===userView)&&(status==='All'||r.status===status)&&(department==='All'||r.department===department)&&(accessSetup==='All'||(r.accessMode==='Custom'?'Custom':'Role Defaults')===accessSetup)&&[personName(r),r.name,r.username,r.companyEmail,r.department,r.title].join(' ').toLowerCase().includes(search.toLowerCase())).sort((a,b)=>personName(a).localeCompare(personName(b))),[allPeople,userView,status,department,accessSetup,search]);
+ if(!data)return <div className="f-workspace adminx adminx-loading"><ShieldCheck size={32}/><h2>{error||'Loading Access Settings…'}</h2>{error&&<button className="adminx-button" onClick={()=>void load()}>Try Again</button>}</div>;
+ const activeTemplates=(templates?.templates||[]).filter(t=>t.status==='Active'),deptNames=[...new Set(allPeople.map(p=>String(p.department||'')).filter(Boolean))].sort(),activePeople=allPeople.filter(p=>p.status==='Active'&&userLifecycleState(p)==='Active'),customPeople=allPeople.filter(p=>p.accessMode==='Custom'),availableTemplates=(templates?.templates||[]).filter(t=>t.status===templateStatus&&[t.name,t.description].join(' ').toLowerCase().includes(templateQuery.toLowerCase()));
+ function openPeople(custom=false,active=false){setSearch('');setDepartment('All');setStatus(active?'Active':'All');setUserView(active?'Active':'All');setAccessSetup(custom?'Custom':'All');setFilters(custom);setTab('users');}
+ async function saved(message='Access settings saved.'){await load();setNotice(message);}
+ const apply=(t:PermissionTemplate)=>setApplying(t),edit=(t:PermissionTemplate)=>setTemplateEditor(t),clone=(t:PermissionTemplate)=>setTemplateAction({template:t,action:'clone'}),archive=(t:PermissionTemplate)=>setTemplateAction({template:t,action:t.status==='Archived'?'restore':'archive'});
+ function renderCard(t:PermissionTemplate){return <TemplateCard key={t.id} template={t} canEdit={templates?.canEdit===true} onApply={apply} onEdit={edit} onClone={clone} onArchive={archive}/>;}
+ async function retrySignInRevocation(id:string){try{setError('');const result=await requestJson<{credentialLifecycle:{message:string}}>('/api/admin/users',{action:'retryCredentialRevocation',id});setNotice(result.credentialLifecycle.message);}catch(e){setError((e as Error).message);}}
+ function userCard(p:FinRecord){const grants=grantsFor(p),moduleCount=new Set(grants.map(g=>g.module)).size,state=userLifecycleState(p),enabled=state==='Active',cap=lifecycle?.capabilities[p.id];return <article className="adminx-person-card" key={p.id}><div className="adminx-person-top"><PersonAvatar personId={p.id} name={personName(p)} size={52}/><span className={'adminx-status '+(enabled?'enabled':'disabled')}>{state}</span></div><h3>{personName(p)}</h3>{!!p.title&&<p className="adminx-job">{String(p.title)}</p>}<p className="adminx-department">{String(p.department||'No Department')}{p.status!=='Active'?' · '+String(p.status):''}</p>{!!p.companyEmail&&<p className="adminx-email"><span>Work Email: </span>{String(p.companyEmail)}</p>}<div className="adminx-access-summary"><ShieldCheck size={16}/><span>{p.role==='Owner'?'Owner Access':`${moduleCount} Modules · ${grants.length} Permissions`}</span></div><div className="adminx-person-origin">{p.accessTemplateName?<><Layers3 size={14}/><span>{String(p.accessTemplateName)}<small>Independent Copy · v{String(p.accessTemplateVersion??'')}</small></span></>:<><Settings2 size={14}/><span>{p.accessMode==='Custom'?'Individual Access':'Role Defaults'}<small>{String(p.role||'Employee')}</small></span></>}</div><footer>{canEditAccess(data!.viewer,p,data!.records)?<button className="adminx-button" onClick={()=>setEditing(p)}>Edit Access <ArrowRight size={14}/></button>:<span className="adminx-readonly">View Only</span>}<details className="adminx-menu"><summary aria-label={'More Actions for '+personName(p)} title={'Account Actions: '+personName(p)}><ChevronDown size={17}/></summary><div><button onClick={()=>setHelpPerson(p)}><HelpCircle size={14}/>Sign-In Help</button>{cap?.canDeactivate&&<button onClick={()=>setLifecycleAction({person:p,action:'deactivate'})}>Deactivate Access</button>}{state==='Deactivated'&&cap?.canManage&&p.accountStatus==='Disabled'&&<button onClick={()=>void retrySignInRevocation(p.id)}>Retry Sign-In Revocation</button>}{cap?.canReactivate&&<button onClick={()=>setLifecycleAction({person:p,action:'reactivate'})}>Review & Reactivate</button>}{state==='Deactivated'&&!cap?.canReactivate&&cap?.reactivationReason&&<small className="adminx-menu-note">{cap.reactivationReason}</small>}</div></details>{cap?.canResetPassword&&<button type="button" className="adminx-password-action" aria-label={'Reset Password for '+personName(p)} onClick={()=>setResetPerson(p)}><KeyRound size={15} aria-hidden="true"/>Reset Password</button>}{p.updatedAt&&<div className="adminx-changed"><span>Last Changed</span><AdminStamp value={p.updatedAt}/><AdminActor name={p.updatedBy}/></div>}</footer></article>;}
+ const nav=adminNav; const currentTab=tabAllowed(data,tab)?tab:adminNav.find(([key])=>tabAllowed(data,key))?.[0]||'users'; if(currentTab!==tab)return <div className="f-workspace adminx"><p>This section is not assigned to your account.</p><button className="adminx-button" onClick={()=>setTab(currentTab)}>Open Available Admin Section</button></div>;
+ return <div className="f-workspace adminx"><ModuleRail label="Admin Sections"><nav className="f-tabs">{nav.filter(([key])=>tabAllowed(data,key)).map(([key,label])=><button key={key} className={tab===key?'active':''} aria-current={tab===key?'page':undefined} onClick={()=>{setTab(key);setNotice('');}}>{key==='delegated-access'&&<Eye size={16} aria-hidden="true"/>}{label}</button>)}</nav></ModuleRail>{!['announcements','site-themes','delegated-access'].includes(tab)&&<header className="adminx-page-heading"><div><span className="adminx-eyebrow">ADMINISTRATION</span><h1>{nav.find(([key])=>key===tab)?.[1]}</h1></div><div className="adminx-actions"><button className="adminx-icon" aria-label="Refresh Admin" title="Refresh Admin" disabled={refreshing} onClick={()=>void load()}><RefreshCw size={18} className={refreshing?'adminx-spin':''}/></button>{['overview','users'].includes(tab)&&lifecycle?.authorityAssignment.canCreate&&<button className="adminx-button primary" onClick={()=>setCreatingUser(true)}><UserPlus size={17}/>Add Site User</button>}{tab==='templates'&&templates?.canEdit&&<button className="adminx-button primary" onClick={()=>setTemplateEditor(null)}><Plus size={16}/>Create Template</button>}</div></header>}
+ {notice&&<div className="adminx-success" role="status"><CheckCircle2 size={19}/><span>{notice}</span><button type="button" aria-label="Dismiss Confirmation" title="Dismiss Confirmation" onClick={()=>setNotice('')}><X size={17}/></button></div>}{error&&<p className="adminx-error" role="alert">{error}</p>}
+ {tab==='delegated-access'?<DelegatedAccessWorkspace/>:tab==='announcements'?<AnnouncementsWorkspace/>:tab==='site-themes'?<SiteThemeWorkspace/>:tab==='activity'?<AdminActivity/>:tab==='catalog'?<div className="hr2 adminx-existing"><AssignmentCatalog/></div>:tab==='departments'?<div className="adminx-existing"><DepartmentSettings records={data.records} viewer={data.viewer} onSaved={load}/></div>:tab==='overview'?<><section className="adminx-hero"><div><span className="adminx-hero-kicker"><ShieldCheck size={16}/>Permission Center</span><h2>Give Every Role<br/>the Right Access.</h2><p>Start with a role template. Fine-tune access for each person as their responsibilities grow.</p><div className="adminx-actions"><button className="adminx-button light" onClick={()=>setTab('templates')}>Explore Templates <ArrowRight size={16}/></button><button className="adminx-button ghost" onClick={()=>setTab('users')}>Manage People</button></div></div><div className="adminx-hero-stack" aria-label="Access Structure"><button type="button" onClick={()=>openPeople()}><span><Users size={21}/></span><p>People<b>{allPeople.length} User Records</b></p><ArrowRight size={19}/></button><button type="button" onClick={()=>setTab('templates')}><span><Layers3 size={21}/></span><p>Reusable Templates<b>{templates?activeTemplates.length:'—'} Available</b></p><ArrowRight size={19}/></button><button type="button" onClick={()=>openPeople(true)}><span><Settings2 size={21}/></span><p>Individual Control<b>Adjust Person by Person</b></p><ArrowRight size={19}/></button></div></section><div className="adminx-metrics"><button onClick={()=>openPeople(false,true)}><span className="adminx-stat-icon teal"><Users size={21}/></span><span><small>Active Employees</small><strong>{activePeople.length}</strong></span><ArrowRight size={17}/></button><button onClick={()=>setTab('templates')}><span className="adminx-stat-icon lilac"><Layers3 size={21}/></span><span><small>Permission Templates</small><strong>{templates?activeTemplates.length:'—'}</strong></span><ArrowRight size={17}/></button><button onClick={()=>openPeople(true)}><span className="adminx-stat-icon amber"><Settings2 size={21}/></span><span><small>Custom Access Setups</small><strong>{customPeople.length}</strong></span><ArrowRight size={17}/></button></div><div className="adminx-section-line"><div><h2>Start with a Role</h2><p>Apply once, then personalize without changing the template.</p></div><button className="adminx-text-button" onClick={()=>setTab('templates')}>View All Templates <ArrowRight size={16}/></button></div>{templateError?<div className="adminx-error" role="alert">{templateError}<button className="adminx-button" onClick={()=>void load()}>Retry</button></div>:<div className="adminx-template-grid">{activeTemplates.slice(0,4).map(renderCard)}</div>}<section className="adminx-review-banner"><div className="adminx-stat-icon lilac"><ShieldCheck size={24}/></div><div><h3>Review Changes Before They Take Effect</h3><p>See which permissions will be added, removed, or changed. Every saved change records its reason and author.</p></div>{canAccess(data.viewer,'Admin','activity')&&<button className="adminx-button" onClick={()=>setTab('activity')}>Change History <ChevronRight size={15}/></button>}</section></>:tab==='users'?<><div className="adminx-user-views" aria-label="User Account Status">{['Active','Onboarding','Deactivated','All'].map(view=><button key={view} className={userView===view?'active':''} aria-pressed={userView===view} onClick={()=>{setUserView(view);setStatus('All');}}>{view}<span>{allPeople.filter(p=>view==='All'||userLifecycleState(p)===view).length}</span></button>)}<button className="adminx-help-link" onClick={()=>setHelpPerson(null)}><HelpCircle size={16}/>Sign-In Help</button></div>{lifecycleError&&<p className="adminx-error" role="alert">Account management controls could not load: {lifecycleError}<button className="adminx-button" onClick={()=>void load()}>Retry</button></p>}{userView==='Deactivated'&&<div className="adminx-notice compact"><ShieldCheck size={18}/><p>Deactivated accounts cannot sign in. Their personnel records and permission history remain. Reactivation requires an access review; former employees must first be rehired through People &amp; HR.</p></div>}<div className="adminx-toolbar"><label className="adminx-search"><Search size={18}/><ResponsiveSearchInput value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search Name, Username, Work Email, Role, or Department" aria-label="Search People"/></label><button className={'adminx-button '+(filters?'selected':'')} aria-expanded={filters} onClick={()=>setFilters(!filters)}><Filter size={16}/>Filters{(status!=='All'||department!=='All'||accessSetup!=='All')&&<span className="adminx-filter-count">{Number(status!=='All')+Number(department!=='All')+Number(accessSetup!=='All')}</span>}</button>{templates?.canEdit&&<button className="adminx-button primary" onClick={()=>setTab('templates')}><Layers3 size={16}/>Apply a Template</button>}</div>{filters&&<div className="adminx-filter-panel"><label>Employment Status<select value={status} onChange={e=>setStatus(e.target.value)}>{['Active','All','Former','Leave','Onboarding'].map(s=><option key={s}>{s}</option>)}</select></label><label>Department<select value={department} onChange={e=>setDepartment(e.target.value)}><option value="All">All Departments</option>{deptNames.map(d=><option key={d}>{d}</option>)}</select></label><label>Access Setup<select value={accessSetup} onChange={e=>setAccessSetup(e.target.value)}>{['All','Custom','Role Defaults'].map(v=><option key={v} value={v}>{v==='All'?'All Setups':v==='Custom'?'Individual Access':v}</option>)}</select></label><button className="adminx-text-button" onClick={()=>{setStatus('All');setDepartment('All');setAccessSetup('All');}}>Reset Filters</button></div>}<div className="adminx-section-line small"><p>{people.length} {people.length===1?'Person':'People'} · {userView==='All'?'All Accounts':userView+' Accounts'}</p><span>Permissions Belong to the Person</span></div><div className="adminx-people-grid">{people.map(userCard)}</div>{!people.length&&<div className="adminx-empty"><Search size={27}/><h3>No Matching People</h3><p>Try another name or clear a filter.</p><button className="adminx-button" onClick={()=>{setSearch('');setStatus('All');setDepartment('All');setAccessSetup('All');}}>Clear Search & Filters</button></div>}</>:<><div className="adminx-template-intro"><Layers3 size={26}/><div><h2>One Setup. Ready for the Next Hire.</h2><p>Build reusable access for dispatchers, drivers, managers, or any role you create. A person’s exceptions never rewrite the shared template.</p></div></div><div className="adminx-toolbar"><label className="adminx-search"><Search size={18}/><ResponsiveSearchInput value={templateQuery} onChange={e=>setTemplateQuery(e.target.value)} placeholder="Find a Template" aria-label="Search Permission Templates"/></label><div className="adminx-segment" aria-label="Template Status">{['Active','Archived'].map(s=><button key={s} className={templateStatus===s?'active':''} aria-pressed={templateStatus===s} onClick={()=>setTemplateStatus(s)}>{s}<span>{templates?.templates.filter(t=>t.status===s).length||0}</span></button>)}</div></div>{templateError&&<p className="adminx-error" role="alert">{templateError}</p>}<div className="adminx-template-grid">{availableTemplates.map(renderCard)}{templateStatus==='Active'&&templates?.canEdit&&<button className="adminx-create-template" onClick={()=>setTemplateEditor(null)}><span><Plus size={29}/></span><h3>Create Your Own</h3><p>Choose the modules, tabs, and responsibilities this role needs.</p></button>}</div>{!availableTemplates.length&&(!templates?.canEdit||templateStatus==='Archived')&&<div className="adminx-empty"><Layers3 size={29}/><h3>No {templateStatus==='Archived'?'Archived ':''}Templates Found</h3><p>{templateStatus==='Archived'?'Archived templates stay here so you can restore them.':'Try a different search.'}</p></div>}</>}
+ {creatingUser&&lifecycle&&<AdminUserSetup viewer={data.viewer} people={allPeople} departments={data.records.filter(r=>r.kind==='department')} capabilities={lifecycle} onClose={()=>setCreatingUser(false)} onSaved={saved} onOpenExisting={p=>{setCreatingUser(false);if(canEditAccess(data.viewer,p,data.records))setEditing(p);else{setSearch(personName(p));setUserView('All');setStatus('All');setTab('users');}}}/>}{resetPerson&&<ResetPasswordDialog key={resetPerson.id} person={resetPerson.id} name={personName(resetPerson)} onClose={()=>setResetPerson(null)}/>}{helpPerson!==undefined&&<SignInHelp person={helpPerson||undefined} onClose={()=>setHelpPerson(undefined)}/>} {lifecycleAction&&<UserLifecycleAction {...lifecycleAction} viewer={data.viewer} onClose={()=>setLifecycleAction(null)} onSaved={saved}/>} {editing&&<PersonEditor key={editing.id} person={editing} viewer={data.viewer} people={allPeople} mode="admin" onClose={()=>setEditing(null)} onSaved={()=>saved()}/>}{templateEditor!==undefined&&<TemplateEditor template={templateEditor} viewer={data.viewer} onClose={()=>setTemplateEditor(undefined)} onSaved={()=>saved('Permission template saved. Existing user access is unchanged.')}/>}{applying&&templates&&<ApplyTemplate template={applying} people={allPeople} eligible={templates.people} onClose={()=>setApplying(null)} onSaved={saved}/>}{templateAction&&<TemplateAction {...templateAction} onClose={()=>setTemplateAction(null)} onSaved={()=>saved('Permission template updated. Existing user access is unchanged.')}/>}</div>;
 }

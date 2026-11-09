@@ -39,7 +39,7 @@ test('delegated access cannot exceed actor tab, edit, or role ceiling; self-esca
  assert.throws(()=>sanitizeFields({rate:500},['role','access']),/cannot change/);
 });
 test('new hire mailboxes share both company aliases and reporting chain cannot loop or escape',()=>{
- const next={...person,id:'new',name:'New hire',email:'new@parkingtowingenforcement.com'};validateProfile(next,undefined,manager,records);assert.deepEqual(next.emailAliases,['new@gtowingtransport.com']);
+ const next={...person,id:'new',name:'New hire',email:'new@parkingtowingenforcement.com',startDate:'2026-10-26'};validateProfile(next,undefined,manager,records);assert.deepEqual(next.emailAliases,['new@gtowingtransport.com']);
  assert.throws(()=>validateProfile({...next,email:'braden@parkingtowingenforcement.com'},undefined,manager,records),/belongs/);
  assert.throws(()=>validateProfile({...next,supervisor:'outside'},undefined,manager,records),/team/);
  assert.throws(()=>validateProfile({...person,supervisor:'braden'},person,owner,records),/loop/);

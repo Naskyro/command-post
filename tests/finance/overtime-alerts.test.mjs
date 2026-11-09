@@ -45,14 +45,14 @@ test('employee may request extra earning hours without disclosing personal finan
  const r=request();validateTime(r,undefined,employee,[worker]);assert.equal(r.status,'Pending');assert.equal(r.supervisor,'super');assert.equal(r.submittedBy,'p');
  for(const hours of [0,-1,NaN,129])assert.throws(()=>validateTime(request({hours}),undefined,employee,[worker]));
  assert.throws(()=>validateTime(request({date:'2026-02-30'}),undefined,employee,[worker]));
- assert.throws(()=>validateTime(request(),undefined,employee,[{...worker,exempt:true,payType:'Salary exempt'}]),/nonexempt/);
+ const exemptRequest=request();validateTime(exemptRequest,undefined,employee,[{...worker,exempt:true,payType:'Salary exempt'}]);assert.equal(exemptRequest.status,'Pending');
 });
 test('review requires another supervisor and cannot change the requested facts or a saved decision',()=>{
  const pending=request({version:1});
  const approved={...pending,decision:'Approved',reviewNote:'Coverage available.'};
  validateTime(approved,pending,supervisor,[worker]);assert.equal(approved.status,'Reviewed');assert.equal(approved.reviewedBy,supervisor.name);
  assert.equal(canReviewOvertime({...supervisor,person:'p',owner:true,canManage:true},'p',[worker]),false);
- assert.throws(()=>validateTime({...pending,decision:'Approved'},pending,{...employee,owner:true,canManage:true},[worker]),/own overtime/);
+ assert.throws(()=>validateTime({...pending,decision:'Approved'},pending,{...employee,owner:true,canManage:true},[worker]),/own additional hours/);
  assert.throws(()=>validateTime({...pending,decision:'Approved',hours:5,reviewNote:'Ok'},pending,supervisor,[worker]),/as submitted/);
  assert.throws(()=>validateTime({...approved,hours:4},approved,supervisor,[worker]),/saved/);
  assert.throws(()=>validateTime({...pending,decision:'Approved'},pending,{...supervisor,access:[{module:'Timeclock',tab:'Requests',level:'View'}]},[worker]),/supervisor/);

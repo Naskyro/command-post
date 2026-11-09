@@ -1,4 +1,6 @@
 'use client';
+import {priorClosedWork} from '@/lib/year-history/work-periods';
+import {businessToday} from '@/lib/year-history/model';
 import FilterBar from '@/components/shared/FilterBar';
 import './work.css';
 import { useState } from 'react';
@@ -14,9 +16,19 @@ export function WorkQueue({rows,all,staff,viewerId,editable,onOpen,onAccount,onN
   const name=(id:unknown)=>staff.find(p=>p.id===id)?.name||all.find(p=>p.id===id)?.name||'Unassigned';
   const date=today(),end=new Date(Date.parse(date+'T12:00Z')+(6-new Date(date+'T12:00Z').getUTCDay())*86400000).toISOString().slice(0,10);
   const base=rows.filter(r=>(scope!=='Mine'||r.assignee===viewerId)&&(scope!=='Requested'||r.authorId===viewerId)&&(!person||r.assignee===person)&&(!type||r.type===type)&&(!query||[r.name,name(r.accountId),name(r.assignee),r.details,r.waitingOn].join(' ').toLowerCase().includes(query.toLowerCase())));
-  const displayName=(r:Row)=>r.name==='Monthly check-in'?'Monthly Check-In':r.name;
+  // Older persisted queue rows used sentence case. Keep those rows readable
+  // after the shared title-case vocabulary update; new rows are already
+  // written with the canonical labels by lib/accounts/model.ts.
+  const displayName=(r:Row)=>({
+    'Monthly check-in':'Monthly Check-In',
+    'Signage check due':'Signage Check Due',
+    'Confirm signage check date':'Confirm Signage Check Date',
+  } as Record<string,string>)[r.name]||r.name;
   const matches=(r:Row,key:string)=>key==='This week'?!isFinished(r)&&!!actionDate(r)&&actionDate(r)>=date&&actionDate(r)<=end:workGroup(r,date)===key;
-  const result=base.filter(r=>!metric||matches(r,metric));
+  const [allYears,setAllYears]=useState(false),businessDay=businessToday();
+  const pastClosures=base.filter(r=>priorClosedWork(r,businessDay)).length;
+  // Explicit Completed metric always includes every year. Period rollover never hides overdue, reopened, or undated work.
+  const result=base.filter(r=>metric?matches(r,metric):allYears||!priorClosedWork(r,businessDay));
   const metrics=[['Overdue',AlertCircle],['Today',CalendarDays],['This week',Clock3],['Completed',Check]] as const;
   const sorted=[...result].sort((a,b)=>(actionDate(a)||'9999').localeCompare(actionDate(b)||'9999')||a.name.localeCompare(b.name));
   const shown=sorted.slice(0,limit);
@@ -32,6 +44,7 @@ export function WorkQueue({rows,all,staff,viewerId,editable,onOpen,onAccount,onN
   return <div className="am-work-queue"><div className="am-queue-metrics">{metrics.map(([label,Icon])=><button key={label} className={label.toLowerCase().replace(' ','-')} aria-pressed={metric===label} onClick={()=>{setMetric(metric===label?'':label);setLimit(60)}}><Icon size={19}/><span>{label}</span><b>{base.filter(r=>matches(r,label)).length}</b></button>)}</div>
     <div className="am-queue-toolbar"><div className="am-queue-scopes" aria-label="Task scope">{[['All',orders?'All work orders':'All tasks'],['Mine','My tasks'],['Requested','Requested by me']].map(([id,label])=><button key={id} aria-pressed={scope===id} onClick={()=>{setScope(id);setLimit(60)}}>{label}</button>)}</div><div className="am-actions">{onRequest&&<Button variant="outline" size="sm" onClick={onRequest}><Wrench size={16}/>Request Operations</Button>}{onNew&&<Button size="sm" onClick={onNew}><Plus size={16}/>{orders?'New work order':'New task'}</Button>}</div></div>
     <FilterBar className="am-queue-filters"><label className="am-queue-search"><Search size={17}/><input aria-label="Search tasks" placeholder="Search tasks or accounts" value={query} onChange={e=>{setQuery(e.target.value);setLimit(60)}}/></label><select aria-label="Assigned to" value={person} onChange={e=>setPerson(e.target.value)}><option value="">All assignees</option>{staff.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><select aria-label="Task type" value={type} onChange={e=>setType(e.target.value)}><option value="">All types</option>{[...new Set(rows.map(r=>String(r.type||'')))].filter(Boolean).sort().map(t=><option key={t}>{t}</option>)}</select>{metric&&<Button variant="ghost" size="sm" onClick={()=>setMetric('')}>Clear {metric}</Button>}<div className="am-queue-view"><button aria-label="List view" aria-pressed={view==='List'} onClick={()=>setView('List')}><List size={18}/></button><button aria-label="Agenda view" aria-pressed={view==='Agenda'} onClick={()=>setView('Agenda')}><CalendarDays size={18}/></button></div></FilterBar>
+    {!metric&&pastClosures>0&&<p className="am-queue-years"><span>{pastClosures} prior-year closed {pastClosures===1?'item':'items'} {allYears?'shown':'in Year History'}.</span> <Button size="sm" variant="ghost" onClick={()=>{setAllYears(v=>!v);setLimit(60)}}>{allYears?'Return to Current Work':'Show All Years'}</Button></p>}
     {!result.length&&<p className="am-empty">No tasks match these filters.</p>}
     {view==='List'?groups.map(group=>{const tasks=shown.filter(r=>workGroup(r,date)===group);return tasks.length>0&&<details className="am-task-group" key={group} open={!['Completed','Cancelled'].includes(group)||!!metric}><summary><ChevronDown size={17}/>{group}<span>{result.filter(r=>workGroup(r,date)===group).length}</span></summary><div className="am-task-table"><div className="am-task-columns"><span>Task / account</span><span>Progress</span><span>Due date</span><span>Assigned to</span><span/></div>{tasks.map(task)}</div></details>}):<div className="am-queue-agenda">{[...new Set(shown.map(r=>actionDate(r)||'Unscheduled'))].sort().map(day=><section className="am-panel" key={day}><header><h3>{day==='Unscheduled'?day:formatDate(day)}</h3></header>{shown.filter(r=>(actionDate(r)||'Unscheduled')===day).map(task)}</section>)}</div>}
     {result.length>limit&&<Button variant="outline" onClick={()=>setLimit(n=>n+60)}>Show more ({result.length-limit})</Button>}

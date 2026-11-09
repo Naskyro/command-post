@@ -1,0 +1,61 @@
+import type {ReportDefinition,ReportFilters,ChartKind} from './types';
+import type {Viewer} from '../finance/model';
+import {canAccess} from '../finance/access.ts';
+
+const overview='Overview',out='Outflows',ar='Receivables',debts='Debts',pay='Payroll',tax='Reports & Taxes';
+type Spec=ReportDefinition&{tab:string};
+const date: (keyof ReportFilters)[]=['from','to'],who:(keyof ReportFilters)[]=[...date,'department','person'];
+const rows:Spec[]=[];
+function add(tab:string,group:string,id:string,title:string,description:string,visual:ChartKind,filters:(keyof ReportFilters)[]=date){
+ const unit=visual==='table'?undefined:['bank-status','release-outcomes','cash-activity','expense-status'].includes(id)?'records':id==='close-progress'?'%':'USD';
+ rows.push({id,title,group,description,visual,filters,unit,tab});
+}
+add(overview,'Cash & Revenue','monthly-revenue','Monthly Operating Receipts','Cash-basis operating sales, net of reversals in operating income categories. Owner financing and transfers are excluded.','line');
+add(overview,'Cash & Revenue','monthly-expense','Monthly Operating Spending','Recorded expense-category bank activity, net of refunds. Compare changes over time.','line');
+add(overview,'Cash & Revenue','monthly-cash-flow','Monthly Net Cash Flow','Deposits less withdrawals across the bank register, including financing and transfers.','bar');
+add(overview,'Cash & Revenue','cash-vs-expense','Operating Receipts vs. Spending','Compare net operating receipts with net operating spending for each observed month.','scatter');
+add(overview,'Cash & Revenue','cash-in-out','Cash Inflows & Outflows','Compare gross bank money in and money out side by side.','bar');
+add(overview,'Cash & Revenue','cash-activity','Monthly Bank Activity','How many credits, debits, and other bank entries were observed each month?','line');
+add(overview,'Cash & Revenue','receipts-stream','Operating Receipts by Category','Show the mix of operating receipts across the categorized sales streams.','bar');
+add(overview,'Banking & Controls','cash-treatment','Bank Activity by Treatment','Trace signed bank amounts by cash flow treatment, including transfers and owner funding.','bar');
+add(overview,'Banking & Controls','bank-status','Bank Register Status','Track imported, categorized, matched, and reconciled transactions.','bar');
+add(out,'Banking & Controls','cash-review','Cash Withdrawal Review','See dated withdrawals still missing the review or custody details required by Finance.','table');
+add(out,'Banking & Controls','bank-uncategorized','Transactions Needing Classification','Find bank entries without a known category or marked for classification review.','table');
+add(overview,'Spending & Budgets','operating-cost-mix','Operating Spending by Category','Rank the net amounts charged to operating expense categories.','bar');
+add(overview,'Spending & Budgets','spending-groups','Operating Spending by Cost Group','Compare operating cost groups after refunds. Negative totals indicate net credits.','bar');
+add(overview,'Spending & Budgets','approved-budgets','Monthly Budget Variance','Compare approved category limits with actual net spending. Months without bank activity stay blank.','bar');
+add(out,'Spending & Budgets','expense-vendors','Employee Purchases by Vendor','Find the vendors used for recorded purchases. Purchase records are separate from the bank register.','bar',who);
+add(out,'Spending & Budgets','expense-method','Employee Purchase Methods','Compare company card, cash, or personal-fund purchases.','pie',who);
+add(out,'Spending & Budgets','receipt-exceptions','Missing Expense Receipts','Find purchases whose receipt has not been recorded as attached.','table',who);
+add(out,'Spending & Budgets','expense-status','Spending Report Workflow','Compare weekly spending reports by submission and approval status.','bar',who);
+add(out,'Vendors & Payables','ap-aging','Open Payables by Age','Group current unpaid bill balances by days beyond the due date.','bar',[]);
+add(out,'Vendors & Payables','ap-vendors','Unpaid Balances by Vendor','Identify which vendors have open invoice balances, including partly paid bills.','bar',[]);
+add(out,'Vendors & Payables','bills-due','Bill Due Date Register','Outstanding bills and their due dates, approval status and unpaid balance.','table');
+add(out,'Vendors & Payables','bill-payments','Bill Payments by Method','See how recorded vendor payments were made, using the payment date.','bar');
+add(out,'Vendors & Payables','subscriptions','Subscription Renewals','Review live subscription charges and renewal dates; amounts retain their original billing frequency.','table');
+add(ar,'Receivables & Recovery','ar-aging','Open Receivables by Age','Group issued, unpaid client invoice balances by days overdue.','bar',[]);
+add(ar,'Receivables & Recovery','ar-clients','Outstanding Client Balances','Which clients or properties still owe on issued invoices?','bar',[]);
+add(ar,'Receivables & Recovery','invoices-issued','Client Invoices Issued','Monthly original amounts for issued invoices, excluding drafts.','line');
+add(ar,'Receivables & Recovery','release-receipts','Release Collections by Month','Customer release receipts less recorded refunds and chargebacks, by receipt date.','line');
+add(ar,'Receivables & Recovery','release-method','Release Payment Mix','Compare net recorded collections across payment methods.','bar');
+add(ar,'Receivables & Recovery','release-outcomes','Release Outcomes','Count full, reduced, courtesy, refunded, and charged-back releases in Finance.','pie');
+add(ar,'Receivables & Recovery','receipts-unmatched','Release Receipts Awaiting Bank Match','Locate release payments with no recorded bank match.','table');
+add(ar,'Receivables & Recovery','lien-recovery','Lien Sale Recovery Register','Compare sale proceeds, selling costs, commissions, and recorded surplus per recovery.','table');
+add(ar,'Cash Custody','cash-movements','Cash Custody Movements','Recorded cash movements by type, amount and responsible person; not bank income.','bar',who);
+add(debts,'Debt & Commitments','debt-register','Debt & Repayment Register','Recorded balance snapshots and repayment commitments, with their source dates.','table',[]);
+add(debts,'Debt & Commitments','debt-direction','Balance by Debt Direction','Separate amounts owed by the company from amounts owed to the company.','bar',[]);
+add(debts,'Debt & Commitments','debt-service','Debt Payments by Month','Review repayments over time with the recorded principal and interest split.','line');
+add(pay,'Payroll','payroll-gross','Gross Payroll Trend','Gross pay in released payroll runs, grouped by period end.','line',who);
+add(pay,'Payroll','payroll-employer','Employer Payroll Cost','Gross, employer taxes and reimbursements in released payroll, for staff you may review.','bar',who);
+add(pay,'Payroll','payroll-withholding','Employee Withholding by Pay Period','Actual recorded employee tax withheld in released payroll runs.','line',who);
+add(pay,'Payroll','payroll-commission','Commissions by Employee','Commission amounts on released pay lines, grouped by employee.','bar',who);
+add(pay,'Payroll','payroll-dept','Gross Payroll by Department','Released gross pay grouped by the department saved on the pay line.','pie',who);
+add(pay,'Payroll','payroll-reimbursement','Payroll Reimbursements','Pay-period reimbursement totals, with employee line details.','bar',who);
+add(tax,'Accounting & Tax','trial-balance','Posted Journal Trial Balance','Debits and credits by ledger account and the period’s movement. Uses only posted journals.','table');
+add(tax,'Accounting & Tax','ledger-profit-loss','Posted Journal Profit & Loss','Period income and expenses from posted accounting journals; bank activity is not substituted.','bar');
+add(tax,'Accounting & Tax','balance-sheet','Posted Journal Balance Sheet','Cumulative asset, liability and equity balances through an as-of date, with accumulated earnings.','table',['to']);
+add(tax,'Accounting & Tax','tax-deadlines','Tax Filing & Payment Register','Filing dates, status, entered obligations and recorded payments.','table');
+add(tax,'Accounting & Tax','close-progress','Month-End Close Progress','See which period closing checks are complete or pending.','bar');
+export function permittedFinance(v:Viewer,s:Spec){return !v.onboardingOnly&&canAccess(v,'Finance',tax)&&canAccess(v,'Finance',s.tab);}
+export function financeSpecs(v:Viewer){return rows.filter(s=>permittedFinance(v,s));}
+export const allFinanceSpecs=rows;
