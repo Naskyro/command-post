@@ -9,6 +9,7 @@ import CcrWorkspace from '@/components/ccr/CcrWorkspace';
 import {sectionOutcome,validOutcomeFilter} from '@/lib/ccr/court-outcomes';
 import {directoryTab,directoryPath} from '@/lib/ccr/navigation';
 import CompanyDrive from '@/components/drive/CompanyDrive';
+import VehicleDispositionWorkspace from '@/components/vehicle-disposition/VehicleDispositionWorkspace';
 import {actionDate} from '@/lib/accounts/work';
 import {today as accountToday} from '@/lib/accounts/model';
 import ModuleSearch from '@/components/shared/ModuleSearch';
@@ -60,7 +61,7 @@ type CellValue = string | number | boolean | null;
 const modules = [
   { label: "Home", icon: Home }, { label: "Accounts", icon: Building2 },
   { label: "Account Management", icon: BriefcaseBusiness }, { label: "Sales CRM", icon: Target }, { label: "Finance", icon: WalletCards }, { label: "Timeclock", icon: Clock3 }, { label: "Work Orders", icon: Wrench },
-  { label: "Compliance, Claims & Recovery", icon: Scale }, { label: "Company Drive", icon: FolderOpen },
+  { label: "Compliance, Claims & Recovery", icon: Scale }, { label: "Company Drive", icon: FolderOpen }, { label: "Vehicle Disposition & Sales", icon: Car },
   { label: "People & HR", icon: Users }, { label: "Slack", icon: MessageSquareText }, { label: "SOP Library", icon: BookOpen },
   { label: "Admin", icon: Settings },
 ];
@@ -222,6 +223,7 @@ export default function CommandPost() {
     if (label === "Timeclock") return <TimeclockWorkspace key={"timeclock"+JSON.stringify(workspaceTarget)} initialView={workspaceTarget.tab} initialPerson={workspaceTarget.person} initialWeek={workspaceTarget.date} initialDepartment={workspaceTarget.department} />;
     if (label === "Compliance, Claims & Recovery" && sessionViewer) return <CcrExpenseNavigation viewer={sessionViewer} go={navigate}><CcrWorkspace key={sessionViewer.person+'|'+JSON.stringify(sessionViewer.access)} viewer={sessionViewer} requestedTab={workspaceTarget.tab} record={workspaceTarget.section} onNavigate={navigate} /></CcrExpenseNavigation>;
     if (label === "Company Drive") return <CompanyDrive initialNode={workspaceTarget.section}/>;
+    if (label === "Vehicle Disposition & Sales") return <VehicleDispositionWorkspace />;
     if (label === "Slack") return <FinanceWorkspace key="slack" mode="slack" />;
     if (label === "SOP Library") return <SchoolHouseWorkspace viewer={sessionViewer} key={sessionViewer?.person+'|'+sessionViewer?.role+'|'+JSON.stringify(sessionViewer?.access||[])} initialTab={sopTab} initialPolicy={workspaceTarget.section} />;
     const moduleCopy: Record<string, { subtitle: string; metrics: [string, string, string?][]; items: { title: string; detail: string; status: string }[] }> = {
