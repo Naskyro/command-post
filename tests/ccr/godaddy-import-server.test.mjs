@@ -1,5 +1,3 @@
-const fixtureSuffix0 = String(1).padStart(4, '0');
-const fixtureSuffix1 = String(2).padStart(4, '0');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
@@ -37,7 +35,7 @@ test('GoDaddy reviewed import authenticates, previews conflicts, binds directory
  const call=(body,actor='lead',options)=>importer.POST(request(actor,body,options));
  const quote=value=>'"'+String(value??'').replaceAll('"','""')+'"';
  const csv=rows=>{const columns=[...new Set(rows.flatMap(Object.keys))];return columns.map(quote).join(',')+'\n'+rows.map(row=>columns.map(k=>quote(row[k])).join(',')).join('\n');};
- const original={transactionId:'ab1234cd',disputeId:'dc4321ba',transactionDay:'2026-02-04',transactionTime:'18:08',transactionZone:'',originalTransactionCents:'33111',disputedAmountCents:'33111',cardBrand:'Visa',cardLast4:fixtureSuffix1,rawStatus:'LOST',customerName:'Jamie Example',accountName:'Example Property',propertyAddress:'100 Example Road',stockNumber:'STOCK-1',towbookCallNumber:'CALL-1',customerCollectionStage:'Not Started',responseDeadlineDay:'2026-05-23',responseDeadlineTime:'19:00',responseDeadlineZone:'',sourceNotes:'Reviewed release record; signed language has a marked correction.'};
+ const original={transactionId:'ab1234cd',disputeId:'dc4321ba',transactionDay:'2026-02-04',transactionTime:'18:08',transactionZone:'',originalTransactionCents:'33111',disputedAmountCents:'33111',cardBrand:'Visa',cardLast4:'0923',rawStatus:'LOST',customerName:'Jamie Example',accountName:'Example Property',propertyAddress:'100 Example Road',stockNumber:'STOCK-1',towbookCallNumber:'CALL-1',customerCollectionStage:'Not Started',responseDeadlineDay:'2026-05-23',responseDeadlineTime:'19:00',responseDeadlineZone:'',sourceNotes:'Reviewed release record; signed language has a marked correction.'};
  const second={...original,transactionId:'tx-2',disputeId:'dispute-2',customerName:'',accountName:'Same Name Property',propertyAddress:'200 Source Address'};
  const text=csv([original,second]),base={csv:text,filename:'reviewed.csv'};
 
@@ -71,7 +69,7 @@ test('GoDaddy reviewed import authenticates, previews conflicts, binds directory
  const unlinked=(await server.getRegister(viewers.lead,'recovery',staff)).rows.find(row=>row.id===result.created[0].id);assert.equal(unlinked.chargeback.details.accountId,'');assert.equal(unlinked.chargeback.details.accountName,'');assert.equal(unlinked.chargeback.details.propertyAddress,'200 Source Address');assert.match(unlinked.chargeback.sourceNotes,/Same Name Property/);
 
  // Contradictory card/name facts cannot silently pass as a duplicate.
- response=await call({action:'preview',csv:csv([{...original,cardLast4:fixtureSuffix0}])});assert.equal(response.status,200);assert.match((await response.json()).cases[0].conflict,/different card ending/);
+ response=await call({action:'preview',csv:csv([{...original,cardLast4:'0001'}])});assert.equal(response.status,200);assert.match((await response.json()).cases[0].conflict,/different card ending/);
  response=await call({action:'preview',csv:csv([{...original,customerName:'Different Person'}])});assert.equal(response.status,200);assert.match((await response.json()).cases[0].conflict,/different customer name/);
 
  // A manually duplicated source identity blocks only that preview row. Selecting

@@ -55,7 +55,7 @@ test('dates, rehire choice, reason and stale employee versions are validated bef
 });
 test('transaction persists both status changes, encrypted decisions, tasks and audits while preserving open time and all historical records',async()=>{
  const clock={id:'clock-active:employee',kind:'clock',version:1,person:'employee',status:'Running',startedAt:'2026-10-01T10:00:00Z'};write(clock);
- const bank={id:'bank-old',kind:'bank',personId:'employee',version:1,data:{status:'Verified',accountNumber:'0'.repeat(8)},createdAt:'2026-01-01T12:00:00Z',createdBy:'Fixture',updatedAt:'2026-01-01T12:00:00Z',updatedBy:'Fixture'};await api.writeHrRecord(undefined,bank,viewer,'Fixture');
+ const bank={id:'bank-old',kind:'bank',personId:'employee',version:1,data:{status:'Verified',accountNumber:'00001234'},createdAt:'2026-01-01T12:00:00Z',createdBy:'Fixture',updatedAt:'2026-01-01T12:00:00Z',updatedBy:'Fixture'};await api.writeHrRecord(undefined,bank,viewer,'Fixture');
  const result=await api.recordSeparation(input,viewer,[...finance,clock],[bank]);
  assert.equal(result.followUpCount,3);assert.equal(result.alreadyRecorded,false);
  const saved=storedPeople().find(r=>r.id==='employee');assert.equal(saved.status,'Former');assert.equal(saved.accountStatus,'Disabled');assert.equal(saved.version,3);

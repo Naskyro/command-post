@@ -1,4 +1,3 @@
-const fixtureSuffix0 = String(1).padStart(4, '0');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {canReadRecord,validateSave,readiness,listRecord,onboardingRecordView,can} from '../../lib/hr/workflow.ts';
@@ -117,9 +116,9 @@ test('a Timeclock-only account cannot read its own restricted HR file',()=>{
  assert.equal(canReadRecord(hr('bank'),staff,finance,[]),false);
 });
 test('sensitive list payloads contain status but not bank or tax secrets',()=>{
- const safe=listRecord(hr('bank',{status:'Verified',accountNumber:'0'.repeat(9),routingNumber:'0'.repeat(9),accountLast4:fixtureSuffix0}));
- assert.equal(safe.data.accountNumber,undefined);assert.equal(safe.data.routingNumber,undefined);assert.equal(safe.data.accountLast4,fixtureSuffix0);
- assert.equal(listRecord(hr('w9',{taxpayerId:'0'.repeat(9),status:'Verified'})).data.taxpayerId,undefined);
+ const safe=listRecord(hr('bank',{status:'Verified',accountNumber:'123456789',routingNumber:'111000025',accountLast4:'6789'}));
+ assert.equal(safe.data.accountNumber,undefined);assert.equal(safe.data.routingNumber,undefined);assert.equal(safe.data.accountLast4,'6789');
+ assert.equal(listRecord(hr('w9',{taxpayerId:'123456789',status:'Verified'})).data.taxpayerId,undefined);
 });
 test('payment reviewers see the payment setup without offer terms or approval snapshots',()=>{
  const reviewer=viewer('manager',['manageTaxBank']);

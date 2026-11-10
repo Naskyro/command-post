@@ -1,12 +1,11 @@
-const fixtureSuffix0 = String(1).padStart(4, '0');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {blankChargeback,blankChargebackDetails,blankPreArbitration,checkedChargeback,noticeInstant,processorActions,deadlinePassed,chargebackRecoveryQueue,towbookLookupText} from '../../lib/ccr/chargeback.ts';
 const now=new Date('2026-11-19T17:30:00Z'),check=(c,old)=>checkedChargeback(c,old,50000,now);
 test('payment time stays exactly as shown and an unstated zone is never defaulted to Central',()=>{
- const details={...blankChargebackDetails(),transactionDay:'2026-06-07',transactionTime:'18:45',transactionZone:'',towbookCallNumber:'000042',cardBrand:'Visa',cardLast4:fixtureSuffix0,originalTransactionCents:50000,transactionReference:'pay-1'},c=check({...blankChargeback(),processor:'GoDaddy Payments',details});
+ const details={...blankChargebackDetails(),transactionDay:'2026-06-07',transactionTime:'18:45',transactionZone:'',towbookCallNumber:'000042',cardBrand:'Visa',cardLast4:'0012',originalTransactionCents:50000,transactionReference:'pay-1'},c=check({...blankChargeback(),processor:'GoDaddy Payments',details});
  assert.equal(c.details.transactionTime,'18:45');assert.equal(c.details.transactionZone,'');assert.equal(c.details.towbookCallNumber,'000042');
- const lookup=towbookLookupText(c,50000);assert.match(lookup,/2026-06-07/);assert.match(lookup,/18:45 \(time zone not provided\)/);assert.ok(lookup.includes('Visa ending ' + fixtureSuffix0));assert.match(lookup,/Original transaction amount: \$500.00/);assert.match(lookup,/Towbook call number: 000042/);assert.doesNotMatch(lookup,/Chicago|Central|UTC/);
+ const lookup=towbookLookupText(c,50000);assert.match(lookup,/2026-06-07/);assert.match(lookup,/18:45 \(time zone not provided\)/);assert.match(lookup,/Visa ending 0012/);assert.match(lookup,/Original transaction amount: \$500.00/);assert.match(lookup,/Towbook call number: 000042/);assert.doesNotMatch(lookup,/Chicago|Central|UTC/);
  assert.throws(()=>check({...c,details:{...details,transactionTime:'24:01'}}),/payment time/);assert.throws(()=>check({...c,details:{...details,transactionZone:'Local'}}),/time zone/);
  const utc=check({...c,details:{...details,transactionTime:'23:45',transactionZone:'UTC'}});assert.match(towbookLookupText(utc,50000),/23:45 UTC/);
  const oldPayload={...details};delete oldPayload.transactionTime;delete oldPayload.transactionZone;delete oldPayload.towbookCallNumber;

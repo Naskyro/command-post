@@ -1,4 +1,3 @@
-const fixtureSuffix0 = String(1).padStart(4, '0');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {planAssignment,outstandingAssignments,assignmentAccess,claimAccess} from '../../lib/hr/assignments.ts';
@@ -7,7 +6,7 @@ const people=[{id:'worker',kind:'person',version:1,name:'Worker Example',status:
 const create=(data)=>planAssignment({personId:'worker',data},v,people,[])[0];
 const asset=()=>create({type:'Asset',name:'Drill',category:'Drill',date:'2026-10-01',issuedCondition:'Good',cost:100,assetTag:'D-1'});
 const outcome=(r,data,records=[r])=>planAssignment({id:r.id,version:r.version,action:'outcome',data},v,people,records);
-test('asset retains descriptors and zero dollar cost',()=>{const r=create({type:'Asset',name:'Card',category:'Debit Card',date:'2026-10-01',issuedCondition:'New',cost:0,cardLast4:fixtureSuffix0});assert.equal(r.data.cost,0);assert.equal(r.data.cardLast4,fixtureSuffix0);assert.throws(()=>create({type:'Asset',name:'Card',category:'Debit Card',date:'2026-10-01',issuedCondition:'New',cardLast4:'12345678'}));});
+test('asset retains descriptors and zero dollar cost',()=>{const r=create({type:'Asset',name:'Card',category:'Debit Card',date:'2026-10-01',issuedCondition:'New',cost:0,cardLast4:'1234'});assert.equal(r.data.cost,0);assert.equal(r.data.cardLast4,'1234');assert.throws(()=>create({type:'Asset',name:'Card',category:'Debit Card',date:'2026-10-01',issuedCondition:'New',cardLast4:'12345678'}));});
 test('missing asset creates one linked CCR claim and no deduction',()=>{const r=asset(),result=outcome(r,{status:'Missing',date:'2026-10-28',notes:'Not returned at exit'});assert.equal(result.length,2);assert.equal(result[0].data.claimId,result[1].id);assert.equal(result[1].kind,'assetClaim');assert.match(result[1].data.financialAction,/No Liability/);assert.equal(outstandingAssignments('worker',result).length,0);const repeat=outcome(result[0],{status:'Not Returned',date:'2026-10-28',notes:'Still pending'},result);assert.equal(repeat.length,1);});
 test('damaged return creates claim, good return does not',()=>{assert.equal(outcome(asset(),{status:'Returned',condition:'Good',date:'2026-10-28'}).length,1);assert.equal(outcome(asset(),{status:'Returned',condition:'Damaged',date:'2026-10-28',notes:'Broken handle'}).length,2);});
 test('later return preserves original missing claim',()=>{const result=outcome(asset(),{status:'Missing',date:'2026-10-28',notes:'Missing'}),returned=outcome(result[0],{status:'Returned',condition:'Good',date:'2026-10-28'},result)[0];assert.equal(returned.data.claimId,result[1].id);assert.equal(result[1].data.status,'Open');assert.equal(returned.data.history.length,3);});

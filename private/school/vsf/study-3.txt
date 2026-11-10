@@ -261,12 +261,12 @@ This is the Travis County Sheriff’s Office. We’re calling to verify the VIN 
 VSF Dispatcher:
  Sure, can you provide me with the year, make, model, and the last four digits of the VIN?
 TCSO Dispatcher:
- It’s a 2019 Toyota Camry, last four digits [vehicle ID suffix removed].
+ It’s a 2019 Toyota Camry, last four digits 3842.
 VSF Dispatcher:
  Thank you. I’ll step outside and confirm the VIN on the vehicle — can I place you on a brief hold?
 (The VSF Dispatcher goes outside, compares the VIN on the vehicle to the one in Towbook, confirms they match, then returns to the phone.)
 VSF Dispatcher:
- Thanks for holding. The full VIN is [vehicle ID removed].
+ Thanks for holding. The full VIN is 4T1B11HK7KU93842.
 TCSO Dispatcher:
  Okay, thank you for confirming. That vehicle is reported stolen. We’ll be sending an officer out to your location to verify in person. Where is the vehicle located at? 
 ________________

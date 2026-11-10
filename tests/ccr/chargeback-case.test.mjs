@@ -1,4 +1,3 @@
-const fixtureSuffix0 = String(1).padStart(4, '0');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {blankChargeback,blankChargebackDetails,blankChargeMailing,checkedChargeback,recoveryTotals,totals,isRecoveryCost} from '../../lib/ccr/chargeback.ts';
@@ -33,13 +32,13 @@ test('a sourced historical recovery can have an explicitly unknown payment date 
 });
 
 test('case facts retain exact vehicle/card/reference facts while an unknown processor outcome remains unknown',()=>{
- const details={...blankChargebackDetails(),customerName:'Customer One',accountId:'account-1',accountName:'Alpha',stockNumber:'000041',vehicleYear:'2022',vehicleMake:'Honda',vehicleModel:'Accord',plate:'AB123',vin:'1HGCM82633A004352',cardBrand:'Visa',cardLast4:fixtureSuffix0,originalTransactionCents:54000,transactionDay:'2026-09-01'};
+ const details={...blankChargebackDetails(),customerName:'Customer One',accountId:'account-1',accountName:'Alpha',stockNumber:'000041',vehicleYear:'2022',vehicleMake:'Honda',vehicleModel:'Accord',plate:'AB123',vin:'1HGCM82633A004352',cardBrand:'Visa',cardLast4:'0012',originalTransactionCents:54000,transactionDay:'2026-09-01'};
  const c=check({...blankChargeback(),details,sourceNotes:'Invoice p. 2\nDate still needs confirmation.'});
- assert.equal(c.details.stockNumber,'000041');assert.equal(c.details.cardLast4,fixtureSuffix0);assert.equal(c.reply,'Not Yet Verified');assert.equal(c.decision,'Pending');assert.equal(c.disposition,'Unverified');assert.equal(c.entries.length,0);
- assert.throws(()=>check({...c,details:{...details,cardLast4:'0'.repeat(16)}}),/length|four/);
+ assert.equal(c.details.stockNumber,'000041');assert.equal(c.details.cardLast4,'0012');assert.equal(c.reply,'Not Yet Verified');assert.equal(c.decision,'Pending');assert.equal(c.disposition,'Unverified');assert.equal(c.entries.length,0);
+ assert.throws(()=>check({...c,details:{...details,cardLast4:'4111111111111111'}}),/length|four/);
  assert.throws(()=>check({...c,details:{...details,transactionDay:'2026-02-30'}}),/date/);
  assert.throws(()=>check({...c,details:{...details,vehicleYear:'20222'}}),/length|year/);
- assert.equal(check({...c,details:undefined},50000,c).details.cardLast4,fixtureSuffix0);
+ assert.equal(check({...c,details:undefined},50000,c).details.cardLast4,'0012');
 });
 test('itemized service bill, actual company costs and selected recovery fees remain separate',()=>{
  const c=check({...blankChargeback(),serviceFees:[{id:'tow',label:'Tow Fee',cents:50000,reference:'invoice 1'}],entries:[payment('post',1445,'Certified Mail Postage'),payment('fee',2000,'Processor Fee',{includeInRecovery:true}),payment('partial',15000,'Cash Repayment',{method:'Check'}),payment('fee-repaid',1000,'Cash Repayment',{allocation:'Fees'})],disposition:'Partial Recovery'});

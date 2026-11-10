@@ -1,10 +1,9 @@
-const fixtureSuffix0 = String(1).padStart(4, '0');
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseGoDaddyDisputesCsv,readGoDaddyCsv,godaddyCsvMaxBytes,godaddyCsvTemplate,godaddyRequiredHeaders} from '../../lib/ccr/godaddy-import.ts';
 import {noticeInstant,recoveryTotals} from '../../lib/ccr/chargeback.ts';
 
-const base={transactionId:'ab1234cd',disputeId:'dc4321ba',transactionDay:'2026-02-04',transactionTime:'18:08',transactionZone:'',originalTransactionCents:'30564',disputedAmountCents:'30563',cardBrand:'Visa',cardLast4:fixtureSuffix0,rawStatus:'LOST',reportedDay:'2026-04-28',responseDeadlineDay:'2026-05-23',responseDeadlineTime:'19:00',responseDeadlineZone:'',rawPhase:'First Chargeback',rawReason:'Consumer: Cancelled Merchandise/Services',rawCardholderLabel:'VISA CARDHOLDER',customerCollectionStage:'Not Started',collectionStageBasis:'Staff confirmed no demand letter has been prepared.'};
+const base={transactionId:'ab1234cd',disputeId:'dc4321ba',transactionDay:'2026-02-04',transactionTime:'18:08',transactionZone:'',originalTransactionCents:'30564',disputedAmountCents:'30563',cardBrand:'Visa',cardLast4:'0923',rawStatus:'LOST',reportedDay:'2026-04-28',responseDeadlineDay:'2026-05-23',responseDeadlineTime:'19:00',responseDeadlineZone:'',rawPhase:'First Chargeback',rawReason:'Consumer: Cancelled Merchandise/Services',rawCardholderLabel:'VISA CARDHOLDER',customerCollectionStage:'Not Started',collectionStageBasis:'Staff confirmed no demand letter has been prepared.'};
 const quote=value=>'"'+String(value??'').replaceAll('"','""')+'"';
 const csv=(rows,additional=[])=>{const columns=[...new Set([...Object.keys(base),...rows.flatMap(Object.keys),...additional])];return '\uFEFF'+columns.map(quote).join(',')+'\r\n'+rows.map(row=>columns.map(key=>quote(row[key])).join(',')).join('\r\n')+'\r\n';};
 const first=(row=base)=>parseGoDaddyDisputesCsv(csv([row]),'reviewed.csv').candidates[0];
@@ -12,7 +11,7 @@ const first=(row=base)=>parseGoDaddyDisputesCsv(csv([row]),'reviewed.csv').candi
 test('reviewed GoDaddy fields retain separate original/disputed cents and unzoned wall-clock times',()=>{
  const item=first(),c=item.record.chargeback,d=c.details;
  assert.equal(item.key,'godaddy:dispute:dc4321ba');assert.deepEqual(item.sourceKeys,['godaddy:transaction:ab1234cd','godaddy:dispute:dc4321ba']);
- assert.equal(item.record.amountCents,30563);assert.equal(d.originalTransactionCents,30564);assert.equal(d.cardLast4,fixtureSuffix0);
+ assert.equal(item.record.amountCents,30563);assert.equal(d.originalTransactionCents,30564);assert.equal(d.cardLast4,'0923');
  assert.equal(d.transactionDay,'2026-02-04');assert.equal(d.transactionTime,'18:08');assert.equal(d.transactionZone,'');
  assert.equal(d.reportedDay,'2026-04-28');assert.equal(c.deadlineDay,'2026-05-23');assert.equal(c.deadlineTime,'19:00');assert.equal(c.zone,'');assert.equal(noticeInstant(c.deadlineDay,c.deadlineTime,c.zone),null);
  assert.equal(c.decision,'Cardholder Prevailed');assert.equal(c.decisionDay,'');assert.equal(c.reply,'Not Yet Verified');assert.equal(c.mail,'Not Started');assert.equal(c.recoveryStage,'Find Release Record');
@@ -64,7 +63,7 @@ test('duplicate source rows skip once, while conflicting identities or facts fai
 
 test('invalid money, full card data, dates, zones, source processors and unsafe optional fields are rejected',()=>{
  for(const amount of ['305.63','-1','1e4','999999999999999999'])assert.throws(()=>first({...base,disputedAmountCents:amount}),/amount|whole cents/);
- assert.throws(()=>first({...base,cardLast4:'0'.repeat(16)}),/card last four/);assert.throws(()=>first({...base,cardLast4:'923'}),/exactly the last four/);
+ assert.throws(()=>first({...base,cardLast4:'4111111111111111'}),/card last four/);assert.throws(()=>first({...base,cardLast4:'923'}),/exactly the last four/);
  assert.throws(()=>first({...base,transactionDay:'2026-02-30'}),/valid payment date/);assert.throws(()=>first({...base,transactionTime:'25:00'}),/24-hour time/);assert.throws(()=>first({...base,transactionZone:'Guessed Central'}),/time zone/);
  assert.throws(()=>first({...base,processor:'Square'}),/different payment processor/);assert.throws(()=>first({...base,currency:'EUR'}),/USD/);assert.throws(()=>first({...base,rawStatus:'ASSUMED LOST'}),/reviewed GoDaddy status/);
  assert.throws(()=>first({...base,vin:'partial'}),/complete 17-character/);assert.throws(()=>first({...base,customerCollectionStage:'Delivered'}),/Record later recovery activity/);
