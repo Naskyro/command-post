@@ -1,17 +1,15 @@
-# Local development Wrangler config for D1 migrations.
-# Copy the values from vite.config.ts localBindingConfig.
+# Worker metadata used by wrangler CLI tools (e.g. wrangler d1 migrations apply).
+# Bindings (DB, BUCKET) are intentionally defined ONLY in vite.config.ts
+# localBindingConfig so the @cloudflare/vite-plugin generates them once in
+# dist/server/wrangler.json. Defining them here AND in vite.config.ts causes
+# wrangler deploy to fail with "Bindings must have unique names."
+#
+# To apply D1 migrations locally:
+#   npx wrangler d1 migrations apply site-creator-d1 --local --migrations-dir drizzle
+# To apply D1 migrations to production (after wrangler login):
+#   npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.json
 
 name = "site-creator-vinext-starter"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat_v2", "enable_weak_ref"]
 main = "./worker/index.ts"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "site-creator-d1"
-database_id = "00000000-0000-4000-8000-000000000000"
-migrations_dir = "drizzle"
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "site-creator-r2"
