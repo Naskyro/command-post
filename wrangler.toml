@@ -8,6 +8,10 @@
 #   npx wrangler d1 migrations apply site-creator-d1 --local --migrations-dir drizzle
 # To apply D1 migrations to production (after wrangler login):
 #   npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.json
+#
+# NOTE: compatibility_flags are defined ONLY in vite.config.ts (nodejs_compat_v2,
+# enable_weak_ref). Do NOT add them here — they would merge with vite.config.ts
+# flags and cause "nodejs_compat and nodejs_compat_v2 cannot be used together."
 
 name = "command-post"
 compatibility_date = "2024-09-23"
