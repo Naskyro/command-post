@@ -3,10 +3,11 @@ import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  "00000000-0000-4000-8000-000000000000";
+// D1 database binding is defined in wrangler.toml so `wrangler d1 migrations apply`
+// works directly. The @cloudflare/vite-plugin merges wrangler.toml into the build
+// output, so DB is available in production without duplicating it here.
 
-const { d1, r2 } = hostingConfig;
+const { r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
@@ -15,16 +16,6 @@ const localBindingConfig = {
   name: "command-post",
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat_v2", "enable_weak_ref"],
-  d1_databases: d1
-    ? [
-        {
-          binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
-          migrations_dir: "drizzle",
-        },
-      ]
-    : [],
   r2_buckets: r2
     ? [
         {
