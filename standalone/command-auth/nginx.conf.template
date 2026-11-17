@@ -23,6 +23,9 @@ http {
         # COMMAND_AUTH_TRUST_LOCAL_PROXY_IP=true must be set in Railway env.
         proxy_set_header X-Command-Client-IP $remote_addr;
 
+        # Pass Origin through so the gateway can verify the request source
+        proxy_set_header Origin             $http_origin;
+
         # Strip browser-added forwarded headers; the gateway controls what goes upstream
         proxy_set_header X-Forwarded-For   "";
         proxy_set_header X-Forwarded-Proto "";
