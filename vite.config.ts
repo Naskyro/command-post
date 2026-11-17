@@ -12,8 +12,9 @@ const { d1, r2 } = hostingConfig;
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
+  name: "command-post",
   main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat"],
+  compatibility_flags: ["nodejs_compat_v2", "enable_weak_ref"],
   d1_databases: d1
     ? [
         {

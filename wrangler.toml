@@ -9,7 +9,6 @@
 # To apply D1 migrations to production (after wrangler login):
 #   npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.json
 
-name = "site-creator-vinext-starter"
+name = "command-post"
 compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat_v2", "enable_weak_ref"]
 main = "./worker/index.ts"
