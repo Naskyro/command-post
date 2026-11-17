@@ -12,7 +12,11 @@ function privateHost(h){if(loopback(h)||/\.(internal|svc\.cluster\.local)$/.test
 const origins=(str,privateOnly=false)=>{let u;try{u=new URL(str);}catch{throw Error('Configure a valid absolute origin.');}if((u.protocol!=='https:'&&!(privateOnly&&u.protocol==='http:'&&loopback(u.hostname)))||u.username||u.password||u.pathname!=='/'||u.search||u.hash||privateOnly&&!privateHost(u.hostname))throw Error('Use an HTTPS origin without a path or credentials; the upstream must be private. Plain HTTP is allowed only for a loopback upstream.');return u.origin;};
 export function configuration(env){
  const secret=key=>{const value=env[key]||'';if(!/^[\da-f]{64,}$/i.test(value))throw Error(key+' must contain at least 32 random bytes encoded as hexadecimal.');return value;};
- const origin=origins(env.COMMAND_PUBLIC_ORIGIN),upstream=origins(env.COMMAND_UPSTREAM_ORIGIN||env.COMMAND_PRIVATE_UPSTREAM,true),internalSecret=secret('COMMAND_AUTH_INTERNAL_SECRET'),gatewaySecret=secret('COMMAND_AUTH_GATEWAY_SECRET');if(safeEqual(internalSecret,gatewaySecret))throw Error('Use different internal and upstream secrets.');
+ // COMMAND_UPSTREAM_TRUST_PUBLIC_ORIGIN=true relaxes the private-host check so a
+ // Cloudflare Workers URL can be used as the upstream. Set this only when the
+ // upstream Worker independently validates x-command-gateway-key on every request.
+ const trustPublicUpstream=env.COMMAND_UPSTREAM_TRUST_PUBLIC_ORIGIN==='true';
+ const origin=origins(env.COMMAND_PUBLIC_ORIGIN),upstream=origins(env.COMMAND_UPSTREAM_ORIGIN||env.COMMAND_PRIVATE_UPSTREAM,!trustPublicUpstream),internalSecret=secret('COMMAND_AUTH_INTERNAL_SECRET'),gatewaySecret=secret('COMMAND_AUTH_GATEWAY_SECRET');if(safeEqual(internalSecret,gatewaySecret))throw Error('Use different internal and upstream secrets.');
  if(new URL(upstream).hostname===new URL(origin).hostname&&new URL(upstream).port===new URL(origin).port||/\b(?:chatgpt\.com|chatgpt\.site|chatgpt-team\.site|openai\.com)\.?$/i.test(new URL(origin).hostname))throw Error('Configure a separate, independently hosted Command origin and private upstream.');
  return {origin,upstream,internalSecret,gatewaySecret,trustLocalProxyIp:env.COMMAND_AUTH_TRUST_LOCAL_PROXY_IP==='true'};
 }
