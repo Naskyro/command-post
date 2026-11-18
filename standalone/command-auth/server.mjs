@@ -18,7 +18,7 @@ export function configuration(env){
  const trustPublicUpstream=env.COMMAND_UPSTREAM_TRUST_PUBLIC_ORIGIN==='true';
  const origin=origins(env.COMMAND_PUBLIC_ORIGIN),upstream=origins(env.COMMAND_UPSTREAM_ORIGIN||env.COMMAND_PRIVATE_UPSTREAM,!trustPublicUpstream),internalSecret=secret('COMMAND_AUTH_INTERNAL_SECRET'),gatewaySecret=secret('COMMAND_AUTH_GATEWAY_SECRET');if(safeEqual(internalSecret,gatewaySecret))throw Error('Use different internal and upstream secrets.');
  if(new URL(upstream).hostname===new URL(origin).hostname&&new URL(upstream).port===new URL(origin).port||/\b(?:chatgpt\.com|chatgpt\.site|chatgpt-team\.site|openai\.com)\.?$/i.test(new URL(origin).hostname))throw Error('Configure a separate, independently hosted Command origin and private upstream.');
- return {origin,upstream,internalSecret,gatewaySecret,trustLocalProxyIp:env.COMMAND_AUTH_TRUST_LOCAL_PROXY_IP==='true'};
+ return {origin,upstream,internalSecret,gatewaySecret,trustPublicUpstream,trustLocalProxyIp:env.COMMAND_AUTH_TRUST_LOCAL_PROXY_IP==='true'};
 }
 const escaped=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const json=(res,status,body)=>{res.writeHead(status,{'content-type':'application/json; charset=utf-8','cache-control':'no-store'});res.end(JSON.stringify(body));};
@@ -41,7 +41,9 @@ const responseHeaders=new Set(['cache-control','content-type','content-length','
 function pass(req,res,cfg,roster,compatLogout=false){return new Promise((resolve,reject)=>{const target=new URL(cfg.upstream),publicUrl=new URL(cfg.origin),headers={};for(const [k,v] of Object.entries(req.headers))if(requestHeaders.has(k)&&v!=null)headers[k]=v;
  // Only app audit cookies and the app-enforced read-only delegation can travel upstream.
  const all=cookies(req);const downstream=[...all].filter(([k,v])=>/^cp_[a-z0-9_]+$/.test(k)&&/^[A-Za-z0-9_.=-]{1,1024}$/.test(v)).map(([k,v])=>k+'='+v);if(all.has('__Host-command-view')){const view=all.get('__Host-command-view');downstream.push('__Host-command-view='+(/^[A-Za-z0-9_.=-]{1,1024}$/.test(view)?view:'invalid'));}if(downstream.length)headers.cookie=downstream.join('; ');if(req.headers['x-command-read-only'])headers['x-command-read-only']='1';
- headers.host=publicUrl.host;headers['x-forwarded-host']=publicUrl.host;headers['x-forwarded-proto']='https';headers['x-command-person-id']=roster.person;headers['x-command-gateway-key']=cfg.gatewaySecret;if(req.headers.origin===cfg.origin)headers.origin=cfg.origin;
+ // A public upstream (e.g. workers.dev) is routed by Host at the edge; sending the
+ // public Host would loop back to this gateway, so present the upstream's own origin.
+ headers.host=cfg.trustPublicUpstream?target.host:publicUrl.host;headers['x-forwarded-host']=publicUrl.host;headers['x-forwarded-proto']='https';headers['x-command-person-id']=roster.person;headers['x-command-gateway-key']=cfg.gatewaySecret;if(req.headers.origin===cfg.origin)headers.origin=cfg.trustPublicUpstream?target.origin:cfg.origin;
  const client=(target.protocol==='https:'?https:http).request({protocol:target.protocol,hostname:target.hostname.replace(/^\[|\]$/g,''),port:target.port||undefined,path:req.url,method:req.method,headers,timeout:30000},up=>{
   if(compatLogout){up.resume();json(res,200,{redirect:'/auth/login'});resolve();return;}
   for(const [k,v] of Object.entries(up.headers))if(responseHeaders.has(k)&&v!=null)res.setHeader(k,v);
