@@ -72,6 +72,7 @@ export function createGateway(db,cfg){
  // Admin credential management — authenticated with the internal secret.
  // Use this to issue one-time setup/reset links for any roster person.
  if(path==='/auth/admin/issue'&&method==='POST'){if(!safeEqual(req.headers.authorization||'','Bearer '+cfg.internalSecret))throw problem(403,'Unauthorized.');const body=await read(req,'application/json');const {token,username,expiresAt}=db.issue(body);return json(res,200,{username,expiresAt,resetUrl:cfg.origin+'/auth/reset?token='+token});}
+
  if(/^\/auth(?:\/|$)/i.test(path))throw problem(404,'Not found.');
  if(!account){if(path.startsWith('/api/'))return json(res,401,{error:'Sign in to Command.',signInUrl:'/auth/login',redirect:'/auth/login'});return redir(res,'/auth/login');}
  if(!['GET','HEAD','POST','PUT','PATCH','DELETE','OPTIONS'].includes(method))throw problem(405,'Method not allowed.');if(!['GET','HEAD','OPTIONS'].includes(method))shield(req,cfg);
