@@ -68,7 +68,11 @@ export function createGateway(db,cfg){
  if(path==='/auth/logout'&&method==='POST'){await posted(req,cfg);db.logout(raw);setCookie(res,cookie(sessionCookie,'',0),cookie(csrfCookie,'',0),cookie(resetCookie,'',0));return redir(res,'/auth/login');}
  if(path==='/auth/password'&&account&&method==='GET')return page(res,'Change Your Password','<p>After saving, sign in again on each device.</p>'+form(req,res,path,field('Current Password','old','password','current-password')+field('New Password','password','password','new-password')+field('Confirm Password','confirm','password','new-password'),'Save Password'));
  if(path==='/auth/password'&&account&&method==='POST'){const body=await posted(req,cfg);db.limit('change',account.person,8,900);if(body.confirm!==body.password)throw problem(400,'Your passwords do not match.');await db.change(raw,body.old,body.password);setCookie(res,cookie(sessionCookie,'',0),cookie(csrfCookie,'',0));return redir(res,'/auth/login');}
- if(path==='/auth/password'&&!account)return redir(res,'/auth/login');if(/^\/auth(?:\/|$)/i.test(path))throw problem(404,'Not found.');
+ if(path==='/auth/password'&&!account)return redir(res,'/auth/login');
+ // Admin credential management — authenticated with the internal secret.
+ // Use this to issue one-time setup/reset links for any roster person.
+ if(path==='/auth/admin/issue'&&method==='POST'){if(!safeEqual(req.headers.authorization||'','Bearer '+cfg.internalSecret))throw problem(403,'Unauthorized.');const body=await read(req,'application/json');const {token,username,expiresAt}=db.issue(body);return json(res,200,{username,expiresAt,resetUrl:cfg.origin+'/auth/reset?token='+token});}
+ if(/^\/auth(?:\/|$)/i.test(path))throw problem(404,'Not found.');
  if(!account){if(path.startsWith('/api/'))return json(res,401,{error:'Sign in to Command.',signInUrl:'/auth/login',redirect:'/auth/login'});return redir(res,'/auth/login');}
  if(!['GET','HEAD','POST','PUT','PATCH','DELETE','OPTIONS'].includes(method))throw problem(405,'Method not allowed.');if(!['GET','HEAD','OPTIONS'].includes(method))shield(req,cfg);
  const compatLogout=path==='/api/session'&&method==='POST';if(compatLogout){if((req.headers['content-type']||'').split(';')[0]!=='application/json')throw problem(415,'JSON required.');db.logout(raw);setCookie(res,cookie(sessionCookie,'',0),cookie(csrfCookie,'',0),cookie(resetCookie,'',0),'cp_activity_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0');}
