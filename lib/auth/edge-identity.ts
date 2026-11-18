@@ -49,6 +49,15 @@ export async function trustedApplicationRequest(req:Request,env:AuthEnv):Promise
    if(!rosterId(person))return failure(401);
    h.set(verifiedRosterHeader,person!);
   }
+  // Rewrite the request URL to the public origin the gateway forwarded, so any
+  // feature that builds an absolute URL uses gtcommand.com instead of workers.dev.
+  const fwdHost=h.get('x-forwarded-host'),fwdProto=h.get('x-forwarded-proto')||'https';
+  if(fwdHost&&/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,252}$/.test(fwdHost)){
+   const dest=new URL(url.pathname+url.search,'https://placeholder');
+   dest.host=fwdHost;dest.protocol=(/^https?$/i.test(fwdProto)?fwdProto:'https')+':';
+   const init:RequestInit={method:req.method,headers:h};if(req.method!=='GET'&&req.method!=='HEAD')init.body=req.body;
+   return new Request(dest.toString(),init);
+  }
   changed=true;
  }
  return changed?new Request(req,{headers:h}):req;
