@@ -10,7 +10,7 @@ export function resetConfig(env:ResetsEnv):ResetConfig|null{
  }catch{return null;}
 }
 export async function issuePasswordReset(config:ResetConfig,data:{personId:string;username?:string;actorId:string;reason:string},transport:typeof fetch=fetch){
- const response=await transport(config.internal.toString(),{method:'POST',redirect:'error',cache:'no-store',signal:AbortSignal.timeout(12000),headers:{Authorization:'Bearer '+config.secret,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(data)});
+ const response=await transport(config.internal.toString(),{method:'POST',redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(12000),headers:{Authorization:'Bearer '+config.secret,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(data)});
  if(!response.ok)throw Error('service-unavailable');
  const b=await response.json() as {username?:unknown;resetUrl?:unknown;expiresAt?:unknown};
  if(typeof b.username!=='string'||!b.username||b.username.length>150||typeof b.resetUrl!=='string'||typeof b.expiresAt!=='string')throw Error('invalid-result');

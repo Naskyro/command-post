@@ -24,7 +24,7 @@ async function notify(config:ResetConfig| null,action:'deactivate'|'reactivate',
  if(!config)return false;
  try{
   const url=new URL('/internal/command/'+action,config.internal);
-  const res=await transport(url,{method:'POST',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(5500),headers:{Authorization:'Bearer '+config.secret,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({personId,operationId,version,actorId,reason:action==='deactivate'?'Revoke credentials for a disabled Command account.':'Allow a new credential setup after an authorized access review.'})});
+  const res=await transport(url,{method:'POST',cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(5500),headers:{Authorization:'Bearer '+config.secret,'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({personId,operationId,version,actorId,reason:action==='deactivate'?'Revoke credentials for a disabled Command account.':'Allow a new credential setup after an authorized access review.'})});
   return res.ok&&(await res.json() as {ok?:unknown}).ok===true;
  }catch{return false;}
 }

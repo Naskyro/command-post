@@ -10,7 +10,7 @@ export async function lookupRouting(number:string,fetcher:typeof fetch=fetch,now
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),4500);
  let result:RoutingLookup;
  try{
-  const response=await fetcher('https://bankrouting.io/api/v1/aba/'+number,{headers:{Accept:'application/json'},redirect:'error',signal:controller.signal});
+  const response=await fetcher('https://bankrouting.io/api/v1/aba/'+number,{headers:{Accept:'application/json'},redirect:'manual',signal:controller.signal});
   if(response.status===404)result={...base,status:'Not Found',message:'The directory did not find this routing number. Confirm the bank name and ACH routing number with your financial institution.'};
   else if(!response.ok)throw new Error('Lookup unavailable');
   else {

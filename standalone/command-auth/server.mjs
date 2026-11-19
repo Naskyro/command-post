@@ -36,15 +36,23 @@ function pageNonce(req,res){let raw=cookies(req).get(csrfCookie);if(!validToken(
 function form(req,res,path,fields,button){const csrf=pageNonce(req,res);return `<form method="post" action="${path}"><input type="hidden" name="csrf" value="${csrf}">${fields}<button>${button}</button></form>`;}
 async function posted(req,cfg){shield(req,cfg);const data=await read(req,'application/x-www-form-urlencoded'),other=cookies(req).get(csrfCookie);if(!validToken(other)||!validToken(data.csrf)||!safeEqual(other,data.csrf))throw problem(403,'Your form expired. Reopen the page and try again.');return data;}
 function remote(req,cfg){const addr=req.socket.remoteAddress||'unknown',v=req.headers['x-command-client-ip'];return cfg.trustLocalProxyIp&&loopback(addr)&&typeof v==='string'&&isIP(v)?v:addr;}
-const requestHeaders=new Set(['accept','accept-encoding','accept-language','content-type','content-length','if-modified-since','if-none-match','range','user-agent','cache-control','rsc','next-router-state-tree','next-router-prefetch','next-url','next-action','content-range']);
-const responseHeaders=new Set(['cache-control','content-type','content-length','content-encoding','content-disposition','accept-ranges','content-range','vary','etag','last-modified','link','content-security-policy','permissions-policy','x-content-type-options','referrer-policy']);
+// Keep in sync with every header the app routes, Vinext's router/actions and the browser client read or send.
+const requestHeaders=new Set(['accept','accept-encoding','accept-language','content-type','content-length','if-modified-since','if-none-match','if-match','range','user-agent','cache-control','content-range',
+ 'sec-fetch-site','sec-fetch-mode','sec-fetch-dest',
+ 'rsc','next-router-state-tree','next-router-prefetch','next-router-segment-prefetch','next-url','next-action',
+ 'x-vinext-action','x-rsc-action','x-vinext-interception-context','x-vinext-mounted-slots','x-vinext-rsc-render-mode',
+ 'x-document-name','x-document-size','x-document-type','x-document-type-other','x-record-id','x-record-version']);
+const responseHeaders=new Set(['cache-control','content-type','content-length','content-encoding','content-disposition','accept-ranges','content-range','vary','etag','last-modified','link','content-security-policy','permissions-policy','x-content-type-options','referrer-policy','retry-after','x-frame-options',
+ 'x-command-read-only','x-action-redirect','x-action-redirect-status','x-action-redirect-type','x-action-revalidated','x-nextjs-action-not-found','x-vinext-params','x-vinext-rsc','x-vinext-cache','x-vinext-mounted-slots','x-vinext-interception-context','x-vinext-rsc-render-mode']);
+// Reuse TLS connections to the upstream instead of a new handshake per request.
+const upstreamAgents={'https:':new https.Agent({keepAlive:true,maxSockets:256,keepAliveMsecs:30000}),'http:':new http.Agent({keepAlive:true,maxSockets:256})};
 function pass(req,res,cfg,roster,compatLogout=false){return new Promise((resolve,reject)=>{const target=new URL(cfg.upstream),publicUrl=new URL(cfg.origin),headers={};for(const [k,v] of Object.entries(req.headers))if(requestHeaders.has(k)&&v!=null)headers[k]=v;
  // Only app audit cookies and the app-enforced read-only delegation can travel upstream.
  const all=cookies(req);const downstream=[...all].filter(([k,v])=>/^cp_[a-z0-9_]+$/.test(k)&&/^[A-Za-z0-9_.=-]{1,1024}$/.test(v)).map(([k,v])=>k+'='+v);if(all.has('__Host-command-view')){const view=all.get('__Host-command-view');downstream.push('__Host-command-view='+(/^[A-Za-z0-9_.=-]{1,1024}$/.test(view)?view:'invalid'));}if(downstream.length)headers.cookie=downstream.join('; ');if(req.headers['x-command-read-only'])headers['x-command-read-only']='1';
  // A public upstream (e.g. workers.dev) is routed by Host at the edge; sending the
  // public Host would loop back to this gateway, so present the upstream's own origin.
  headers.host=cfg.trustPublicUpstream?target.host:publicUrl.host;headers['x-forwarded-host']=publicUrl.host;headers['x-forwarded-proto']='https';headers['x-command-person-id']=roster.person;headers['x-command-gateway-key']=cfg.gatewaySecret;if(req.headers.origin===cfg.origin)headers.origin=cfg.origin;
- const client=(target.protocol==='https:'?https:http).request({protocol:target.protocol,hostname:target.hostname.replace(/^\[|\]$/g,''),port:target.port||undefined,path:req.url,method:req.method,headers,timeout:30000},up=>{
+ const client=(target.protocol==='https:'?https:http).request({protocol:target.protocol,hostname:target.hostname.replace(/^\[|\]$/g,''),port:target.port||undefined,path:req.url,method:req.method,headers,timeout:30000,agent:upstreamAgents[target.protocol]},up=>{
   if(compatLogout){up.resume();json(res,200,{redirect:'/auth/login'});resolve();return;}
   for(const [k,v] of Object.entries(up.headers))if(responseHeaders.has(k)&&v!=null)res.setHeader(k,v);
   const appCookies=(up.headers['set-cookie']||[]).filter(v=>/^cp_[a-z0-9_]+=/i.test(v)||v.startsWith('__Host-command-view='));if(appCookies.length)setCookie(res,...appCookies);
@@ -59,6 +67,10 @@ async function stillEligible(cfg,persons){
 export function createGateway(db,cfg){
  async function internal(req,res){if(pathOf(req)!=='/internal/command/reset'&&pathOf(req)!=='/internal/command/deactivate'&&pathOf(req)!=='/internal/command/reactivate')throw problem(404,'Not found.');if(req.method!=='POST')throw problem(405,'POST required.');if(!safeEqual(req.headers.authorization||'','Bearer '+cfg.internalSecret))throw problem(403,'Unauthorized service.');const body=await read(req,'application/json');if(pathOf(req)==='/internal/command/reset'){const {token,username,expiresAt}=db.issue(body);return json(res,200,{username,expiresAt,resetUrl:cfg.origin+'/auth/reset?token='+token});}db.status(body,pathOf(req).endsWith('/reactivate'));json(res,200,{ok:true});}
  async function external(req,res){const path=pathOf(req),method=req.method,tokens=cookies(req),raw=tokens.get(sessionCookie),account=db.session(raw),ip=remote(req,cfg);
+ // The Worker cannot reach the loopback-only internal port, so its server-to-server
+ // credential calls (in-app reset links, deactivate, reactivate) arrive here instead.
+ // internal() independently requires the internal-secret bearer token.
+ if(['/internal/command/reset','/internal/command/deactivate','/internal/command/reactivate'].includes(path)&&(req.headers.authorization||'').startsWith('Bearer '))return internal(req,res);
  if(/^\/(?:api\/)?internal(?:\/|$)/i.test(path))throw problem(404,'Not found.');
  if(path==='/auth/login'&&method==='GET'){if(account)return redir(res,'/');return page(res,'Sign In',form(req,res,path,field('Username','username','text','username')+field('Password','password','password','current-password'),'Sign In')+'<p>For first-time access or a password reset, ask your Command administrator for a one-use link.</p>');}
  if(path==='/auth/login'&&method==='POST'){const body=await posted(req,cfg);db.limit('login-ip',ip,100,900);db.limit('login-user',canonicalUsername(body.username),12,900);const session=await db.authenticate(body.username,body.password);setCookie(res,cookie(sessionCookie,session,ttl.session),cookie(csrfCookie,'',0));return redir(res,'/');}
@@ -83,6 +95,6 @@ export function createGateway(db,cfg){
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
  process.umask(0o077);const cfg=configuration(process.env),filename=process.env.COMMAND_AUTH_DB;if(!filename||filename===':memory:'||!filename.startsWith('/'))throw Error('COMMAND_AUTH_DB must be an absolute persistent SQLite path.');const db=createStore(filename),handlers=createGateway(db,cfg);db.clean();const timer=setInterval(()=>db.clean(),60000);timer.unref();
- const listeners=[[handlers.publicHandler,Number(process.env.COMMAND_AUTH_PUBLIC_PORT||4100)],[handlers.internalHandler,Number(process.env.COMMAND_AUTH_INTERNAL_PORT||4101)]].map(([handler,port])=>{const s=http.createServer({headersTimeout:12000,requestTimeout:60000,maxHeaderSize:24576},handler);s.listen(port,'127.0.0.1');return s;});
+ const listeners=[[handlers.publicHandler,Number(process.env.COMMAND_AUTH_PUBLIC_PORT||4100)],[handlers.internalHandler,Number(process.env.COMMAND_AUTH_INTERNAL_PORT||4101)]].map(([handler,port])=>{const s=http.createServer({headersTimeout:12000,requestTimeout:300000,maxHeaderSize:24576},handler);s.listen(port,'127.0.0.1');return s;});
  for(const signal of ['SIGINT','SIGTERM'])process.once(signal,async()=>{clearInterval(timer);await Promise.all(listeners.map(s=>new Promise(done=>s.close(done))));db.close();});
 }

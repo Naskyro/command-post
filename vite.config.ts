@@ -15,7 +15,12 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const localBindingConfig = {
   name: "command-post",
   main: "./worker/index.ts",
-  compatibility_flags: ["nodejs_compat_v2", "enable_weak_ref"],
+  // global_fetch_strictly_public: the Worker calls the gateway at gtcommand.com
+  // (a Cloudflare-proxied zone on this account). Without it, that fetch skips
+  // Cloudflare's front door, goes straight to the origin, and fails.
+  // cache_option_enabled: server fetches pass cache:'no-store'; before this flag
+  // the runtime throws on it, which silently broke reset links and deactivation.
+  compatibility_flags: ["nodejs_compat_v2", "enable_weak_ref", "global_fetch_strictly_public", "cache_option_enabled"],
   r2_buckets: r2
     ? [
         {

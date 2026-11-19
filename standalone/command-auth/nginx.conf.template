@@ -1,9 +1,9 @@
-worker_processes 1;
+worker_processes auto;
 pid /tmp/nginx.pid;
 error_log /dev/stderr warn;
 
 events {
-    worker_connections 256;
+    worker_connections 4096;
 }
 
 http {
@@ -16,12 +16,27 @@ http {
     uwsgi_temp_path       /tmp/nginx_uwsgi;
     scgi_temp_path        /tmp/nginx_scgi;
 
+    # The largest app upload is 150 MB (court/docket staging). nginx's 1 MB
+    # default rejected every larger upload with 413 before it reached the app.
+    client_max_body_size 160m;
+
+    # Real client IP for per-IP sign-in rate limiting. gtcommand.com is proxied
+    # by Cloudflare, so $remote_addr is a shared proxy address; without this every
+    # user shares one login bucket and gets locked out together.
+    map $http_cf_connecting_ip $command_client_ip {
+        ""      $http_x_real_ip;
+        default $http_cf_connecting_ip;
+    }
+
+    upstream command_gateway {
+        server 127.0.0.1:4100;
+        keepalive 64;
+    }
+
     server {
         listen ${PORT};
 
-        # Forward real client IP for per-IP rate limiting in the gateway.
-        # COMMAND_AUTH_TRUST_LOCAL_PROXY_IP=true must be set in Railway env.
-        proxy_set_header X-Command-Client-IP $remote_addr;
+        proxy_set_header X-Command-Client-IP $command_client_ip;
 
         # Pass Origin through so the gateway can verify the request source
         proxy_set_header Origin             $http_origin;
@@ -31,11 +46,17 @@ http {
         proxy_set_header X-Forwarded-Proto "";
         proxy_set_header X-Forwarded-Host  "";
 
-        proxy_read_timeout 65s;
-        proxy_send_timeout 65s;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+
+        # Stream server-rendered pages to the browser as they are produced.
+        proxy_buffering off;
+
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
 
         location / {
-            proxy_pass http://127.0.0.1:4100;
+            proxy_pass http://command_gateway;
         }
     }
 }
