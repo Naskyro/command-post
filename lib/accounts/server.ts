@@ -6,7 +6,7 @@ import type { Viewer, FinRecord } from '@/lib/finance/model';
 import { AppError, ConflictError, ForbiddenError } from '@/lib/shared/errors';
 import { access, head, canEdit, canRead, canReadFile, clean } from './policy';
 import { prepareRelease } from './releases';
-import { today, type Row } from './model';
+import { today, woKinds, type Row } from './model';
 import { prepareClaim } from './claims';
 import history from './history-data.json';
 import {withSalesHandoffHistory} from '../sales/handoff-relationships';
@@ -72,7 +72,7 @@ export function projection(all: Row[], v: Viewer, surface: string) {
         const pending = new Set(all.filter(isPendingAccount).map(r => r.id));
         all = all.filter(r => !pending.has(r.id) && !pending.has(String(r.accountId || '')));
     }
-    if(surface==='orders') { if(!canAccess(v,'Work Orders','orders')) throw new ForbiddenError(); const orders=all.filter(r=>r.kind==='workOrder'); return orders.concat(all.filter(r=>r.kind==='workTypes'),all.filter(r=>r.kind==='comment'&&orders.some(o=>o.id===r.parentId)),all.filter(r=>r.kind==='account'||r.kind==='contact').map(r=>({id:r.id,kind:r.kind,version:r.version,name:r.name,address:r.kind==='account'?r.address:undefined}))); }
+    if(surface==='orders') { if(!canAccess(v,'Work Orders','orders')) throw new ForbiddenError(); const orders=all.filter(r=>r.kind==='workOrder'); return orders.concat(all.filter(r=>r.kind==='workTypes'),all.filter(r=>r.kind==='comment'&&orders.some(o=>o.id===r.parentId)),all.filter(r=>r.kind==='account'||r.kind==='contact').map(r=>({id:r.id,kind:r.kind,version:r.version,name:r.name,address:r.kind==='account'?r.address:undefined})),all.filter(r=>woKinds.includes(r.kind))); }
     if(surface==='claims') { if(!access(v,'claims')) throw new ForbiddenError(); return all.filter(r=>r.kind==='claim'||r.kind==='file'&&r.category==='Claim evidence').concat(all.filter(r=>['account','contact'].includes(r.kind)).map(r=>({id:r.id,kind:r.kind,version:r.version,name:r.name,assignee:r.assignee}))); }
     if (surface !== 'dispatch')
         return all.filter(r => r.kind !== 'vehicle' && (r.kind==='comment' ? all.some(p=>p.id===r.parentId&&canRead(v,p)) : r.kind === 'file' ? canReadFile(v, r) : canRead(v, r)));
@@ -92,7 +92,7 @@ export function projection(all: Row[], v: Viewer, surface: string) {
 }
 export async function save(body: Record<string, unknown>, ctx: Awaited<ReturnType<typeof context>>) {
     const { viewer: v, staff, all } = ctx, action = String(body.action || 'save');
-    if(all.some(r=>r.id===body.id&&r.assetRequest===true)&&!['comment'].includes(String(body.kind))) throw new AppError('Manage this equipment request in the Asset Library so custody and work order status stay synchronized.');
+    if(all.some(r=>(r.id===body.id||r.id===(body.record as Row|undefined)?.id)&&r.assetRequest===true)&&!['comment'].includes(String(body.kind))) throw new AppError('Manage this equipment request in the Asset Library so custody and work order status stay synchronized.');
     if (action === 'activateOnboarding' || action === 'onboardingContact' || action === 'propertyContact') {
         const account = all.find(r => r.kind === 'account' && r.id === body.accountId);
         if (!account || action !== 'propertyContact' && !isPendingAccount(account) || !canEdit(v, account, all, staff)) throw new ForbiddenError();

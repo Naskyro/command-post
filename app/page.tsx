@@ -18,6 +18,7 @@ import Notifications from '@/components/Notifications';
 import AccountHub from "@/components/dispatch/AccountHub";
 import SalesWorkspace from "@/components/sales/SalesWorkspace";
 import AccountWorkspace from "@/components/accounts/AccountWorkspace";
+import WorkOrdersWorkspace from "@/components/work-orders/WorkOrdersWorkspace";
 import {queue as accountQueue,type Row as AccountRow} from "@/lib/accounts/model";
 import {DelegatedAccessBanner, DelegatedAccessTabSync, type DelegatedView} from '@/components/admin/DelegatedAccessBanner';
 import {canOpenYearHistory} from '@/lib/year-history/access';
@@ -215,7 +216,7 @@ export default function CommandPost() {
 
   function renderOtherModule(label: string) {
     if (label === "Home") return <HomeWorkspace readOnly={viewing} key={(sessionViewer?.person||"")+"|"+JSON.stringify(sessionViewer?.access||[])} onOpen={navigate}/>;
-    if (label === "Work Orders") return <AccountWorkspace surface="orders" initialTab={workspaceTarget.tab==='year-history'?'year-history':workspaceTarget.tab==='assets'?'assets':undefined} onOpen={navigate}/>;
+    if (label === "Work Orders") return workspaceTarget.tab==='year-history'||workspaceTarget.tab==='assets'?<AccountWorkspace surface="orders" initialTab={workspaceTarget.tab} onOpen={navigate}/>:<WorkOrdersWorkspace key={workOrderTab} initialTab={workOrderTab} onOpen={navigate}/>;
     if (label === "People & HR") return <HrWorkspace initialTab={hrTab} initialHomeSection={workspaceTarget.section} initialHomePerson={workspaceTarget.person} onNavigate={navigate}/>;
     if (label === "Sales CRM") return <SalesWorkspace initialTab={salesTab} onOpen={navigate} />;
     if (label === "Admin") return <UserAccessWorkspace initialTab={workspaceTarget.tab} />;

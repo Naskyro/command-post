@@ -13,7 +13,9 @@ export function numberError(field:Pick<Field,'key'|'label'>,value:unknown):strin
 export const isMixed=(r:Row)=>['Mixed','Mixed use'].includes(String(r.propertyType));
 export const hasDigital=(r:Row)=>['Digital only','Physical and digital'].includes(String(r.permitSystem));
 export const hasPhysical=(r:Row)=>['Physical only','Physical and digital'].includes(String(r.permitSystem));
+const workOrderModuleOnly = new Set(['category','requestType','location','approvedAmount','relatedVehicle','relatedEmployee','relatedDevice','projectId','provider','providerName','date','requiresApproval','safetyImpact','operationalImpact','internalNotes','attachmentNote','woNumber','whichPrinter','itErrorMessage','othersAffected','currentMileage','specificLocation','buildingUnsecured','supplyItem','supplyQty','supplyDateNeeded','preferredVendor','immediateDanger','safeToUse','peopleExposed']);
 export function fieldVisible(r:Row,key:string):boolean {
+ if(r.kind==='workOrder'&&workOrderModuleOnly.has(key))return r[key]!==undefined&&r[key]!==''&&r[key]!==false;
  if(!['account','opportunity'].includes(r.kind))return true;
  if(key.startsWith('leasingOfficeParking')&&key!=='leasingOfficeParking')return ['Enforced','Do not tow'].includes(String(r.leasingOfficeParking))&&(key!=='leasingOfficeParkingHours'&&key!=='leasingOfficeParkingAuthority'||r.leasingOfficeParking==='Enforced');
  if(['physicalPermitType','physicalPermitDisplay'].includes(key))return hasPhysical(r);

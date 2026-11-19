@@ -7,8 +7,8 @@ import type { Viewer, FinRecord } from '@/lib/finance/model';
 import { AppError, ForbiddenError } from '@/lib/shared/errors';
 import { healthFactors, vehicleKey } from './insights';
 import { contactName, checklistProgress, isWaiting, orderStatuses } from './work';
-import { forms, areas, current, today, type Row, type Kind } from './model';
-import { workTypeOptions } from './work-options';
+import { forms, areas, current, today, woKinds, type Row, type Kind } from './model';
+import { workTypeOptions, woStatuses } from './work-options';
 import { normalizeContact } from './contact-details';
 const legacy: Record<string, string[]> = { relationships: ['accounts', 'setup'], work: ['today', 'lifecycle'], activity: ['interactions', 'notes'], signage: ['compliance'], files: ['agreement', 'compliance'], decisions: ['lifecycle'], performance: ['accounts'] };
 export function access(v: Viewer, area: string, edit = false): boolean {
@@ -31,6 +31,7 @@ export function canEdit(v: Viewer, r: Row, all: Row[], staff: FinRecord[]): bool
     if(r.kind==='workTypes') return access(v,'workOrders',true);
     if(r.kind==='comment') {const parent=all.find(p=>p.id===r.parentId); return !!parent && (!r.authorId||r.authorId===v.person) && canEdit(v,parent,all,staff);}
     if(r.kind==='workOrder' && canAccess(v,'Work Orders','orders',true)) return !r.readOnly;
+    if(woKinds.includes(r.kind)) return canAccess(v,'Work Orders','orders',true);
     if (r.readOnly || !access(v, areas[r.kind], true))
         return false;
     if (r.kind === 'email' && r.authorId && r.authorId !== v.person)
@@ -54,7 +55,7 @@ export function canEdit(v: Viewer, r: Row, all: Row[], staff: FinRecord[]): bool
         return all.some(a => a.companyId === r.companyId && assigned(v, a));
     return false;
 }
-export function canRead(v: Viewer, r: Row) { if(r.kind==='salesRoute')return canAccess(v,'Sales CRM','routes')&&(v.owner||r.authorId===v.person);if(r.kind==='salesSettings')return canAccess(v,'Sales CRM');return access(v, areas[r.kind]) && (r.kind !== 'email' || r.authorId === v.person || !!r.accountId && ['Linked','Sent'].includes(String(r.status))); }
+export function canRead(v: Viewer, r: Row) { if(r.kind==='salesRoute')return canAccess(v,'Sales CRM','routes')&&(v.owner||r.authorId===v.person);if(r.kind==='salesSettings')return canAccess(v,'Sales CRM');if(woKinds.includes(r.kind))return canAccess(v,'Work Orders','orders');return access(v, areas[r.kind]) && (r.kind !== 'email' || r.authorId === v.person || !!r.accountId && ['Linked','Sent'].includes(String(r.status))); }
 export function canReadFile(v: Viewer, r: Row) {
     if (r.kind !== 'file')
         return false;
@@ -164,7 +165,7 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
         throw new AppError('Set an end date for temporary coverage.');
     if (result.startDate && result.endDate && String(result.endDate) < String(result.startDate))
         throw new AppError('End date must follow start date.');
-    if (!['account', 'company', 'contact', 'affiliation', 'playbook', 'opportunity', 'email', 'workOrder', 'comment', 'salesActivity'].includes(kind) && !result.accountId)
+    if (!['account', 'company', 'contact', 'affiliation', 'playbook', 'opportunity', 'email', 'workOrder', 'comment', 'salesActivity', ...woKinds].includes(kind) && !result.accountId)
         throw new AppError('Choose an account.');
     for (const key of ['email', 'alternateEmail', 'workEmail'])
         if (result[key] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(result[key])))
@@ -207,13 +208,16 @@ export function clean(input: unknown, old: Row | undefined, v: Viewer, all: Row[
     }
     if (kind === 'workOrder') {
         const ops=canAccess(v,'Work Orders','orders',true);
-        if(!old) {result.authorId=v.person;result.requestedAt=new Date().toISOString(); if(!ops && (result.status!=='Requested'||result.assignee)) throw new ForbiddenError('Submit the request to Operations for assignment.');}
-        if(!ops&&!old && ['actualCost','estimatedCost','scheduledDate','resolution'].some(k=>result[k]!==undefined&&result[k]!=='')) throw new ForbiddenError('Operations records scheduling, cost and completion.');
+        if(!old) {result.authorId=result.submittedBy=result.createdBy=v.person;result.requestedAt=result.createdAt=new Date().toISOString(); if(!ops && (!['New','Requested'].includes(String(result.status))||result.assignee)) throw new ForbiddenError('Submit the request to Operations for assignment.');}
+        if(!result.category&&!result.type) throw new AppError('Complete Work type.');
+        if(!result.category&&!result.details) throw new AppError('Complete Work requested.');
+        if(!ops&&!old && ['actualCost','estimatedCost','approvedAmount','scheduledDate','resolution'].some(k=>result[k]!==undefined&&result[k]!=='')) throw new ForbiddenError('Operations records scheduling, cost and completion.');
         if(result.assignee && !staff.some(p=>p.id===result.assignee && p.department==='Operations' && p.status==='Active')) throw new AppError('Choose an active Operations employee.');
-        if(!ops && old && ['checklist','assignee','scheduledDate','status','actualCost','estimatedCost','resolution','completedSteps'].some(k=>JSON.stringify(result[k])!==JSON.stringify(old[k]))) throw new ForbiddenError('Operations manages assignment and completion. Add a comment to follow up.');
-        if(!orderStatuses.includes(String(result.status))) throw new AppError('Choose a work order status.');
+        if(!ops && old && ['checklist','assignee','scheduledDate','status','actualCost','estimatedCost','approvedAmount','resolution','completedSteps'].some(k=>JSON.stringify(result[k])!==JSON.stringify(old[k]))) throw new ForbiddenError('Operations manages assignment and completion. Add a comment to follow up.');
+        if(![...orderStatuses, ...woStatuses].includes(String(result.status))) throw new AppError('Choose a work order status.');
+        if(result.status==='Approved'&&old?.status!=='Approved'){result.approvedBy=v.person;result.approvedAt=new Date().toISOString();}
         if(result.status==='Scheduled'&&!result.scheduledDate) throw new AppError('Choose a scheduled date.');
-        if(['In progress','Ready for review','Completed'].includes(String(result.status))&&!result.assignee) throw new AppError('Assign an Operations employee.');
+        if(['In progress','Ready for review','Completed','In Progress','Ready for Verification'].includes(String(result.status))&&!result.assignee) throw new AppError('Assign an Operations employee.');
         if(result.status==='Completed'&&!result.resolution) throw new AppError('Add completion notes.');
     }
     if (kind === 'task') {
