@@ -43,7 +43,7 @@ function pass(req,res,cfg,roster,compatLogout=false){return new Promise((resolve
  const all=cookies(req);const downstream=[...all].filter(([k,v])=>/^cp_[a-z0-9_]+$/.test(k)&&/^[A-Za-z0-9_.=-]{1,1024}$/.test(v)).map(([k,v])=>k+'='+v);if(all.has('__Host-command-view')){const view=all.get('__Host-command-view');downstream.push('__Host-command-view='+(/^[A-Za-z0-9_.=-]{1,1024}$/.test(view)?view:'invalid'));}if(downstream.length)headers.cookie=downstream.join('; ');if(req.headers['x-command-read-only'])headers['x-command-read-only']='1';
  // A public upstream (e.g. workers.dev) is routed by Host at the edge; sending the
  // public Host would loop back to this gateway, so present the upstream's own origin.
- headers.host=cfg.trustPublicUpstream?target.host:publicUrl.host;headers['x-forwarded-host']=publicUrl.host;headers['x-forwarded-proto']='https';headers['x-command-person-id']=roster.person;headers['x-command-gateway-key']=cfg.gatewaySecret;if(req.headers.origin===cfg.origin)headers.origin=cfg.trustPublicUpstream?target.origin:cfg.origin;
+ headers.host=cfg.trustPublicUpstream?target.host:publicUrl.host;headers['x-forwarded-host']=publicUrl.host;headers['x-forwarded-proto']='https';headers['x-command-person-id']=roster.person;headers['x-command-gateway-key']=cfg.gatewaySecret;if(req.headers.origin===cfg.origin)headers.origin=cfg.origin;
  const client=(target.protocol==='https:'?https:http).request({protocol:target.protocol,hostname:target.hostname.replace(/^\[|\]$/g,''),port:target.port||undefined,path:req.url,method:req.method,headers,timeout:30000},up=>{
   if(compatLogout){up.resume();json(res,200,{redirect:'/auth/login'});resolve();return;}
   for(const [k,v] of Object.entries(up.headers))if(responseHeaders.has(k)&&v!=null)res.setHeader(k,v);
